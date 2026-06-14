@@ -1,0 +1,82 @@
+<div x-show="activeTab === 'saves'" class="container mx-auto px-4 py-6 max-w-6xl">
+
+  <!-- Not connected -->
+  <div x-show="!sfStatus.connected" class="text-center py-20">
+    <p class="text-gray-500 text-sm">Connect to your server to manage saves.</p>
+  </div>
+
+  <div x-show="sfStatus.connected">
+
+    <!-- Action result banner -->
+    <div
+      x-show="actionResult"
+      x-transition
+      :class="actionResult?.ok ? 'bg-green-900/30 border-green-800 text-green-300' : 'bg-red-900/30 border-red-800 text-red-300'"
+      class="p-3 border rounded-lg text-sm mb-5 flex items-center justify-between"
+    >
+      <span x-text="actionResult?.message"></span>
+      <button @click="actionResult = null" class="text-current opacity-60 hover:opacity-100 ml-4">✕</button>
+    </div>
+
+    <!-- Create save -->
+    <div class="bg-gray-800 rounded-xl p-5 border border-gray-700 mb-6">
+      <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Create Save</h3>
+      <div class="flex gap-2">
+        <input
+          type="text"
+          x-model="newSaveName"
+          placeholder="Enter save name…"
+          @keydown.enter="triggerSave()"
+          class="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-orange-400 transition-colors"
+        />
+        <button
+          @click="triggerSave()"
+          :disabled="actionLoading || !newSaveName.trim()"
+          class="px-4 py-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
+        >
+          <span x-show="!actionLoading">Save</span>
+          <span x-show="actionLoading">Saving…</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Save list -->
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-base font-semibold text-gray-200">Save Files</h2>
+      <button @click="saves = null; loadSaves()" class="text-xs text-gray-500 hover:text-gray-300 transition-colors">↻ Refresh</button>
+    </div>
+
+    <div x-show="loading" class="text-center py-10 text-gray-500 text-sm animate-pulse">Loading saves…</div>
+    <div
+      x-show="error && !loading"
+      class="p-4 bg-red-900/30 border border-red-800 rounded-lg text-red-300 text-sm"
+      x-text="error"
+    ></div>
+
+    <div x-show="saves && !loading" class="space-y-5">
+      <template x-for="session in saves?.sessions ?? []" :key="session.sessionName">
+        <div>
+          <div class="text-xs font-semibold text-orange-400 uppercase tracking-wide mb-2 px-1" x-text="session.sessionName"></div>
+          <div class="space-y-1.5">
+            <template x-for="save in session.saveHeaders ?? []" :key="save.saveName">
+              <div class="bg-gray-800 rounded-lg px-4 py-3 border border-gray-700 flex items-center justify-between gap-4">
+                <div class="min-w-0">
+                  <div class="text-sm font-medium text-white truncate" x-text="save.saveName"></div>
+                  <div class="text-xs text-gray-400 mt-0.5" x-text="formatSaveDate(save.saveDateTime)"></div>
+                </div>
+                <button
+                  @click="loadSave(session.sessionName, save.saveName)"
+                  :disabled="actionLoading"
+                  class="shrink-0 px-3 py-1 text-xs bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-gray-300 rounded-md transition-colors"
+                >
+                  Load
+                </button>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+      <div x-show="!saves?.sessions?.length" class="text-center py-10 text-gray-500 text-sm">No saves found.</div>
+    </div>
+  </div>
+</div>

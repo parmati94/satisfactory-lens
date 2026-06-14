@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Satisfactory Lens — Sign In</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <script type="module" src="/js/login.js"></script>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-sm px-4">
+    <div class="bg-gray-800 rounded-2xl p-8 border border-gray-700 shadow-2xl" x-data="loginForm" x-cloak>
+      <div class="text-center mb-6">
+        <h1 class="text-2xl font-bold text-orange-400">Satisfactory Lens</h1>
+        <p class="text-sm text-gray-400 mt-1">Sign in to continue</p>
+      </div>
+      <form @submit.prevent="login()">
+        <div class="mb-4">
+          <label class="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Username</label>
+          <input
+            type="text"
+            x-model="username"
+            autocomplete="username"
+            class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-orange-400 transition-colors"
+            required
+          />
+        </div>
+        <div class="mb-5">
+          <label class="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Password</label>
+          <input
+            type="password"
+            x-model="password"
+            autocomplete="current-password"
+            class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-orange-400 transition-colors"
+            required
+          />
+        </div>
+        <div
+          x-show="error"
+          x-cloak
+          class="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-lg text-red-300 text-sm"
+          x-text="error"
+        ></div>
+        <button
+          type="submit"
+          :disabled="loading"
+          class="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm"
+        >
+          <span x-show="!loading">Sign In</span>
+          <span x-show="loading">Signing in…</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

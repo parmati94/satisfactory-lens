@@ -1,0 +1,34 @@
+name: satisfactory-lens
+services:
+  satisfactory-lens:
+    build: .
+    image: satisfactory-lens:latest
+    container_name: satisfactory-lens
+    ports:
+      - "5180:80"
+    # volumes:
+    #   - /path/to/satisfactory/saves:/app/saves:ro
+    environment:
+      - TZ=America/New_York
+      # App auth (set ENABLE_LOGIN=true to require username/password to access the UI)
+      - ENABLE_LOGIN=false
+      - USERNAME=admin
+      - PASSWORD=changeme
+      - SESSION_SECRET=change-me-in-production
+      # Satisfactory dedicated server
+      # Set SF_HOST to auto-connect on startup, or leave blank to connect via the UI
+      - SF_HOST=
+      - SF_PORT=7777
+      - SF_PASSWORD=
+      - SF_ALLOW_SELF_SIGNED=true
+      # Save viewer — uncomment the volume above and set SAVE_MOUNT_PATH to enable
+      - SAVE_MOUNT_PATH=/app/saves
+      - SAVE_FILE_NAME=        # specific .sav filename; blank = auto-select newest
+      - ENABLE_AUTO_WATCH=true # watch mounted file for changes and auto-reload
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

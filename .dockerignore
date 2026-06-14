@@ -1,0 +1,24 @@
+# Version control
+.git
+.gitignore
+
+# Docker files (not needed inside the image)
+.dockerignore
+docker-compose*.yml
+
+# Dependencies — reinstalled inside the image
+**/node_modules
+
+# Build outputs — rebuilt inside the image
+frontend/dist
+backend/dist
+
+# Dev / docs / tooling
+CLAUDE.md
+PLANNING.md
+.claude
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log

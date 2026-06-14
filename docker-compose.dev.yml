@@ -1,0 +1,35 @@
+name: satisfactory-lens-dev
+services:
+  satisfactory-lens:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - DEV_MODE=true
+    image: satisfactory-lens:dev
+    container_name: satisfactory-lens-dev
+    ports:
+      - "5181:80"
+    volumes:
+      # Mount backend source for live reload via tsx watch
+      - ./backend/src:/app/backend/src
+      # Mount built frontend (run `npm run build` in frontend/ locally, or `vite dev` separately)
+      - ./frontend/dist:/usr/share/nginx/html
+    environment:
+      - TZ=America/New_York
+      - ENABLE_LOGIN=false
+      - USERNAME=admin
+      - PASSWORD=changeme
+      - SESSION_SECRET=dev-secret-not-for-production
+      # Point at your actual SF server for dev
+      - SF_HOST=
+      - SF_PORT=7777
+      - SF_PASSWORD=
+      - SF_ALLOW_SELF_SIGNED=true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
