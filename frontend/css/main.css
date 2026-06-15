@@ -3,3 +3,8 @@
 @tailwind utilities;
 
 [x-cloak] { display: none !important; }
+
+/* Override Leaflet's default light gray container background */
+.leaflet-container {
+  background: #030712 !important; /* gray-950, matches app body */
+}

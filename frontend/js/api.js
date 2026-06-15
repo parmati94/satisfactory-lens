@@ -54,5 +54,7 @@ export const api = {
     watch: () => apiFetch('/api/save/watch', { method: 'POST' }),
     players: () => apiFetch('/api/save/players'),
     buildings: () => apiFetch('/api/save/buildings'),
+    resources: () => apiFetch('/api/save/resources'),
+    power: () => apiFetch('/api/save/power'),
   },
 };

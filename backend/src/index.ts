@@ -9,6 +9,7 @@ import { savesRouter } from './routes/saves';
 import { settingsRouter } from './routes/settings';
 import { autoConnect } from './api/sfClient';
 import { saveViewerRouter } from './routes/saveViewer';
+import { mapTilesRouter } from './routes/mapTiles';
 import { loadFromDisk } from './save/loader';
 import { startWatching, broadcastSaveReloaded } from './save/watcher';
 import { getSaveStatus } from './save/saveState';
@@ -29,6 +30,7 @@ app.use(serverStateRouter);
 app.use(savesRouter);
 app.use(settingsRouter);
 app.use(saveViewerRouter);
+app.use(mapTilesRouter);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', version: '1.0.0' });
