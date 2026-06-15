@@ -5,33 +5,25 @@ import 'leaflet/dist/leaflet.css';
 
 // Stored outside Alpine to avoid reactivity overhead on Leaflet objects
 let _leafletMap = null;
-let _mapMarkerLayer = null;
+let _playerLayer = null;
+let _resourceNodeLayer = null;
+let _mapPinLayer = null;
 
-// Satisfactory world → tile mapping, mirroring AnthorNet/SC-InteractiveMap's
-// GameMap.js (game units = Unreal cm). SCIM's playable bounds:
+// Satisfactory world bounds in Unreal cm
 const MAP_WEST  = -324698.832031;
 const MAP_EAST  =  425301.832031;
-const MAP_NORTH = -375000;          // negative Y = north in UE coords
+const MAP_NORTH = -375000;
 const MAP_SOUTH =  375000;
 const TILE_SIZE = 256;
 
-// SCIM pads the 32768px map with a proportional border (extraBackgroundSize),
-// which is what makes the *native* tile zoom 8, not 7: the padded map is
-// 40960px = 160 tiles, sitting top-left inside a 256-tile (2^8) grid — exactly
-// the 62.5% coverage we measured. Replicating this padding is what makes our
-// markers line up with the tiles.
-const MAP_BG_BASE = 32768;
-const MAP_EXTRA = 4096;
-const _xLen = Math.abs(MAP_WEST) + Math.abs(MAP_EAST);
-const _yLen = Math.abs(MAP_NORTH) + Math.abs(MAP_SOUTH);
-const _westOffset = (_xLen / MAP_BG_BASE) * MAP_EXTRA;
-const _northOffset = (_yLen / MAP_BG_BASE) * MAP_EXTRA;
-const MAP_W = MAP_WEST - _westOffset;
-const MAP_N = MAP_NORTH - _northOffset;
-const MAP_X_MAX = (Math.abs(MAP_WEST) + Math.abs(MAP_EAST)) + 2 * _westOffset;
-const MAP_Y_MAX = (Math.abs(MAP_NORTH) + Math.abs(MAP_SOUTH)) + 2 * _northOffset;
-const MAP_BG_SIZE = MAP_BG_BASE + MAP_EXTRA * 2;                       // 40960
-const MAP_ZOOM_RATIO = Math.ceil(Math.log2(MAP_BG_SIZE / TILE_SIZE));  // 8
+// Local tiles are cropped to the exact game world — no padding.
+// 16384px canvas / 256px tiles = 64 tiles per side at native zoom 6.
+const MAP_BG_SIZE    = 16384;
+const MAP_W          = MAP_WEST;
+const MAP_N          = MAP_NORTH;
+const MAP_X_MAX      = Math.abs(MAP_WEST) + Math.abs(MAP_EAST);
+const MAP_Y_MAX      = Math.abs(MAP_NORTH) + Math.abs(MAP_SOUTH);
+const MAP_ZOOM_RATIO = Math.round(Math.log2(MAP_BG_SIZE / TILE_SIZE)); // 6
 
 function gameToLatLng(gameX, gameY) {
   const rasterX = (gameX - MAP_W) * MAP_BG_SIZE / MAP_X_MAX;
@@ -63,6 +55,18 @@ document.addEventListener('alpine:init', () => {
 
     // ── Phase 3: Map ─────────────────────────────────────────────────────
     mapInitialized: false,
+    svResourceNodes: null,
+    mapRefreshing: false,
+    mapFiltersOpen: false,
+    mapFilters: {
+      players:       true,
+      hub:           true,
+      stamps:        true,
+      purityImpure:  true,
+      purityNormal:  true,
+      purityPure:    true,
+    },
+    svMapPins: null,
     // ─────────────────────────────────────────────────────────────────────
 
     // ── Phase 2: Save Viewer ──────────────────────────────────────────────
@@ -74,6 +78,9 @@ document.addEventListener('alpine:init', () => {
     svBuildings: null,
     svResources: null,
     svPower: null,
+    svStorage: null,
+    expandedPlayer: null,    // instanceName of expanded player row
+    expandedStorage: null,   // instanceName of expanded storage row
     showDownloadModal: false,
     downloadSaveName: '',
     downloadLoading: false,
@@ -150,7 +157,13 @@ document.addEventListener('alpine:init', () => {
       if (tab === 'settings' && !this.serverOptions && this.sfStatus.connected) await this.loadSettings();
       if (tab === 'saveviewer') await this.loadSaveActiveSubTab();
       if (tab === 'map') {
-        if (!this.svPlayers && this.saveStatus?.loaded) await this.loadSvPlayers();
+        if (this.saveStatus?.loaded) {
+          await Promise.all([
+            !this.svPlayers       ? this.loadSvPlayers()       : Promise.resolve(),
+            !this.svResourceNodes ? this.loadSvResourceNodes() : Promise.resolve(),
+            !this.svMapPins       ? this.loadSvMapPins()       : Promise.resolve(),
+          ]);
+        }
         await this.$nextTick();
         this.initMap();
       }
@@ -248,6 +261,7 @@ document.addEventListener('alpine:init', () => {
         this.svBuildings = null;
         this.svResources = null;
         this.svPower = null;
+        this.svResourceNodes = null;
         if (this.saveStatus?.loaded) await this.loadSaveActiveSubTab();
       } catch (e) {
         this.saveDataError = e.message;
@@ -268,6 +282,7 @@ document.addEventListener('alpine:init', () => {
         this.svBuildings = null;
         this.svResources = null;
         this.svPower = null;
+        this.svResourceNodes = null;
         if (this.saveStatus?.loaded) await this.loadSaveActiveSubTab();
       } catch (e) {
         this.downloadError = e.message;
@@ -284,10 +299,11 @@ document.addEventListener('alpine:init', () => {
 
     async loadSaveActiveSubTab() {
       if (!this.saveStatus?.loaded) return;
-      if (this.saveTab === 'players' && !this.svPlayers) await this.loadSvPlayers();
+      if (this.saveTab === 'players'   && !this.svPlayers)   await this.loadSvPlayers();
+      if (this.saveTab === 'storage'   && !this.svStorage)   await this.loadSvStorage();
       if (this.saveTab === 'buildings' && !this.svBuildings) await this.loadSvBuildings();
       if (this.saveTab === 'resources' && !this.svResources) await this.loadSvResources();
-      if (this.saveTab === 'power' && !this.svPower) await this.loadSvPower();
+      if (this.saveTab === 'power'     && !this.svPower)     await this.loadSvPower();
     },
 
     async loadSvPlayers() {
@@ -300,6 +316,27 @@ document.addEventListener('alpine:init', () => {
         this.saveDataError = e.message;
       } finally {
         this.saveDataLoading = false;
+      }
+    },
+
+    async loadSvStorage() {
+      this.saveDataLoading = true;
+      this.saveDataError = null;
+      try {
+        const data = await api.save.storage();
+        this.svStorage = data.containers;
+      } catch (e) {
+        this.saveDataError = e.message;
+      } finally {
+        this.saveDataLoading = false;
+      }
+    },
+
+    async loadSvMapPins() {
+      try {
+        this.svMapPins = await api.save.mapPins();
+      } catch (e) {
+        console.warn('map pins unavailable:', e.message);
       }
     },
 
@@ -339,6 +376,12 @@ document.addEventListener('alpine:init', () => {
       }
     },
 
+    async loadSvResourceNodes() {
+      try {
+        this.svResourceNodes = await api.save.resourceNodes();
+      } catch { this.svResourceNodes = []; }
+    },
+
     connectSaveSSE() {
       if (this._eventSource) return;
       const es = new EventSource('/api/save/events');
@@ -351,12 +394,15 @@ document.addEventListener('alpine:init', () => {
           if (msg.event === 'save_reloaded') {
             await this.loadSaveStatus();
             this.svPlayers = null;
+            this.svStorage = null;
             this.svBuildings = null;
             this.svResources = null;
             this.svPower = null;
+            this.svResourceNodes = null;
+            this.svMapPins = null;
             if (this.activeTab === 'saveviewer') await this.loadSaveActiveSubTab();
             if (this.activeTab === 'map') {
-              await this.loadSvPlayers();
+              await Promise.all([this.loadSvPlayers(), this.loadSvResourceNodes(), this.loadSvMapPins()]);
               this.updateMapMarkers();
             }
           }
@@ -384,6 +430,50 @@ document.addEventListener('alpine:init', () => {
 
     // ── Phase 3: Map methods ──────────────────────────────────────────────
 
+    toggleMapFilters() {
+      this.mapFiltersOpen = !this.mapFiltersOpen;
+    },
+
+    toggleMapFilter(key) {
+      this.mapFilters[key] = !this.mapFilters[key];
+      this.updateMapMarkers();
+    },
+
+    toggleAllNodes() {
+      const anyOn = this.mapFilters.purityImpure || this.mapFilters.purityNormal || this.mapFilters.purityPure;
+      this.mapFilters.purityImpure = !anyOn;
+      this.mapFilters.purityNormal = !anyOn;
+      this.mapFilters.purityPure   = !anyOn;
+      this.updateMapMarkers();
+    },
+
+    nodeCountByPurity(purity) {
+      return this.svResourceNodes?.filter(n => n.purity === purity && n.icon).length ?? 0;
+    },
+
+    mapResetView() {
+      if (!_leafletMap) return;
+      const bounds = L.latLngBounds(
+        gameToLatLng(MAP_WEST, MAP_NORTH),
+        gameToLatLng(MAP_EAST, MAP_SOUTH),
+      );
+      _leafletMap.setView(bounds.getCenter(), _leafletMap.getBoundsZoom(bounds) + 1.75, { animate: true });
+    },
+
+    async mapRefresh() {
+      if (this.mapRefreshing || !this.saveStatus?.loaded) return;
+      this.mapRefreshing = true;
+      try {
+        await Promise.all([this.loadSvPlayers(), this.loadSvResourceNodes(), this.loadSvMapPins()]);
+        this.updateMapMarkers();
+      } finally {
+        setTimeout(() => { this.mapRefreshing = false; }, 400);
+      }
+    },
+
+    mapZoomIn()  { _leafletMap?.zoomIn(); },
+    mapZoomOut() { _leafletMap?.zoomOut(); },
+
     initMap() {
       if (_leafletMap) {
         _leafletMap.invalidateSize();
@@ -394,10 +484,11 @@ document.addEventListener('alpine:init', () => {
       const container = document.getElementById('leaflet-map');
       _leafletMap = L.map(container, {
         crs: L.CRS.Simple,
-        minZoom: 3,
+        minZoom: 1,
         maxZoom: 12,
         zoomSnap: 0.25,
         zoomDelta: 0.25,
+        zoomControl: false,
       });
 
       // Bounds of the playable world (the un-padded map), expressed via the same
@@ -409,43 +500,35 @@ document.addEventListener('alpine:init', () => {
         gameToLatLng(MAP_EAST, MAP_SOUTH),
       );
 
-      // Keep the user inside the world — stops panning out into the empty void
       _leafletMap.setMaxBounds(bounds);
       _leafletMap.options.maxBoundsViscosity = 1.0;
 
-      // `bounds` here stops Leaflet from requesting tiles outside the world.
-      L.tileLayer('/api/map/tiles/{z}/{x}/{y}', {
+      L.tileLayer('/tiles/{z}/{x}/{y}.png', {
         noWrap: true,
         bounds,
         minNativeZoom: 3,
         maxNativeZoom: MAP_ZOOM_RATIO,
-        maxZoom: 12,
+        maxZoom: 10,
         tileSize: TILE_SIZE,
-        attribution: 'Tiles &copy; <a href="https://satisfactory-calculator.com">SCIM</a>',
       }).addTo(_leafletMap);
 
-      _mapMarkerLayer = L.layerGroup().addTo(_leafletMap);
+      // Layer z-order: nodes → pins → players (players on top)
+      _resourceNodeLayer = L.layerGroup().addTo(_leafletMap);
+      _mapPinLayer       = L.layerGroup().addTo(_leafletMap);
+      _playerLayer       = L.layerGroup().addTo(_leafletMap);
 
-      // Center on the map, starting ~1.75 zoom levels past the "fit whole map"
-      // zoom so it opens comfortably zoomed in rather than fully pulled out.
       const center = bounds.getCenter();
       const frameView = () => {
         const fitZoom = _leafletMap.getBoundsZoom(bounds);
-        _leafletMap.setView(center, fitZoom + 1.75, { animate: false });
+        _leafletMap.setView(center, fitZoom + 2, { animate: false });
       };
 
-      // Set an initial view immediately so the map is never view-less
       frameView();
 
-      // ResizeObserver handles window resizes after initial load
       new ResizeObserver(() => {
         if (_leafletMap) _leafletMap.invalidateSize({ animate: false });
       }).observe(container);
 
-      // The container may still be settling its flex layout when the map is
-      // first created. Recompute size and re-frame after the browser paints,
-      // otherwise the world lands in a corner. rAF is more reliable than a
-      // fixed setTimeout because it fires once layout is actually committed.
       requestAnimationFrame(() => {
         if (!_leafletMap) return;
         _leafletMap.invalidateSize({ animate: false });
@@ -457,24 +540,112 @@ document.addEventListener('alpine:init', () => {
     },
 
     updateMapMarkers() {
-      if (!_leafletMap || !_mapMarkerLayer) return;
-      _mapMarkerLayer.clearLayers();
-      if (!this.svPlayers?.length) return;
+      if (!_leafletMap) return;
+      this._updatePlayerMarkers();
+      this._updateMapPinMarkers();
+      this._updateResourceNodeMarkers();
+    },
+
+    _updatePlayerMarkers() {
+      if (!_playerLayer) return;
+      _playerLayer.clearLayers();
+      if (!this.mapFilters.players || !this.svPlayers?.length) return;
 
       for (const player of this.svPlayers) {
         const latlng = gameToLatLng(player.position.x, player.position.y);
         const xM = (player.position.x / 100).toFixed(0);
         const yM = (player.position.y / 100).toFixed(0);
         const zM = (player.position.z / 100).toFixed(0);
-        L.circleMarker(latlng, {
-          radius: 8,
-          color: '#fed7aa',
-          fillColor: '#f97316',
-          fillOpacity: 0.9,
-          weight: 2,
-        })
+        const icon = L.icon({
+          iconUrl: '/assets/players/player_marker.png',
+          iconSize: [28, 28],
+          iconAnchor: [14, 14],
+          popupAnchor: [0, -14],
+        });
+        L.marker(latlng, { icon })
           .bindPopup(`<strong>${player.playerName}</strong><br><span style="font-family:monospace;font-size:11px">${xM} m, ${yM} m, ${zM} m alt</span>`)
-          .addTo(_mapMarkerLayer);
+          .addTo(_playerLayer);
+      }
+    },
+
+    _updateMapPinMarkers() {
+      if (!_mapPinLayer) return;
+      _mapPinLayer.clearLayers();
+      if (!this.svMapPins) return;
+
+      // HUB — dark blue circle with inline SVG house icon, slightly larger than other markers
+      if (this.mapFilters.hub && this.svMapPins.hub) {
+        const hub = this.svMapPins.hub;
+        const latlng = gameToLatLng(hub.position.x, hub.position.y);
+        const icon = L.divIcon({
+          className: '',
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
+          popupAnchor: [0, -18],
+          html: `<div style="width:32px;height:32px;border-radius:50%;background:#1e3a8a;border:2px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.6)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+          </div>`,
+        });
+        L.marker(latlng, { icon })
+          .bindPopup('<strong>HUB Terminal</strong>')
+          .addTo(_mapPinLayer);
+      }
+
+      // Player-placed map stamps
+      if (this.mapFilters.stamps && this.svMapPins.stamps?.length) {
+        for (const stamp of this.svMapPins.stamps) {
+          const latlng = gameToLatLng(stamp.position.x, stamp.position.y);
+          const { r, g, b } = stamp.color;
+          const cssColor = `rgb(${r},${g},${b})`;
+          const icon = L.divIcon({
+            className: '',
+            iconSize: [28, 28],
+            iconAnchor: [14, 14],
+            popupAnchor: [0, -16],
+            html: `<div style="width:28px;height:28px;border-radius:50%;background:${cssColor};border:2px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.6)">
+              <svg width="13" height="15" viewBox="0 0 16 18" fill="white" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="8" cy="7" rx="6" ry="6"/>
+                <ellipse cx="8" cy="7" rx="2.5" ry="2.5" fill="${cssColor}"/>
+                <polygon points="3,10 13,10 8,18"/>
+              </svg>
+            </div>`,
+          });
+          const label = stamp.name || 'Map Marker';
+          L.marker(latlng, { icon })
+            .bindPopup(`<strong>${label}</strong>`)
+            .addTo(_mapPinLayer);
+        }
+      }
+    },
+
+    _updateResourceNodeMarkers() {
+      if (!_resourceNodeLayer) return;
+      _resourceNodeLayer.clearLayers();
+      const anyNodesOn = this.mapFilters.purityImpure || this.mapFilters.purityNormal || this.mapFilters.purityPure;
+      if (!anyNodesOn || !this.svResourceNodes?.length) return;
+
+      const PURITY_RING = { Impure: '#ef4444', Normal: '#eab308', Pure: '#22c55e', Unknown: '#6b7280' };
+
+      for (const node of this.svResourceNodes) {
+        if (!node.icon) continue;
+        if (!this.mapFilters[`purity${node.purity}`]) continue;
+        const latlng = gameToLatLng(node.position.x, node.position.y);
+        const ring = PURITY_RING[node.purity] ?? PURITY_RING.Unknown;
+
+        const icon = L.divIcon({
+          className: '',
+          iconSize: [28, 28],
+          iconAnchor: [14, 14],
+          html: `<div style="width:28px;height:28px;border-radius:50%;border:2.5px solid ${ring};overflow:hidden;background:#111827;box-shadow:0 1px 3px rgba(0,0,0,.6)"><img src="/assets/resources/${node.icon}" style="width:100%;height:100%;object-fit:cover"></div>`,
+        });
+
+        const xM = (node.position.x / 100).toFixed(0);
+        const yM = (node.position.y / 100).toFixed(0);
+        L.marker(latlng, { icon })
+          .bindPopup(`<strong>${node.label}</strong><br><span style="color:${ring};font-size:11px">${node.purity}</span><br><span style="font-family:monospace;font-size:11px">${xM} m, ${yM} m</span>`)
+          .addTo(_resourceNodeLayer);
       }
     },
 

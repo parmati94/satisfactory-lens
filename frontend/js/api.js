@@ -56,5 +56,8 @@ export const api = {
     buildings: () => apiFetch('/api/save/buildings'),
     resources: () => apiFetch('/api/save/resources'),
     power: () => apiFetch('/api/save/power'),
+    resourceNodes: () => apiFetch('/api/save/resource-nodes'),
+    mapPins: () => apiFetch('/api/save/map-pins'),
+    storage: () => apiFetch('/api/save/storage'),
   },
 };
