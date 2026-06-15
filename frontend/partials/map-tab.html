@@ -1,0 +1,25 @@
+<div x-show="activeTab === 'map'" class="flex flex-col" style="height: calc(100vh - 98px);">
+
+  <!-- Status bar -->
+  <div class="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-gray-900 border-b border-gray-800 text-xs text-gray-400">
+    <div class="flex items-center gap-3">
+      <span x-show="saveStatus?.loaded" class="flex items-center gap-2">
+        <span class="text-gray-200 font-medium" x-text="saveStatus?.sourceName"></span>
+        <span x-show="svPlayers?.length" class="text-orange-400">
+          · <span x-text="svPlayers?.length"></span> player<span x-show="svPlayers?.length !== 1">s</span> on map
+        </span>
+        <span x-show="svPlayers !== null && !svPlayers?.length" class="text-gray-500">· No players in save</span>
+      </span>
+      <span x-show="!saveStatus?.loaded" class="text-gray-500">
+        No save loaded — load a save in <button @click="switchTab('saveviewer')" class="underline hover:text-gray-300 transition-colors">Save Viewer</button> to show player positions
+      </span>
+    </div>
+    <span class="text-gray-700">Tiles &copy; <a href="https://satisfactory-calculator.com" target="_blank" rel="noopener" class="hover:text-gray-500 transition-colors">SCIM</a></span>
+  </div>
+
+  <!-- Padded viewport — dark surround frames the map and hides white tile edges -->
+  <div class="flex-1 min-h-0 p-4 bg-gray-950">
+    <div id="leaflet-map" class="h-full w-full rounded-xl overflow-hidden border border-gray-800" style="background: #030712;"></div>
+  </div>
+
+</div>
