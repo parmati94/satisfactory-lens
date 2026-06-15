@@ -25,3 +25,6 @@ data/*.sav
 .DS_Store
 Thumbs.db
 *.log
+
+# Claude Code project instructions (personal/local)
+CLAUDE.md
