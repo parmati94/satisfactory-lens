@@ -13,6 +13,7 @@ import { extractBuildings } from '../save/extractors/buildings';
 import { extractResources } from '../save/extractors/resources';
 import { extractPower } from '../save/extractors/power';
 import { extractResourceNodes } from '../save/extractors/resourceNodes';
+import { extractMapPins } from '../save/extractors/mapPins';
 
 const router = Router();
 
@@ -126,6 +127,17 @@ router.get('/api/save/resource-nodes', (_req, res) => {
   if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
   try {
     res.json(extractResourceNodes(save));
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+// GET /api/save/map-pins — hub position + player-placed map stamps
+router.get('/api/save/map-pins', (_req, res) => {
+  const save = getSave();
+  if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
+  try {
+    res.json(extractMapPins(save));
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }

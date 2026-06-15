@@ -7,6 +7,7 @@ import 'leaflet/dist/leaflet.css';
 let _leafletMap = null;
 let _playerLayer = null;
 let _resourceNodeLayer = null;
+let _mapPinLayer = null;
 
 // Satisfactory world bounds in Unreal cm
 const MAP_WEST  = -324698.832031;
@@ -59,10 +60,13 @@ document.addEventListener('alpine:init', () => {
     mapFiltersOpen: false,
     mapFilters: {
       players:       true,
+      hub:           true,
+      stamps:        true,
       purityImpure:  true,
       purityNormal:  true,
       purityPure:    true,
     },
+    svMapPins: null,
     // ─────────────────────────────────────────────────────────────────────
 
     // ── Phase 2: Save Viewer ──────────────────────────────────────────────
@@ -154,6 +158,7 @@ document.addEventListener('alpine:init', () => {
           await Promise.all([
             !this.svPlayers       ? this.loadSvPlayers()       : Promise.resolve(),
             !this.svResourceNodes ? this.loadSvResourceNodes() : Promise.resolve(),
+            !this.svMapPins       ? this.loadSvMapPins()       : Promise.resolve(),
           ]);
         }
         await this.$nextTick();
@@ -310,6 +315,14 @@ document.addEventListener('alpine:init', () => {
       }
     },
 
+    async loadSvMapPins() {
+      try {
+        this.svMapPins = await api.save.mapPins();
+      } catch (e) {
+        console.warn('map pins unavailable:', e.message);
+      }
+    },
+
     async loadSvBuildings() {
       this.saveDataLoading = true;
       this.saveDataError = null;
@@ -368,9 +381,10 @@ document.addEventListener('alpine:init', () => {
             this.svResources = null;
             this.svPower = null;
             this.svResourceNodes = null;
+            this.svMapPins = null;
             if (this.activeTab === 'saveviewer') await this.loadSaveActiveSubTab();
             if (this.activeTab === 'map') {
-              await Promise.all([this.loadSvPlayers(), this.loadSvResourceNodes()]);
+              await Promise.all([this.loadSvPlayers(), this.loadSvResourceNodes(), this.loadSvMapPins()]);
               this.updateMapMarkers();
             }
           }
@@ -432,7 +446,7 @@ document.addEventListener('alpine:init', () => {
       if (this.mapRefreshing || !this.saveStatus?.loaded) return;
       this.mapRefreshing = true;
       try {
-        await Promise.all([this.loadSvPlayers(), this.loadSvResourceNodes()]);
+        await Promise.all([this.loadSvPlayers(), this.loadSvResourceNodes(), this.loadSvMapPins()]);
         this.updateMapMarkers();
       } finally {
         setTimeout(() => { this.mapRefreshing = false; }, 400);
@@ -480,8 +494,9 @@ document.addEventListener('alpine:init', () => {
         tileSize: TILE_SIZE,
       }).addTo(_leafletMap);
 
-      // Resource nodes below players in z-order
+      // Layer z-order: nodes → pins → players (players on top)
       _resourceNodeLayer = L.layerGroup().addTo(_leafletMap);
+      _mapPinLayer       = L.layerGroup().addTo(_leafletMap);
       _playerLayer       = L.layerGroup().addTo(_leafletMap);
 
       const center = bounds.getCenter();
@@ -509,6 +524,7 @@ document.addEventListener('alpine:init', () => {
     updateMapMarkers() {
       if (!_leafletMap) return;
       this._updatePlayerMarkers();
+      this._updateMapPinMarkers();
       this._updateResourceNodeMarkers();
     },
 
@@ -524,13 +540,65 @@ document.addEventListener('alpine:init', () => {
         const zM = (player.position.z / 100).toFixed(0);
         const icon = L.icon({
           iconUrl: '/assets/players/player_marker.png',
-          iconSize: [44, 44],
-          iconAnchor: [22, 22],
-          popupAnchor: [0, -22],
+          iconSize: [28, 28],
+          iconAnchor: [14, 14],
+          popupAnchor: [0, -14],
         });
         L.marker(latlng, { icon })
           .bindPopup(`<strong>${player.playerName}</strong><br><span style="font-family:monospace;font-size:11px">${xM} m, ${yM} m, ${zM} m alt</span>`)
           .addTo(_playerLayer);
+      }
+    },
+
+    _updateMapPinMarkers() {
+      if (!_mapPinLayer) return;
+      _mapPinLayer.clearLayers();
+      if (!this.svMapPins) return;
+
+      // HUB — dark blue circle with inline SVG house icon, slightly larger than other markers
+      if (this.mapFilters.hub && this.svMapPins.hub) {
+        const hub = this.svMapPins.hub;
+        const latlng = gameToLatLng(hub.position.x, hub.position.y);
+        const icon = L.divIcon({
+          className: '',
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
+          popupAnchor: [0, -18],
+          html: `<div style="width:32px;height:32px;border-radius:50%;background:#1e3a8a;border:2px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.6)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+          </div>`,
+        });
+        L.marker(latlng, { icon })
+          .bindPopup('<strong>HUB Terminal</strong>')
+          .addTo(_mapPinLayer);
+      }
+
+      // Player-placed map stamps
+      if (this.mapFilters.stamps && this.svMapPins.stamps?.length) {
+        for (const stamp of this.svMapPins.stamps) {
+          const latlng = gameToLatLng(stamp.position.x, stamp.position.y);
+          const { r, g, b } = stamp.color;
+          const cssColor = `rgb(${r},${g},${b})`;
+          const icon = L.divIcon({
+            className: '',
+            iconSize: [28, 28],
+            iconAnchor: [14, 14],
+            popupAnchor: [0, -16],
+            html: `<div style="width:28px;height:28px;border-radius:50%;background:${cssColor};border:2px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.6)">
+              <svg width="13" height="15" viewBox="0 0 16 18" fill="white" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="8" cy="7" rx="6" ry="6"/>
+                <ellipse cx="8" cy="7" rx="2.5" ry="2.5" fill="${cssColor}"/>
+                <polygon points="3,10 13,10 8,18"/>
+              </svg>
+            </div>`,
+          });
+          const label = stamp.name || 'Map Marker';
+          L.marker(latlng, { icon })
+            .bindPopup(`<strong>${label}</strong>`)
+            .addTo(_mapPinLayer);
+        }
       }
     },
 
