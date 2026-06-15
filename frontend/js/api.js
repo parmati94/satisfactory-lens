@@ -39,6 +39,8 @@ export const api = {
       apiFetch('/api/saves/load', { method: 'POST', body: { sessionName, saveName } }),
     save: (saveName) =>
       apiFetch('/api/saves/save', { method: 'POST', body: { saveName } }),
+    delete: (saveName) =>
+      apiFetch(`/api/saves/${encodeURIComponent(saveName)}`, { method: 'DELETE' }),
   },
 
   settings: {
