@@ -12,6 +12,7 @@ import { extractPlayers } from '../save/extractors/players';
 import { extractBuildings } from '../save/extractors/buildings';
 import { extractResources } from '../save/extractors/resources';
 import { extractPower } from '../save/extractors/power';
+import { extractResourceNodes } from '../save/extractors/resourceNodes';
 
 const router = Router();
 
@@ -118,5 +119,56 @@ router.get('/api/save/power', (_req, res) => {
   }
 });
 
+
+// GET /api/save/resource-nodes
+router.get('/api/save/resource-nodes', (_req, res) => {
+  const save = getSave();
+  if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
+  try {
+    res.json(extractResourceNodes(save));
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+// GET /api/save/debug/type-paths?filter=Resource — dev diagnostic, lists unique typePaths
+router.get('/api/save/debug/type-paths', (_req, res) => {
+  const save = getSave();
+  if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
+  const filter = ((_req as any).query.filter as string ?? '').toLowerCase();
+  const counts = new Map<string, number>();
+  for (const level of Object.values(save.levels)) {
+    for (const obj of level.objects) {
+      if (filter && !obj.typePath.toLowerCase().includes(filter)) continue;
+      counts.set(obj.typePath, (counts.get(obj.typePath) ?? 0) + 1);
+    }
+  }
+  const sorted = Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([typePath, count]) => ({ typePath, count }));
+  res.json(sorted);
+});
+
+// GET /api/save/debug/node-sample — inspect first BP_ResourceNode to find property layout
+router.get('/api/save/debug/node-sample', (_req, res) => {
+  const save = getSave();
+  if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
+  for (const level of Object.values(save.levels)) {
+    for (const obj of level.objects) {
+      if (obj.typePath !== '/Game/FactoryGame/Resource/BP_ResourceNode.BP_ResourceNode_C') continue;
+      res.json({
+        typePath: obj.typePath,
+        instanceName: obj.instanceName,
+        objectType: (obj as any).type ?? (obj as any).saveType ?? 'unknown',
+        hasTransform: !!(obj as any).transform,
+        propertyKeys: Object.keys((obj as any).properties ?? {}),
+        mResourceClass: (obj as any).properties?.['mResourceClass'],
+        mPurity: (obj as any).properties?.['mPurity'],
+      });
+      return;
+    }
+  }
+  res.json({ error: 'No BP_ResourceNode found' });
+});
 
 export { router as saveViewerRouter };
