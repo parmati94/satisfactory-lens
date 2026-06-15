@@ -522,13 +522,13 @@ document.addEventListener('alpine:init', () => {
         const xM = (player.position.x / 100).toFixed(0);
         const yM = (player.position.y / 100).toFixed(0);
         const zM = (player.position.z / 100).toFixed(0);
-        L.circleMarker(latlng, {
-          radius: 8,
-          color: '#fed7aa',
-          fillColor: '#f97316',
-          fillOpacity: 0.9,
-          weight: 2,
-        })
+        const icon = L.icon({
+          iconUrl: '/assets/players/player_marker.png',
+          iconSize: [44, 44],
+          iconAnchor: [22, 22],
+          popupAnchor: [0, -22],
+        });
+        L.marker(latlng, { icon })
           .bindPopup(`<strong>${player.playerName}</strong><br><span style="font-family:monospace;font-size:11px">${xM} m, ${yM} m, ${zM} m alt</span>`)
           .addTo(_playerLayer);
       }
