@@ -96,7 +96,7 @@ LoadGame (sessionName, saveName)      → load a save
 SaveGame (saveName)                   → create a save
 DownloadSavegame (saveName)           → binary download of .sav file
 UploadSavegame (saveName)             → upload a modified .sav file
-DeleteSavegame (saveName)             → delete a save
+DeleteSaveFile (saveName)             → delete a save (note: NOT DeleteSavegame)
 RunCommand (command)                  → run server console command
 Shutdown                              → graceful server shutdown
 ```

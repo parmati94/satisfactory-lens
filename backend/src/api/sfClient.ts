@@ -125,12 +125,16 @@ export function enumerateSessions() {
   return call('EnumerateSessions');
 }
 
-export function loadGame(sessionName: string, saveName: string) {
-  return call('LoadGame', { sessionName, saveName });
+export function loadGame(sessionName: string, saveName: string, enableAdvancedGameSettings = false) {
+  return call('LoadGame', { sessionName, saveName, enableAdvancedGameSettings });
 }
 
 export function saveGame(saveName: string) {
   return call('SaveGame', { saveName });
+}
+
+export function deleteSavegame(saveName: string) {
+  return call('DeleteSaveFile', { saveName });
 }
 
 export function runCommand(command: string) {
