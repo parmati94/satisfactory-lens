@@ -65,6 +65,14 @@ document.addEventListener('alpine:init', () => {
     // ── Phase 3: Map ─────────────────────────────────────────────────────
     mapInitialized: false,
     svResourceNodes: null,
+    mapRefreshing: false,
+    mapFiltersOpen: false,
+    mapFilters: {
+      players:       true,
+      purityImpure:  true,
+      purityNormal:  true,
+      purityPure:    true,
+    },
     // ─────────────────────────────────────────────────────────────────────
 
     // ── Phase 2: Save Viewer ──────────────────────────────────────────────
@@ -400,6 +408,50 @@ document.addEventListener('alpine:init', () => {
 
     // ── Phase 3: Map methods ──────────────────────────────────────────────
 
+    toggleMapFilters() {
+      this.mapFiltersOpen = !this.mapFiltersOpen;
+    },
+
+    toggleMapFilter(key) {
+      this.mapFilters[key] = !this.mapFilters[key];
+      this.updateMapMarkers();
+    },
+
+    toggleAllNodes() {
+      const anyOn = this.mapFilters.purityImpure || this.mapFilters.purityNormal || this.mapFilters.purityPure;
+      this.mapFilters.purityImpure = !anyOn;
+      this.mapFilters.purityNormal = !anyOn;
+      this.mapFilters.purityPure   = !anyOn;
+      this.updateMapMarkers();
+    },
+
+    nodeCountByPurity(purity) {
+      return this.svResourceNodes?.filter(n => n.purity === purity && n.icon).length ?? 0;
+    },
+
+    mapResetView() {
+      if (!_leafletMap) return;
+      const bounds = L.latLngBounds(
+        gameToLatLng(MAP_WEST, MAP_NORTH),
+        gameToLatLng(MAP_EAST, MAP_SOUTH),
+      );
+      _leafletMap.setView(bounds.getCenter(), _leafletMap.getBoundsZoom(bounds) + 1.75, { animate: true });
+    },
+
+    async mapRefresh() {
+      if (this.mapRefreshing || !this.saveStatus?.loaded) return;
+      this.mapRefreshing = true;
+      try {
+        await Promise.all([this.loadSvPlayers(), this.loadSvResourceNodes()]);
+        this.updateMapMarkers();
+      } finally {
+        setTimeout(() => { this.mapRefreshing = false; }, 400);
+      }
+    },
+
+    mapZoomIn()  { _leafletMap?.zoomIn(); },
+    mapZoomOut() { _leafletMap?.zoomOut(); },
+
     initMap() {
       if (_leafletMap) {
         _leafletMap.invalidateSize();
@@ -414,6 +466,7 @@ document.addEventListener('alpine:init', () => {
         maxZoom: 12,
         zoomSnap: 0.25,
         zoomDelta: 0.25,
+        zoomControl: false,
       });
 
       // Bounds of the playable world (the un-padded map), expressed via the same
@@ -473,7 +526,7 @@ document.addEventListener('alpine:init', () => {
     _updatePlayerMarkers() {
       if (!_playerLayer) return;
       _playerLayer.clearLayers();
-      if (!this.svPlayers?.length) return;
+      if (!this.mapFilters.players || !this.svPlayers?.length) return;
 
       for (const player of this.svPlayers) {
         const latlng = gameToLatLng(player.position.x, player.position.y);
@@ -495,12 +548,14 @@ document.addEventListener('alpine:init', () => {
     _updateResourceNodeMarkers() {
       if (!_resourceNodeLayer) return;
       _resourceNodeLayer.clearLayers();
-      if (!this.svResourceNodes?.length) return;
+      const anyNodesOn = this.mapFilters.purityImpure || this.mapFilters.purityNormal || this.mapFilters.purityPure;
+      if (!anyNodesOn || !this.svResourceNodes?.length) return;
 
       const PURITY_RING = { Impure: '#ef4444', Normal: '#eab308', Pure: '#22c55e', Unknown: '#6b7280' };
 
       for (const node of this.svResourceNodes) {
         if (!node.icon) continue;
+        if (!this.mapFilters[`purity${node.purity}`]) continue;
         const latlng = gameToLatLng(node.position.x, node.position.y);
         const ring = PURITY_RING[node.purity] ?? PURITY_RING.Unknown;
 
