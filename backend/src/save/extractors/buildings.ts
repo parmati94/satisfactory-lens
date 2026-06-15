@@ -266,11 +266,30 @@ function buildingLabel(typePath: string): string {
     .trim();
 }
 
+export interface Vec3 {
+  x: number;
+  y: number;
+  z: number;
+}
+
+export interface Quat {
+  x: number;
+  y: number;
+  z: number;
+  w: number;
+}
+
+export interface BuildingInstance {
+  pos: Vec3;
+  rot: Quat;
+}
+
 export interface BuildingCount {
   buildClass: string;
   label: string;
   typePath: string;
   count: number;
+  instances: BuildingInstance[];
 }
 
 export interface BuildingCategory {
@@ -287,33 +306,40 @@ export interface BuildingSummary {
   categories: BuildingCategory[];
 }
 
-function addCount(
-  counts: Map<string, { buildClass: string; label: string; typePath: string; category: string; count: number }>,
-  typePath: string,
-  n = 1,
-) {
+type BuildingEntry = { buildClass: string; label: string; typePath: string; category: string; count: number; instances: BuildingInstance[] };
+
+function addCount(counts: Map<string, BuildingEntry>, typePath: string, instance: BuildingInstance) {
   const existing = counts.get(typePath);
   if (existing) {
-    existing.count += n;
+    existing.count++;
+    existing.instances.push(instance);
   } else {
     counts.set(typePath, {
       buildClass: buildClassFromTypePath(typePath),
       label:      buildingLabel(typePath),
       typePath,
       category:   categoryFromTypePath(typePath),
-      count: n,
+      count: 1,
+      instances: [instance],
     });
   }
 }
 
+function transformFromRaw(t: any): BuildingInstance {
+  return {
+    pos: { x: t?.translation?.x ?? 0, y: t?.translation?.y ?? 0, z: t?.translation?.z ?? 0 },
+    rot: { x: t?.rotation?.x ?? 0, y: t?.rotation?.y ?? 0, z: t?.rotation?.z ?? 0, w: t?.rotation?.w ?? 1 },
+  };
+}
+
 export function extractBuildings(save: SatisfactorySave): BuildingSummary {
-  const counts = new Map<string, { buildClass: string; label: string; typePath: string; category: string; count: number }>();
+  const counts = new Map<string, BuildingEntry>();
 
   for (const level of Object.values(save.levels)) {
     for (const obj of level.objects) {
       // ── Normal (heavy) buildables ───────────────────────────────────────
       if (obj.typePath.startsWith(BUILDABLE_PREFIX) && isSaveEntity(obj)) {
-        addCount(counts, obj.typePath);
+        addCount(counts, obj.typePath, transformFromRaw((obj as any).transform));
         continue;
       }
 
@@ -324,9 +350,9 @@ export function extractBuildings(save: SatisfactorySave): BuildingSummary {
         if (sp?.type === 'BuildableSubsystemSpecialProperties') {
           for (const buildable of (sp.buildables as any[])) {
             const tp: string = buildable.typeReference?.pathName ?? '';
-            const n: number = buildable.instances?.length ?? 0;
-            if (tp && n > 0 && tp.startsWith(BUILDABLE_PREFIX)) {
-              addCount(counts, tp, n);
+            if (!tp || !tp.startsWith(BUILDABLE_PREFIX)) continue;
+            for (const inst of (buildable.instances as any[])) {
+              addCount(counts, tp, transformFromRaw(inst.transform));
             }
           }
         }
@@ -344,7 +370,7 @@ export function extractBuildings(save: SatisfactorySave): BuildingSummary {
       catMap.set(entry.category, cat);
     }
     cat.total += entry.count;
-    cat.types.push({ buildClass: entry.buildClass, label: entry.label, typePath: entry.typePath, count: entry.count });
+    cat.types.push({ buildClass: entry.buildClass, label: entry.label, typePath: entry.typePath, count: entry.count, instances: entry.instances });
   }
 
   for (const cat of catMap.values()) {
