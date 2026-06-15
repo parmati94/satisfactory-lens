@@ -58,5 +58,6 @@ export const api = {
     power: () => apiFetch('/api/save/power'),
     resourceNodes: () => apiFetch('/api/save/resource-nodes'),
     mapPins: () => apiFetch('/api/save/map-pins'),
+    storage: () => apiFetch('/api/save/storage'),
   },
 };

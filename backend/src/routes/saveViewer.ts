@@ -14,6 +14,7 @@ import { extractResources } from '../save/extractors/resources';
 import { extractPower } from '../save/extractors/power';
 import { extractResourceNodes } from '../save/extractors/resourceNodes';
 import { extractMapPins } from '../save/extractors/mapPins';
+import { extractStorage } from '../save/extractors/storage';
 
 const router = Router();
 
@@ -127,6 +128,17 @@ router.get('/api/save/resource-nodes', (_req, res) => {
   if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
   try {
     res.json(extractResourceNodes(save));
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+// GET /api/save/storage
+router.get('/api/save/storage', (_req, res) => {
+  const save = getSave();
+  if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
+  try {
+    res.json({ containers: extractStorage(save) });
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }

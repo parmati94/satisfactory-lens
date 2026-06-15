@@ -1,5 +1,6 @@
 import { isSaveEntity, isStrProperty, isFloatProperty } from '@etothepii/satisfactory-file-parser';
 import { Parser } from '@etothepii/satisfactory-file-parser';
+import { buildInstanceMap, extractPlayerInventory, type InventoryItem } from './storage';
 
 type SatisfactorySave = ReturnType<typeof Parser.ParseSave>;
 
@@ -10,10 +11,13 @@ export interface PlayerInfo {
   playerName: string;
   health: number | null;
   position: { x: number; y: number; z: number };
+  inventory: InventoryItem[];
+  equipment: InventoryItem[];
 }
 
 export function extractPlayers(save: SatisfactorySave): PlayerInfo[] {
   const players: PlayerInfo[] = [];
+  const byInstance = buildInstanceMap(save);
 
   for (const level of Object.values(save.levels)) {
     for (const obj of level.objects) {
@@ -27,6 +31,8 @@ export function extractPlayers(save: SatisfactorySave): PlayerInfo[] {
       const healthProp = obj.properties['mCurrentHealth'];
       const health = healthProp && isFloatProperty(healthProp) ? healthProp.value : null;
 
+      const { inventory, equipment } = extractPlayerInventory(obj.instanceName, byInstance);
+
       players.push({
         instanceName: obj.instanceName,
         playerName,
@@ -36,6 +42,8 @@ export function extractPlayers(save: SatisfactorySave): PlayerInfo[] {
           y: Math.round(obj.transform.translation.y),
           z: Math.round(obj.transform.translation.z),
         },
+        inventory,
+        equipment,
       });
     }
   }

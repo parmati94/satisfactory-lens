@@ -78,6 +78,9 @@ document.addEventListener('alpine:init', () => {
     svBuildings: null,
     svResources: null,
     svPower: null,
+    svStorage: null,
+    expandedPlayer: null,    // instanceName of expanded player row
+    expandedStorage: null,   // instanceName of expanded storage row
     showDownloadModal: false,
     downloadSaveName: '',
     downloadLoading: false,
@@ -296,10 +299,11 @@ document.addEventListener('alpine:init', () => {
 
     async loadSaveActiveSubTab() {
       if (!this.saveStatus?.loaded) return;
-      if (this.saveTab === 'players' && !this.svPlayers) await this.loadSvPlayers();
+      if (this.saveTab === 'players'   && !this.svPlayers)   await this.loadSvPlayers();
+      if (this.saveTab === 'storage'   && !this.svStorage)   await this.loadSvStorage();
       if (this.saveTab === 'buildings' && !this.svBuildings) await this.loadSvBuildings();
       if (this.saveTab === 'resources' && !this.svResources) await this.loadSvResources();
-      if (this.saveTab === 'power' && !this.svPower) await this.loadSvPower();
+      if (this.saveTab === 'power'     && !this.svPower)     await this.loadSvPower();
     },
 
     async loadSvPlayers() {
@@ -308,6 +312,19 @@ document.addEventListener('alpine:init', () => {
       try {
         const data = await api.save.players();
         this.svPlayers = data.players;
+      } catch (e) {
+        this.saveDataError = e.message;
+      } finally {
+        this.saveDataLoading = false;
+      }
+    },
+
+    async loadSvStorage() {
+      this.saveDataLoading = true;
+      this.saveDataError = null;
+      try {
+        const data = await api.save.storage();
+        this.svStorage = data.containers;
       } catch (e) {
         this.saveDataError = e.message;
       } finally {
@@ -377,6 +394,7 @@ document.addEventListener('alpine:init', () => {
           if (msg.event === 'save_reloaded') {
             await this.loadSaveStatus();
             this.svPlayers = null;
+            this.svStorage = null;
             this.svBuildings = null;
             this.svResources = null;
             this.svPower = null;
