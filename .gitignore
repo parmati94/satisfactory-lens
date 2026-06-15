@@ -1,5 +1,6 @@
 # Local environment — personal settings, never commit
 docker-compose.local.yml
+docker-compose.local.dev.yml
 
 # Claude Code local settings (may contain personal paths/permissions)
 .claude/settings.local.json
