@@ -13,7 +13,7 @@ services:
     volumes:
       # Mount backend source for live reload via tsx watch
       - ./backend/src:/app/backend/src
-      # Mount built frontend (run `npm run build` in frontend/ locally, or `vite dev` separately)
+      # Mount built frontend (run `npm run build -- --watch` in frontend/)
       - ./frontend/dist:/usr/share/nginx/html
     environment:
       - TZ=America/New_York
@@ -21,7 +21,6 @@ services:
       - USERNAME=admin
       - PASSWORD=changeme
       - SESSION_SECRET=dev-secret-not-for-production
-      # Point at your actual SF server for dev
       - SF_HOST=
       - SF_PORT=7777
       - SF_PASSWORD=

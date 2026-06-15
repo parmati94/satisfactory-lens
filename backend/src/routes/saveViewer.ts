@@ -10,6 +10,8 @@ import {
 } from '../save/watcher';
 import { extractPlayers } from '../save/extractors/players';
 import { extractBuildings } from '../save/extractors/buildings';
+import { extractResources } from '../save/extractors/resources';
+import { extractPower } from '../save/extractors/power';
 
 const router = Router();
 
@@ -93,5 +95,28 @@ router.get('/api/save/buildings', (_req, res) => {
     res.status(500).json({ error: (err as Error).message });
   }
 });
+
+// GET /api/save/resources
+router.get('/api/save/resources', (_req, res) => {
+  const save = getSave();
+  if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
+  try {
+    res.json(extractResources(save));
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+// GET /api/save/power
+router.get('/api/save/power', (_req, res) => {
+  const save = getSave();
+  if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
+  try {
+    res.json(extractPower(save));
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
 
 export { router as saveViewerRouter };
