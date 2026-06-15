@@ -8,31 +8,21 @@ let _leafletMap = null;
 let _playerLayer = null;
 let _resourceNodeLayer = null;
 
-// Satisfactory world → tile mapping, mirroring AnthorNet/SC-InteractiveMap's
-// GameMap.js (game units = Unreal cm). SCIM's playable bounds:
+// Satisfactory world bounds in Unreal cm
 const MAP_WEST  = -324698.832031;
 const MAP_EAST  =  425301.832031;
-const MAP_NORTH = -375000;          // negative Y = north in UE coords
+const MAP_NORTH = -375000;
 const MAP_SOUTH =  375000;
 const TILE_SIZE = 256;
 
-// SCIM pads the 32768px map with a proportional border (extraBackgroundSize),
-// which is what makes the *native* tile zoom 8, not 7: the padded map is
-// 40960px = 160 tiles, sitting top-left inside a 256-tile (2^8) grid — exactly
-// the 62.5% coverage we measured. Replicating this padding is what makes our
-// markers line up with the tiles.
-const MAP_BG_BASE = 32768;
-const MAP_EXTRA = 4096;
-const _xLen = Math.abs(MAP_WEST) + Math.abs(MAP_EAST);
-const _yLen = Math.abs(MAP_NORTH) + Math.abs(MAP_SOUTH);
-const _westOffset = (_xLen / MAP_BG_BASE) * MAP_EXTRA;
-const _northOffset = (_yLen / MAP_BG_BASE) * MAP_EXTRA;
-const MAP_W = MAP_WEST - _westOffset;
-const MAP_N = MAP_NORTH - _northOffset;
-const MAP_X_MAX = (Math.abs(MAP_WEST) + Math.abs(MAP_EAST)) + 2 * _westOffset;
-const MAP_Y_MAX = (Math.abs(MAP_NORTH) + Math.abs(MAP_SOUTH)) + 2 * _northOffset;
-const MAP_BG_SIZE = MAP_BG_BASE + MAP_EXTRA * 2;                       // 40960
-const MAP_ZOOM_RATIO = Math.ceil(Math.log2(MAP_BG_SIZE / TILE_SIZE));  // 8
+// Local tiles are cropped to the exact game world — no padding.
+// 16384px canvas / 256px tiles = 64 tiles per side at native zoom 6.
+const MAP_BG_SIZE    = 16384;
+const MAP_W          = MAP_WEST;
+const MAP_N          = MAP_NORTH;
+const MAP_X_MAX      = Math.abs(MAP_WEST) + Math.abs(MAP_EAST);
+const MAP_Y_MAX      = Math.abs(MAP_NORTH) + Math.abs(MAP_SOUTH);
+const MAP_ZOOM_RATIO = Math.round(Math.log2(MAP_BG_SIZE / TILE_SIZE)); // 6
 
 function gameToLatLng(gameX, gameY) {
   const rasterX = (gameX - MAP_W) * MAP_BG_SIZE / MAP_X_MAX;
@@ -462,7 +452,7 @@ document.addEventListener('alpine:init', () => {
       const container = document.getElementById('leaflet-map');
       _leafletMap = L.map(container, {
         crs: L.CRS.Simple,
-        minZoom: 3,
+        minZoom: 1,
         maxZoom: 12,
         zoomSnap: 0.25,
         zoomDelta: 0.25,
@@ -481,14 +471,13 @@ document.addEventListener('alpine:init', () => {
       _leafletMap.setMaxBounds(bounds);
       _leafletMap.options.maxBoundsViscosity = 1.0;
 
-      L.tileLayer('/api/map/tiles/{z}/{x}/{y}', {
+      L.tileLayer('/tiles/{z}/{x}/{y}.png', {
         noWrap: true,
         bounds,
         minNativeZoom: 3,
         maxNativeZoom: MAP_ZOOM_RATIO,
-        maxZoom: 12,
+        maxZoom: 10,
         tileSize: TILE_SIZE,
-        attribution: 'Tiles &copy; <a href="https://satisfactory-calculator.com">SCIM</a>',
       }).addTo(_leafletMap);
 
       // Resource nodes below players in z-order
@@ -498,7 +487,7 @@ document.addEventListener('alpine:init', () => {
       const center = bounds.getCenter();
       const frameView = () => {
         const fitZoom = _leafletMap.getBoundsZoom(bounds);
-        _leafletMap.setView(center, fitZoom + 1.75, { animate: false });
+        _leafletMap.setView(center, fitZoom + 2, { animate: false });
       };
 
       frameView();

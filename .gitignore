@@ -14,6 +14,12 @@ backend/node_modules/
 frontend/dist/
 backend/dist/
 
+# Generated map tiles (sliced from frontend/public/img/map_16k.jpg at Docker build time)
+frontend/public/tiles/
+
+# One-time tile download cache (used by build_map_tiles.py)
+scripts/_scim_tile_cache/
+
 # Env files
 .env
 .env.local
