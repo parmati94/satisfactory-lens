@@ -12,6 +12,7 @@ export interface InventoryItem {
 export interface StorageContainer {
   instanceName: string;
   label: string;
+  buildClass: string;  // e.g. "Build_StorageContainerMk1" — used for icon lookup
   position: { x: number; y: number; z: number } | null;
   totalSlots: number;
   usedSlots: number;   // non-empty slot count (before aggregation)
@@ -61,6 +62,7 @@ function itemClass(pathName: string): string {
 interface ParsedStacks {
   contents: InventoryItem[];
   usedSlots: number;
+  totalSlots: number;
 }
 
 function parseStacks(entity: any): ParsedStacks {
@@ -82,7 +84,7 @@ function parseStacks(entity: any): ParsedStacks {
     });
   });
 
-  return { contents, usedSlots };
+  return { contents, usedSlots, totalSlots: stacks.length };
 }
 
 // ── Storage containers ────────────────────────────────────────────────────────
@@ -126,9 +128,13 @@ export function extractStorage(save: SatisfactorySave): StorageContainer[] {
 
       const { contents, usedSlots } = parseStacks(invEntity);
 
+      // Build class: last path segment without the _C suffix
+      const buildClass = (tp.split('/').pop()?.split('.')[0] ?? '').replace(/_C$/, '');
+
       containers.push({
         instanceName: obj.instanceName,
         label:        typeLabel(tp),
+        buildClass,
         position,
         totalSlots,
         usedSlots,
@@ -145,13 +151,18 @@ export function extractStorage(save: SatisfactorySave): StorageContainer[] {
 export function extractPlayerInventory(
   playerInstance: string,
   byInstance: Map<string, any>,
-): { inventory: InventoryItem[]; equipment: InventoryItem[] } {
+): { inventory: InventoryItem[]; inventorySlots: number; equipment: InventoryItem[]; equipmentSlots: number } {
   const invKey  = `${playerInstance}.inventory`;
   const armKey  = `${playerInstance}.ArmSlot`;
 
+  const invStacks = parseStacks(byInstance.get(invKey));
+  const armStacks = parseStacks(byInstance.get(armKey));
+
   return {
-    inventory: parseStacks(byInstance.get(invKey)).contents,
-    equipment: parseStacks(byInstance.get(armKey)).contents,
+    inventory:      invStacks.contents,
+    inventorySlots: invStacks.totalSlots,
+    equipment:      armStacks.contents,
+    equipmentSlots: armStacks.totalSlots,
   };
 }
 

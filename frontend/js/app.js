@@ -81,12 +81,15 @@ document.addEventListener('alpine:init', () => {
     svStorage: null,
     expandedPlayer: null,    // instanceName of expanded player row
     expandedStorage: null,   // instanceName of expanded storage row
+    showSettings: false,
     showDownloadModal: false,
     downloadSaveName: '',
     downloadLoading: false,
     downloadError: null,
     sseConnected: false,
     _eventSource: null,
+    tooltip: { visible: false, x: 0, y: 0, name: '', count: null },
+    buildingsSearch: '',
     // ─────────────────────────────────────────────────────────────────────
 
     async init() {
@@ -154,7 +157,6 @@ document.addEventListener('alpine:init', () => {
       this.actionResult = null;
       if (tab === 'dashboard' && !this.serverState && this.sfStatus.connected) await this.loadDashboard();
       if (tab === 'saves' && !this.saves && this.sfStatus.connected) await this.loadSaves();
-      if (tab === 'settings' && !this.serverOptions && this.sfStatus.connected) await this.loadSettings();
       if (tab === 'saveviewer') await this.loadSaveActiveSubTab();
       if (tab === 'map') {
         if (this.saveStatus?.loaded) {
@@ -247,6 +249,42 @@ document.addEventListener('alpine:init', () => {
 
     // ── Phase 2: Save Viewer methods ──────────────────────────────────────
 
+    storagePreview(contents, max = 4) {
+      const byClass = {};
+      for (const item of contents) {
+        if (!byClass[item.itemClass]) byClass[item.itemClass] = { ...item, count: 0 };
+        byClass[item.itemClass].count += item.count;
+      }
+      const unique = Object.values(byClass).sort((a, b) => b.count - a.count);
+      return { items: unique.slice(0, max), overflow: Math.max(0, unique.length - max) };
+    },
+
+    slotGrid(contents, totalSlots) {
+      if (!totalSlots) return [];
+      const bySlot = {};
+      for (const item of contents) bySlot[item.slotIndex] = item;
+      return Array.from({ length: totalSlots }, (_, i) => bySlot[i] ?? null);
+    },
+
+    showItemTooltip(event, item) {
+      if (!item) return;
+      const rect = event.currentTarget.getBoundingClientRect();
+      this.tooltip = { visible: true, x: rect.left + rect.width / 2, y: rect.top, name: item.displayName, count: item.count };
+    },
+
+    hideItemTooltip() {
+      this.tooltip.visible = false;
+    },
+
+    filteredBuildingCategories() {
+      if (!this.svBuildings?.categories) return [];
+      const q = this.buildingsSearch.toLowerCase().trim();
+      if (!q) return this.svBuildings.categories;
+      return this.svBuildings.categories
+        .map(cat => ({ ...cat, types: cat.types.filter(b => b.label.toLowerCase().includes(q)) }))
+        .filter(cat => cat.types.length > 0);
+    },
+
     async loadSaveStatus() {
       try {
         this.saveStatus = await api.save.status();
@@ -294,6 +332,7 @@ document.addEventListener('alpine:init', () => {
     async switchSaveTab(tab) {
       this.saveTab = tab;
       this.saveDataError = null;
+      if (tab !== 'buildings') this.buildingsSearch = '';
       await this.loadSaveActiveSubTab();
     },
 
