@@ -10,6 +10,14 @@ RUN cd backend && npm ci
 COPY backend/ ./backend/
 RUN cd backend && npm run build
 
+# Generate map tiles from committed source image
+RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+RUN pip3 install --no-cache-dir Pillow --break-system-packages
+COPY scripts/slice_map.py ./scripts/
+COPY frontend/public/img/map_16k.jpg ./frontend/public/img/
+RUN python3 scripts/slice_map.py
+
 # Build frontend
 COPY frontend/package*.json ./frontend/
 RUN cd frontend && npm ci
@@ -38,8 +46,14 @@ RUN cd backend && npm ci
 # Copy compiled backend from builder
 COPY --from=builder /app/backend/dist ./backend/dist
 
+# Copy static data files used at runtime
+COPY backend/data/ ./backend/data/
+
 # Copy built frontend
 COPY --from=builder /app/frontend/dist /usr/share/nginx/html
+
+# Copy generated map tiles
+COPY --from=builder /app/frontend/public/tiles /usr/share/nginx/html/tiles
 
 # Copy data directory (Phase 2: Docs.json etc.)
 COPY data/ ./data/
