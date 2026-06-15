@@ -16,8 +16,8 @@ const POWER_CIRCUIT_TYPE = '/Script/FactoryGame.FGPowerCircuit';
 const BASE_POWER_MW: Record<string, number> = {
   // Generators (positive = produces)
   Build_GeneratorBiomass_C:              30,
-  Build_GeneratorBiomass_Automated_C:    20,
-  Build_GeneratorIntegratedBiomass_C:    20,
+  Build_GeneratorBiomass_Automated_C:    30,
+  Build_GeneratorIntegratedBiomass_C:    30,
   Build_GeneratorCoal_C:                 75,
   Build_GeneratorFuel_C:                150,
   Build_GeneratorNuclear_C:           2500,
@@ -68,28 +68,46 @@ function parseComponentPath(pathName: string): { instanceName: string; className
 
 export interface PowerCircuit {
   circuitId: number;
-  producedMW: number;
-  consumedMW: number;
+  producedMW: number;   // actual production — only generators with fuel in inventory
+  capacityMW: number;   // max potential — all generators at overclock regardless of fuel
+  maxDrawMW: number;    // estimated max consumption — all consumers at overclock
   isFused: boolean;
 }
 
 export interface PowerSummary {
   circuits: PowerCircuit[];
   totalProducedMW: number;
-  totalConsumedMW: number;
+  totalCapacityMW: number;
+  totalMaxDrawMW: number;
   fuseCount: number;
 }
 
 export function extractPower(save: SatisfactorySave): PowerSummary {
-  // Index all entities by instanceName for overclock lookups
-  const entityOverclock = new Map<string, number>();
+  // Build a single object map covering all entities and components
+  const objectMap = new Map<string, any>();
   for (const level of Object.values(save.levels)) {
     for (const obj of level.objects) {
-      if (!isSaveEntity(obj)) continue;
-      const potProp = obj.properties['mCurrentPotential'];
-      const potential = potProp && isFloatProperty(potProp) ? potProp.value : 1.0;
-      entityOverclock.set(obj.instanceName, potential);
+      if (obj.instanceName) objectMap.set(obj.instanceName, obj);
     }
+  }
+
+  function getOverclock(instanceName: string): number {
+    const obj = objectMap.get(instanceName);
+    if (!obj || !isSaveEntity(obj)) return 1.0;
+    const p = obj.properties?.['mCurrentPotential'];
+    return p && isFloatProperty(p) ? p.value : 1.0;
+  }
+
+  // Returns true if the generator has fuel loaded (or has no fuel inventory, e.g. geothermal).
+  function generatorHasFuel(instanceName: string): boolean {
+    const entity = objectMap.get(instanceName);
+    if (!entity) return false;
+    const fuelInvPath: string = entity.properties?.['mFuelInventory']?.value?.pathName ?? '';
+    if (!fuelInvPath) return true; // no fuel inventory = always-on (geothermal)
+    const fuelInv = objectMap.get(fuelInvPath);
+    if (!fuelInv) return false;
+    const stacks: any[] = fuelInv.properties?.['mInventoryStacks']?.values ?? [];
+    return stacks.some((s: any) => (s.properties?.NumItems?.value ?? 0) > 0);
   }
 
   const circuits: PowerCircuit[] = [];
@@ -108,7 +126,8 @@ export function extractPower(save: SatisfactorySave): PowerSummary {
       const componentsProp = obj.properties['mComponents'];
 
       let producedMW = 0;
-      let consumedMW = 0;
+      let capacityMW = 0;
+      let maxDrawMW = 0;
 
       if (componentsProp && isArrayProperty(componentsProp)) {
         const seen = new Set<string>();
@@ -125,15 +144,19 @@ export function extractPower(save: SatisfactorySave): PowerSummary {
           const baseMW = BASE_POWER_MW[parsed.className];
           if (baseMW === undefined) continue;
 
-          const overclock = entityOverclock.get(parsed.instanceName) ?? 1.0;
-          const actualMW = baseMW * overclock;
+          const overclock = getOverclock(parsed.instanceName);
+          const scaledMW = baseMW * overclock;
 
-          if (actualMW > 0) producedMW += actualMW;
-          else consumedMW += Math.abs(actualMW);
+          if (scaledMW > 0) {
+            capacityMW += scaledMW;
+            if (generatorHasFuel(parsed.instanceName)) producedMW += scaledMW;
+          } else {
+            maxDrawMW += Math.abs(scaledMW);
+          }
         }
       }
 
-      circuits.push({ circuitId, producedMW, consumedMW, isFused });
+      circuits.push({ circuitId, producedMW, capacityMW, maxDrawMW, isFused });
     }
   }
 
@@ -143,7 +166,8 @@ export function extractPower(save: SatisfactorySave): PowerSummary {
   return {
     circuits,
     totalProducedMW: circuits.reduce((s, c) => s + c.producedMW, 0),
-    totalConsumedMW: circuits.reduce((s, c) => s + c.consumedMW, 0),
+    totalCapacityMW: circuits.reduce((s, c) => s + c.capacityMW, 0),
+    totalMaxDrawMW:  circuits.reduce((s, c) => s + c.maxDrawMW, 0),
     fuseCount: circuits.filter(c => c.isFused).length,
   };
 }
