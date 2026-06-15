@@ -14,7 +14,9 @@
         No save loaded — load a save in <button @click="switchTab('saveviewer')" class="underline hover:text-gray-300 transition-colors">Save Viewer</button> to show player positions
       </span>
     </div>
-    <span class="text-gray-700">Tiles &copy; <a href="https://satisfactory-calculator.com" target="_blank" rel="noopener" class="hover:text-gray-500 transition-colors">SCIM</a></span>
+    <span x-show="svMapPins?.stamps?.length" class="text-gray-500">
+      · <span x-text="svMapPins.stamps.length"></span> stamp<span x-show="svMapPins.stamps.length !== 1">s</span>
+    </span>
   </div>
 
   <!-- Padded viewport -->
@@ -70,6 +72,47 @@
             <div class="w-3.5 h-3.5 rounded-sm border-2 flex-shrink-0 flex items-center justify-center transition-all"
                  :class="mapFilters.players ? 'bg-orange-500 border-orange-500' : 'border-gray-600'">
               <svg x-show="mapFilters.players" fill="none" stroke="white" viewBox="0 0 24 24" style="width:8px;height:8px">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+          </button>
+
+          <!-- HUB row -->
+          <button @click="toggleMapFilter('hub')"
+            class="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-all hover:bg-gray-800/70 group"
+            :class="mapFilters.hub ? 'bg-gray-800/40' : ''">
+            <div class="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 border transition-all"
+                 :class="mapFilters.hub ? 'bg-orange-500/20 border-orange-500/40' : 'bg-gray-800/60 border-gray-700/50'">
+              <svg :class="mapFilters.hub ? 'text-orange-300' : 'text-gray-500'" fill="currentColor" viewBox="0 0 20 20" style="width:11px;height:11px">
+                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h4v-4h2v4h4a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+              </svg>
+            </div>
+            <span class="text-xs font-medium flex-1 text-left transition-colors"
+                  :class="mapFilters.hub ? 'text-gray-200' : 'text-gray-500'">HUB</span>
+            <div class="w-3.5 h-3.5 rounded-sm border-2 flex-shrink-0 flex items-center justify-center transition-all"
+                 :class="mapFilters.hub ? 'bg-orange-500 border-orange-500' : 'border-gray-600'">
+              <svg x-show="mapFilters.hub" fill="none" stroke="white" viewBox="0 0 24 24" style="width:8px;height:8px">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+          </button>
+
+          <!-- Map Stamps row -->
+          <button @click="toggleMapFilter('stamps')"
+            class="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-all hover:bg-gray-800/70 group"
+            :class="mapFilters.stamps ? 'bg-gray-800/40' : ''">
+            <div class="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 border transition-all"
+                 :class="mapFilters.stamps ? 'bg-orange-500/20 border-orange-500/40' : 'bg-gray-800/60 border-gray-700/50'">
+              <svg :class="mapFilters.stamps ? 'text-orange-300' : 'text-gray-500'" fill="currentColor" viewBox="0 0 24 24" style="width:11px;height:11px">
+                <path fill-rule="evenodd" d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <span class="text-xs font-medium flex-1 text-left transition-colors"
+                  :class="mapFilters.stamps ? 'text-gray-200' : 'text-gray-500'">Map Stamps</span>
+            <span class="text-[10px] text-gray-600 tabular-nums" x-text="'(' + (svMapPins?.stamps?.length ?? 0) + ')'"></span>
+            <div class="w-3.5 h-3.5 rounded-sm border-2 flex-shrink-0 flex items-center justify-center transition-all"
+                 :class="mapFilters.stamps ? 'bg-orange-500 border-orange-500' : 'border-gray-600'">
+              <svg x-show="mapFilters.stamps" fill="none" stroke="white" viewBox="0 0 24 24" style="width:8px;height:8px">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M5 13l4 4L19 7"/>
               </svg>
             </div>
