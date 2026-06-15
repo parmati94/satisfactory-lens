@@ -38,6 +38,9 @@ RUN cd backend && npm ci
 # Copy compiled backend from builder
 COPY --from=builder /app/backend/dist ./backend/dist
 
+# Copy static data files used at runtime
+COPY backend/data/ ./backend/data/
+
 # Copy built frontend
 COPY --from=builder /app/frontend/dist /usr/share/nginx/html
 

@@ -5,7 +5,8 @@ import 'leaflet/dist/leaflet.css';
 
 // Stored outside Alpine to avoid reactivity overhead on Leaflet objects
 let _leafletMap = null;
-let _mapMarkerLayer = null;
+let _playerLayer = null;
+let _resourceNodeLayer = null;
 
 // Satisfactory world → tile mapping, mirroring AnthorNet/SC-InteractiveMap's
 // GameMap.js (game units = Unreal cm). SCIM's playable bounds:
@@ -63,6 +64,7 @@ document.addEventListener('alpine:init', () => {
 
     // ── Phase 3: Map ─────────────────────────────────────────────────────
     mapInitialized: false,
+    svResourceNodes: null,
     // ─────────────────────────────────────────────────────────────────────
 
     // ── Phase 2: Save Viewer ──────────────────────────────────────────────
@@ -150,7 +152,12 @@ document.addEventListener('alpine:init', () => {
       if (tab === 'settings' && !this.serverOptions && this.sfStatus.connected) await this.loadSettings();
       if (tab === 'saveviewer') await this.loadSaveActiveSubTab();
       if (tab === 'map') {
-        if (!this.svPlayers && this.saveStatus?.loaded) await this.loadSvPlayers();
+        if (this.saveStatus?.loaded) {
+          await Promise.all([
+            !this.svPlayers       ? this.loadSvPlayers()       : Promise.resolve(),
+            !this.svResourceNodes ? this.loadSvResourceNodes() : Promise.resolve(),
+          ]);
+        }
         await this.$nextTick();
         this.initMap();
       }
@@ -248,6 +255,7 @@ document.addEventListener('alpine:init', () => {
         this.svBuildings = null;
         this.svResources = null;
         this.svPower = null;
+        this.svResourceNodes = null;
         if (this.saveStatus?.loaded) await this.loadSaveActiveSubTab();
       } catch (e) {
         this.saveDataError = e.message;
@@ -268,6 +276,7 @@ document.addEventListener('alpine:init', () => {
         this.svBuildings = null;
         this.svResources = null;
         this.svPower = null;
+        this.svResourceNodes = null;
         if (this.saveStatus?.loaded) await this.loadSaveActiveSubTab();
       } catch (e) {
         this.downloadError = e.message;
@@ -339,6 +348,12 @@ document.addEventListener('alpine:init', () => {
       }
     },
 
+    async loadSvResourceNodes() {
+      try {
+        this.svResourceNodes = await api.save.resourceNodes();
+      } catch { this.svResourceNodes = []; }
+    },
+
     connectSaveSSE() {
       if (this._eventSource) return;
       const es = new EventSource('/api/save/events');
@@ -354,9 +369,10 @@ document.addEventListener('alpine:init', () => {
             this.svBuildings = null;
             this.svResources = null;
             this.svPower = null;
+            this.svResourceNodes = null;
             if (this.activeTab === 'saveviewer') await this.loadSaveActiveSubTab();
             if (this.activeTab === 'map') {
-              await this.loadSvPlayers();
+              await Promise.all([this.loadSvPlayers(), this.loadSvResourceNodes()]);
               this.updateMapMarkers();
             }
           }
@@ -409,11 +425,9 @@ document.addEventListener('alpine:init', () => {
         gameToLatLng(MAP_EAST, MAP_SOUTH),
       );
 
-      // Keep the user inside the world — stops panning out into the empty void
       _leafletMap.setMaxBounds(bounds);
       _leafletMap.options.maxBoundsViscosity = 1.0;
 
-      // `bounds` here stops Leaflet from requesting tiles outside the world.
       L.tileLayer('/api/map/tiles/{z}/{x}/{y}', {
         noWrap: true,
         bounds,
@@ -424,28 +438,22 @@ document.addEventListener('alpine:init', () => {
         attribution: 'Tiles &copy; <a href="https://satisfactory-calculator.com">SCIM</a>',
       }).addTo(_leafletMap);
 
-      _mapMarkerLayer = L.layerGroup().addTo(_leafletMap);
+      // Resource nodes below players in z-order
+      _resourceNodeLayer = L.layerGroup().addTo(_leafletMap);
+      _playerLayer       = L.layerGroup().addTo(_leafletMap);
 
-      // Center on the map, starting ~1.75 zoom levels past the "fit whole map"
-      // zoom so it opens comfortably zoomed in rather than fully pulled out.
       const center = bounds.getCenter();
       const frameView = () => {
         const fitZoom = _leafletMap.getBoundsZoom(bounds);
         _leafletMap.setView(center, fitZoom + 1.75, { animate: false });
       };
 
-      // Set an initial view immediately so the map is never view-less
       frameView();
 
-      // ResizeObserver handles window resizes after initial load
       new ResizeObserver(() => {
         if (_leafletMap) _leafletMap.invalidateSize({ animate: false });
       }).observe(container);
 
-      // The container may still be settling its flex layout when the map is
-      // first created. Recompute size and re-frame after the browser paints,
-      // otherwise the world lands in a corner. rAF is more reliable than a
-      // fixed setTimeout because it fires once layout is actually committed.
       requestAnimationFrame(() => {
         if (!_leafletMap) return;
         _leafletMap.invalidateSize({ animate: false });
@@ -457,8 +465,14 @@ document.addEventListener('alpine:init', () => {
     },
 
     updateMapMarkers() {
-      if (!_leafletMap || !_mapMarkerLayer) return;
-      _mapMarkerLayer.clearLayers();
+      if (!_leafletMap) return;
+      this._updatePlayerMarkers();
+      this._updateResourceNodeMarkers();
+    },
+
+    _updatePlayerMarkers() {
+      if (!_playerLayer) return;
+      _playerLayer.clearLayers();
       if (!this.svPlayers?.length) return;
 
       for (const player of this.svPlayers) {
@@ -474,7 +488,34 @@ document.addEventListener('alpine:init', () => {
           weight: 2,
         })
           .bindPopup(`<strong>${player.playerName}</strong><br><span style="font-family:monospace;font-size:11px">${xM} m, ${yM} m, ${zM} m alt</span>`)
-          .addTo(_mapMarkerLayer);
+          .addTo(_playerLayer);
+      }
+    },
+
+    _updateResourceNodeMarkers() {
+      if (!_resourceNodeLayer) return;
+      _resourceNodeLayer.clearLayers();
+      if (!this.svResourceNodes?.length) return;
+
+      const PURITY_RING = { Impure: '#ef4444', Normal: '#eab308', Pure: '#22c55e', Unknown: '#6b7280' };
+
+      for (const node of this.svResourceNodes) {
+        if (!node.icon) continue;
+        const latlng = gameToLatLng(node.position.x, node.position.y);
+        const ring = PURITY_RING[node.purity] ?? PURITY_RING.Unknown;
+
+        const icon = L.divIcon({
+          className: '',
+          iconSize: [28, 28],
+          iconAnchor: [14, 14],
+          html: `<div style="width:28px;height:28px;border-radius:50%;border:2.5px solid ${ring};overflow:hidden;background:#111827;box-shadow:0 1px 3px rgba(0,0,0,.6)"><img src="/assets/resources/${node.icon}" style="width:100%;height:100%;object-fit:cover"></div>`,
+        });
+
+        const xM = (node.position.x / 100).toFixed(0);
+        const yM = (node.position.y / 100).toFixed(0);
+        L.marker(latlng, { icon })
+          .bindPopup(`<strong>${node.label}</strong><br><span style="color:${ring};font-size:11px">${node.purity}</span><br><span style="font-family:monospace;font-size:11px">${xM} m, ${yM} m</span>`)
+          .addTo(_resourceNodeLayer);
       }
     },
 
