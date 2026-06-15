@@ -44,6 +44,7 @@ A self-hosted web app for viewing and editing a Satisfactory dedicated server an
 - [x] Power tab: per-circuit production vs consumption summary
 - [ ] Resources tab: remove or rework — currently redundant with Buildings (Miners & Extractors category)
 - [ ] Trains tab: stations, locomotives, cargo summary
+- [ ] Save loader fallback: if mounted save path is empty/missing, auto-fall back to downloading the active save via `DownloadSavegame` API
 
 ### Map
 - [x] Leaflet.js base map with self-hosted tiles (z3–z6, sliced at build time from 16K JPEG)
