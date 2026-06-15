@@ -81,12 +81,17 @@ document.addEventListener('alpine:init', () => {
     svStorage: null,
     expandedPlayer: null,    // instanceName of expanded player row
     expandedStorage: null,   // instanceName of expanded storage row
+    showSettings: false,
+    headerReloading: false,
+    confirmDialog: { show: false, title: '', message: '', confirmLabel: 'Confirm', danger: true, resolve: null },
     showDownloadModal: false,
     downloadSaveName: '',
     downloadLoading: false,
     downloadError: null,
     sseConnected: false,
     _eventSource: null,
+    tooltip: { visible: false, x: 0, y: 0, name: '', count: null },
+    buildingsSearch: '',
     // ─────────────────────────────────────────────────────────────────────
 
     async init() {
@@ -154,7 +159,6 @@ document.addEventListener('alpine:init', () => {
       this.actionResult = null;
       if (tab === 'dashboard' && !this.serverState && this.sfStatus.connected) await this.loadDashboard();
       if (tab === 'saves' && !this.saves && this.sfStatus.connected) await this.loadSaves();
-      if (tab === 'settings' && !this.serverOptions && this.sfStatus.connected) await this.loadSettings();
       if (tab === 'saveviewer') await this.loadSaveActiveSubTab();
       if (tab === 'map') {
         if (this.saveStatus?.loaded) {
@@ -187,7 +191,12 @@ document.addEventListener('alpine:init', () => {
       this.loading = true;
       this.error = null;
       try {
-        this.saves = await api.saves.list();
+        const data = await api.saves.list();
+        // Sort each session's saves newest-first (saveDateTime is "YYYY.MM.DD-HH.MM.SS", sorts as string)
+        for (const session of data?.sessions ?? []) {
+          session.saveHeaders?.sort((a, b) => b.saveDateTime.localeCompare(a.saveDateTime));
+        }
+        this.saves = data;
       } catch (e) {
         this.error = e.message;
       } finally {
@@ -230,8 +239,39 @@ document.addEventListener('alpine:init', () => {
       }
     },
 
+    async deleteSave(saveName, saveDateTime) {
+      const ok = await this.showConfirm({
+        title: 'Delete Save',
+        message: `Permanently delete <strong class="text-white">${saveName}</strong>?${saveDateTime ? `<br><span class="text-gray-500 text-xs">${this.formatSaveDate(saveDateTime)}</span>` : ''}<br><br>This cannot be undone.`,
+        confirmLabel: 'Delete',
+        danger: true,
+      });
+      if (!ok) return;
+      this.actionLoading = true;
+      this.actionResult = null;
+      try {
+        await api.saves.delete(saveName);
+        this.actionResult = { ok: true, message: `"${saveName}" deleted.` };
+        const data = await api.saves.list();
+        for (const session of data?.sessions ?? []) {
+          session.saveHeaders?.sort((a, b) => b.saveDateTime.localeCompare(a.saveDateTime));
+        }
+        this.saves = data;
+      } catch (e) {
+        this.actionResult = { ok: false, message: e.message };
+      } finally {
+        this.actionLoading = false;
+      }
+    },
+
     async loadSave(sessionName, saveName) {
-      if (!confirm(`Load "${saveName}"?\n\nThe server will switch to this save. Connected players will be disconnected.`)) return;
+      const ok = await this.showConfirm({
+        title: 'Load Save',
+        message: `Switch to <strong class="text-white">${saveName}</strong>? The server will load this save and connected players will be disconnected.`,
+        confirmLabel: 'Load Save',
+        danger: true,
+      });
+      if (!ok) return;
       this.actionLoading = true;
       this.actionResult = null;
       try {
@@ -246,6 +286,42 @@ document.addEventListener('alpine:init', () => {
     },
 
     // ── Phase 2: Save Viewer methods ──────────────────────────────────────
+
+    storagePreview(contents, max = 4) {
+      const byClass = {};
+      for (const item of contents) {
+        if (!byClass[item.itemClass]) byClass[item.itemClass] = { ...item, count: 0 };
+        byClass[item.itemClass].count += item.count;
+      }
+      const unique = Object.values(byClass).sort((a, b) => b.count - a.count);
+      return { items: unique.slice(0, max), overflow: Math.max(0, unique.length - max) };
+    },
+
+    slotGrid(contents, totalSlots) {
+      if (!totalSlots) return [];
+      const bySlot = {};
+      for (const item of contents) bySlot[item.slotIndex] = item;
+      return Array.from({ length: totalSlots }, (_, i) => bySlot[i] ?? null);
+    },
+
+    showItemTooltip(event, item) {
+      if (!item) return;
+      const rect = event.currentTarget.getBoundingClientRect();
+      this.tooltip = { visible: true, x: rect.left + rect.width / 2, y: rect.top, name: item.displayName, count: item.count };
+    },
+
+    hideItemTooltip() {
+      this.tooltip.visible = false;
+    },
+
+    filteredBuildingCategories() {
+      if (!this.svBuildings?.categories) return [];
+      const q = this.buildingsSearch.toLowerCase().trim();
+      if (!q) return this.svBuildings.categories;
+      return this.svBuildings.categories
+        .map(cat => ({ ...cat, types: cat.types.filter(b => b.label.toLowerCase().includes(q)) }))
+        .filter(cat => cat.types.length > 0);
+    },
 
     async loadSaveStatus() {
       try {
@@ -267,6 +343,31 @@ document.addEventListener('alpine:init', () => {
         this.saveDataError = e.message;
       } finally {
         this.saveDataLoading = false;
+      }
+    },
+
+    async headerReloadSave() {
+      this.headerReloading = true;
+      try {
+        this.saveStatus = await api.save.reload();
+        this.svPlayers = null;
+        this.svBuildings = null;
+        this.svResources = null;
+        this.svPower = null;
+        this.svResourceNodes = null;
+        // Refresh saves list so it reflects latest autosave
+        if (this.sfStatus.connected) {
+          const data = await api.saves.list();
+          for (const session of data?.sessions ?? []) {
+            session.saveHeaders?.sort((a, b) => b.saveDateTime.localeCompare(a.saveDateTime));
+          }
+          this.saves = data;
+        }
+        if (this.saveStatus?.loaded) await this.loadSaveActiveSubTab();
+      } catch (e) {
+        this.saveDataError = e.message;
+      } finally {
+        this.headerReloading = false;
       }
     },
 
@@ -294,6 +395,7 @@ document.addEventListener('alpine:init', () => {
     async switchSaveTab(tab) {
       this.saveTab = tab;
       this.saveDataError = null;
+      if (tab !== 'buildings') this.buildingsSearch = '';
       await this.loadSaveActiveSubTab();
     },
 
@@ -412,9 +514,25 @@ document.addEventListener('alpine:init', () => {
 
     formatSaveDate(dt) {
       if (!dt) return '';
-      // SF API returns saveDateTime as Windows FILETIME (100-ns intervals since 1601-01-01 UTC)
-      const d = new Date(dt / 10000 - 11644473600000);
-      return isNaN(d.getTime()) ? '' : d.toLocaleString();
+      // SF API returns saveDateTime as "YYYY.MM.DD-HH.MM.SS"
+      const m = String(dt).match(/^(\d{4})\.(\d{2})\.(\d{2})-(\d{2})\.(\d{2})\.(\d{2})$/);
+      if (!m) return String(dt);
+      const d = new Date(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z`);
+      return isNaN(d.getTime()) ? String(dt) : d.toLocaleString();
+    },
+
+    showConfirm({ title, message, confirmLabel = 'Confirm', danger = true }) {
+      return new Promise(resolve => {
+        this.confirmDialog = { show: true, title, message, confirmLabel, danger, resolve };
+      });
+    },
+    confirmDialogAccept() {
+      this.confirmDialog.resolve?.(true);
+      this.confirmDialog.show = false;
+    },
+    confirmDialogCancel() {
+      this.confirmDialog.resolve?.(false);
+      this.confirmDialog.show = false;
     },
 
     formatCoord(n) {

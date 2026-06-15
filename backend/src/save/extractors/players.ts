@@ -12,7 +12,9 @@ export interface PlayerInfo {
   health: number | null;
   position: { x: number; y: number; z: number };
   inventory: InventoryItem[];
+  inventorySlots: number;
   equipment: InventoryItem[];
+  equipmentSlots: number;
 }
 
 export function extractPlayers(save: SatisfactorySave): PlayerInfo[] {
@@ -31,7 +33,7 @@ export function extractPlayers(save: SatisfactorySave): PlayerInfo[] {
       const healthProp = obj.properties['mCurrentHealth'];
       const health = healthProp && isFloatProperty(healthProp) ? healthProp.value : null;
 
-      const { inventory, equipment } = extractPlayerInventory(obj.instanceName, byInstance);
+      const { inventory, inventorySlots, equipment, equipmentSlots } = extractPlayerInventory(obj.instanceName, byInstance);
 
       players.push({
         instanceName: obj.instanceName,
@@ -43,7 +45,9 @@ export function extractPlayers(save: SatisfactorySave): PlayerInfo[] {
           z: Math.round(obj.transform.translation.z),
         },
         inventory,
+        inventorySlots,
         equipment,
+        equipmentSlots,
       });
     }
   }
