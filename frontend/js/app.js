@@ -26,6 +26,9 @@ let _cardOpen = false;   // suppress the hover tooltip while the card is open
 let _highlightGfx = null;
 let _pixiUtils = null;
 let _unitsPerCm = 1;
+// category → array of PIXI display objects (sprite layer + spline graphics) for
+// that category, so per-category filter toggles can flip visibility cheaply.
+let _categoryDisplayObjects = new Map();
 // One shared rounded-rect white texture, generated once, used (tinted) for every
 // non-foundation building sprite. Same draw cost/batching as PIXI.Texture.WHITE —
 // the corner radius simply scales with each footprint when the texture stretches.
@@ -145,10 +148,14 @@ document.addEventListener('alpine:init', () => {
       purityPure:    true,
     },
     // Collapsible filter-panel sections.
-    mapSections: { overlays: true, nodes: true },
+    mapSections: { overlays: true, buildings: true, nodes: true },
     // Per-resource-type node toggles, keyed by resourceClass (e.g. Desc_OreIron).
     // Populated dynamically from the loaded nodes (only types present in the save).
     nodeTypeFilters: {},
+    // Per-building-category toggles + the category list (label/color/count),
+    // both built dynamically from the loaded footprints/splines.
+    categoryFilters: {},
+    buildingCategories: [],
     svMapPins: null,
     svBuildingFootprints: null,
     // ─────────────────────────────────────────────────────────────────────
@@ -574,6 +581,7 @@ document.addEventListener('alpine:init', () => {
       } catch (e) {
         console.warn('building footprints unavailable:', e.message);
       }
+      this._ensureBuildingCategories();
     },
 
     async loadSvBuildings() {
@@ -751,6 +759,59 @@ document.addEventListener('alpine:init', () => {
       const anyOn = list.some(t => this.nodeTypeFilters[t.key]);
       for (const t of list) this.nodeTypeFilters[t.key] = !anyOn;
       this.updateMapMarkers();
+    },
+
+    // ── Building category filters ─────────────────────────────────────────
+    // Build the category list (label/color/count) from the loaded footprints +
+    // splines, defaulting any newly-seen category to on. Most-common first.
+    _ensureBuildingCategories() {
+      const data = this.svBuildingFootprints;
+      if (!data) { this.buildingCategories = []; return; }
+      const m = new Map();
+      const bump = (cat, color, n) => {
+        let e = m.get(cat);
+        if (!e) { e = { category: cat, color, count: 0 }; m.set(cat, e); }
+        e.count += n;
+      };
+      for (let i = 0; i < (data.typeIndex?.length ?? 0); i++) {
+        const t = data.types[data.typeIndex[i]];
+        bump(t.category, t.color, 1);
+      }
+      for (const g of (data.splines ?? [])) bump(g.category, g.color, g.lines.length);
+
+      this.buildingCategories = Array.from(m.values()).sort((a, b) => b.count - a.count);
+      for (const c of this.buildingCategories) {
+        if (this.categoryFilters[c.category] === undefined) this.categoryFilters[c.category] = true;
+      }
+    },
+
+    buildingCategoriesAllOn() {
+      return this.buildingCategories.length > 0 &&
+        this.buildingCategories.every(c => this.categoryFilters[c.category]);
+    },
+
+    toggleBuildingCategory(cat) {
+      this.categoryFilters[cat] = !this.categoryFilters[cat];
+      this.mapFilters.buildings = this.buildingCategories.some(c => this.categoryFilters[c.category]);
+      this._applyCategoryVisibility();
+    },
+
+    toggleAllBuildingCategories() {
+      const anyOn = this.buildingCategories.some(c => this.categoryFilters[c.category]);
+      for (const c of this.buildingCategories) this.categoryFilters[c.category] = !anyOn;
+      this.mapFilters.buildings = !anyOn;
+      this._applyCategoryVisibility();
+    },
+
+    // Flip PIXI visibility of each category's sprite layer + spline graphics to
+    // match categoryFilters, then redraw. `redraw` is false when called mid-draw
+    // (from the rebuild) to avoid re-entering the overlay draw callback.
+    _applyCategoryVisibility(redraw = true) {
+      for (const [cat, objs] of _categoryDisplayObjects) {
+        const vis = this.categoryFilters[cat] !== false;
+        for (const o of objs) o.visible = vis;
+      }
+      if (redraw) _buildingOverlay?.redraw();
     },
 
     mapResetView() {
@@ -971,6 +1032,7 @@ document.addEventListener('alpine:init', () => {
       _highlightGfx?.clear();
       _buildingHitList = [];
       _splineHitList = [];
+      _categoryDisplayObjects = new Map();
       if (!data) return;
 
       // Game-cm → overlay layer-point is a fixed linear (affine) transform
@@ -990,6 +1052,14 @@ document.addEventListener('alpine:init', () => {
         if (type._tint === undefined) type._tint = parseInt(type.color.slice(1), 16);
       }
 
+      // Track every display object per category so per-category filters can flip
+      // their visibility without a full rebuild.
+      const registerCategoryObj = (category, obj) => {
+        let arr = _categoryDisplayObjects.get(category);
+        if (!arr) { arr = []; _categoryDisplayObjects.set(category, arr); }
+        arr.push(obj);
+      };
+
       const categoryLayers = new Map();
       const categoryContainer = (category) => {
         let layer = categoryLayers.get(category);
@@ -997,6 +1067,7 @@ document.addEventListener('alpine:init', () => {
           layer = new PIXI.Container();
           categoryLayers.set(category, layer);
           container.addChild(layer);
+          registerCategoryObj(category, layer);
         }
         return layer;
       };
@@ -1114,7 +1185,12 @@ document.addEventListener('alpine:init', () => {
           });
         }
         container.addChild(g);
+        registerCategoryObj(group.category, g);
       }
+
+      // Apply current per-category visibility to the freshly-built objects
+      // (no redraw — we're already inside the overlay draw callback).
+      this._applyCategoryVisibility(false);
     },
 
     // Shared hit-test for hover and click: returns { entry, isSpline } or null.
@@ -1123,6 +1199,7 @@ document.addEventListener('alpine:init', () => {
       const { x: mx, y: my } = latLngToGame(latlng);
 
       for (const b of _buildingHitList) {
+        if (this.categoryFilters[b.category] === false) continue; // hidden category
         const dx = mx - b.cx, dy = my - b.cy;
         if (Math.abs(dx) > b.aabbHW || Math.abs(dy) > b.aabbHH) continue;
         const lx = dx * b.cos + dy * b.sin;
@@ -1131,6 +1208,7 @@ document.addEventListener('alpine:init', () => {
       }
 
       for (const s of _splineHitList) {
+        if (this.categoryFilters[s.category] === false) continue; // hidden category
         if (mx < s.minX - s.halfW || mx > s.maxX + s.halfW ||
             my < s.minY - s.halfW || my > s.maxY + s.halfW) continue;
         const pts = s.gamePts;
