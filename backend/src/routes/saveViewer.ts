@@ -7,6 +7,7 @@ import {
   broadcastSaveReloaded,
   startWatching,
   getWatchedPath,
+  checkForNewerSave,
 } from '../save/watcher';
 import { extractPlayers } from '../save/extractors/players';
 import { extractBuildings } from '../save/extractors/buildings';
@@ -18,12 +19,18 @@ import { extractStorage } from '../save/extractors/storage';
 
 const router = Router();
 
-// GET /api/save/status
-router.get('/api/save/status', (_req, res) => {
-  res.json({
+/** Full status payload: parser state + watch path + newer-save-available info. */
+function fullStatus() {
+  return {
     ...getSaveStatus(),
     watchedPath: getWatchedPath(),
-  });
+    ...checkForNewerSave(),
+  };
+}
+
+// GET /api/save/status
+router.get('/api/save/status', (_req, res) => {
+  res.json(fullStatus());
 });
 
 // POST /api/save/reload — reload from disk mount
@@ -33,7 +40,7 @@ router.post('/api/save/reload', async (_req, res) => {
   if (status.loaded) {
     broadcastSaveReloaded({ sourceName: status.sourceName });
   }
-  res.json(getSaveStatus());
+  res.json(fullStatus());
 });
 
 // POST /api/save/download — download from SF API and parse
@@ -48,7 +55,7 @@ router.post('/api/save/download', async (req, res) => {
   if (status.loaded) {
     broadcastSaveReloaded({ sourceName: status.sourceName });
   }
-  res.json(getSaveStatus());
+  res.json(fullStatus());
 });
 
 // POST /api/save/watch — start/restart file watching
@@ -65,7 +72,7 @@ router.get('/api/save/events', (req: Request, res: Response) => {
   res.flushHeaders();
 
   // Initial status ping
-  res.write(`data: ${JSON.stringify({ event: 'connected', ...getSaveStatus() })}\n\n`);
+  res.write(`data: ${JSON.stringify({ event: 'connected', ...fullStatus() })}\n\n`);
 
   const keepalive = setInterval(() => res.write(':\n\n'), 25000);
 
