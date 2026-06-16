@@ -8,6 +8,68 @@ let _leafletMap = null;
 let _playerLayer = null;
 let _resourceNodeLayer = null;
 let _mapPinLayer = null;
+let _buildingOverlay = null;
+let _buildingOverlayContainer = null;
+let _buildingHitList = [];
+let _splineHitList = [];
+let _lastHoverMs = 0;
+let _clickDownX = 0; // pointer-down position, to tell a click from a map drag
+let _clickDownY = 0;
+let _detailPopup = null; // reusable Leaflet popup for the click detail card
+let _cardEntry = null;   // hit entry currently shown in the card
+let _cardOpen = false;   // suppress the hover tooltip while the card is open
+// Hover outline is drawn as a PIXI.Graphics inside the building overlay (the
+// overlayPane, z-index 400) rather than a separate HTML canvas, so the Leaflet
+// tooltipPane (650) naturally renders above it and PIXI handles all pan/zoom
+// reprojection. _pixiUtils/_unitsPerCm are captured at sprite-rebuild time so
+// the outline shares the sprites' coordinate space.
+let _highlightGfx = null;
+let _pixiUtils = null;
+let _unitsPerCm = 1;
+// category → array of PIXI display objects (sprite layer + spline graphics) for
+// that category, so per-category filter toggles can flip visibility cheaply.
+let _categoryDisplayObjects = new Map();
+// One shared rounded-rect white texture, generated once, used (tinted) for every
+// non-foundation building sprite. Same draw cost/batching as PIXI.Texture.WHITE —
+// the corner radius simply scales with each footprint when the texture stretches.
+let _roundedTex = null;
+function getRoundedTexture(PIXI, renderer) {
+  if (_roundedTex) return _roundedTex;
+  const S = 96;
+  const R = Math.round(S * 0.2); // 20% corner radius reads as soft, not blobby
+  const g = new PIXI.Graphics();
+  g.beginFill(0xffffff);
+  g.drawRoundedRect(0, 0, S, S, R);
+  g.endFill();
+  // resolution >1 supersamples so the corners stay smooth when scaled down.
+  _roundedTex = renderer.generateTexture(g, {
+    resolution: 3,
+    scaleMode: PIXI.SCALE_MODES.LINEAR,
+  });
+  g.destroy(true);
+  return _roundedTex;
+}
+
+// Building hover tooltip — a Leaflet tooltip rather than our own DOM/Alpine
+// element. Leaflet renders it into the tooltipPane, which it always stacks above
+// the tile and PIXI overlay panes, so the WebGL canvas can never obscure it
+// (the same reason the marker bindPopup() tooltips are never covered). Anchored
+// to the hovered building's centre, like a marker popup anchors to its marker.
+let _buildingTooltip = null;
+let _hoveredBuilding = null;
+
+// pixi.js + leaflet-pixi-overlay add ~500KB — only users who open the Map tab
+// should pay for the WebGL building-footprint renderer, so load it lazily.
+let _PIXI = null;
+async function loadPixiDeps() {
+  if (_PIXI) return _PIXI;
+  const [PIXI] = await Promise.all([
+    import('pixi.js'),
+    import('leaflet-pixi-overlay'),
+  ]);
+  _PIXI = PIXI;
+  return _PIXI;
+}
 
 // Satisfactory world bounds in Unreal cm
 const MAP_WEST  = -324698.832031;
@@ -25,10 +87,28 @@ const MAP_X_MAX      = Math.abs(MAP_WEST) + Math.abs(MAP_EAST);
 const MAP_Y_MAX      = Math.abs(MAP_NORTH) + Math.abs(MAP_SOUTH);
 const MAP_ZOOM_RATIO = Math.round(Math.log2(MAP_BG_SIZE / TILE_SIZE)); // 6
 
+
 function gameToLatLng(gameX, gameY) {
   const rasterX = (gameX - MAP_W) * MAP_BG_SIZE / MAP_X_MAX;
   const rasterY = (gameY - MAP_N) * MAP_BG_SIZE / MAP_Y_MAX;
   return _leafletMap.unproject([rasterX, rasterY], MAP_ZOOM_RATIO);
+}
+
+function latLngToGame(latlng) {
+  const p = _leafletMap.project(latlng, MAP_ZOOM_RATIO);
+  return { x: p.x * MAP_X_MAX / MAP_BG_SIZE + MAP_W, y: p.y * MAP_Y_MAX / MAP_BG_SIZE + MAP_N };
+}
+
+// Squared distance from point (px,py) to segment (ax,ay)-(bx,by). Squared form
+// avoids a sqrt per segment in the hover hit-test hot loop.
+function distSqToSegment(px, py, ax, ay, bx, by) {
+  const dx = bx - ax, dy = by - ay;
+  const len2 = dx * dx + dy * dy;
+  let t = len2 ? ((px - ax) * dx + (py - ay) * dy) / len2 : 0;
+  t = t < 0 ? 0 : t > 1 ? 1 : t;
+  const cx = ax + t * dx, cy = ay + t * dy;
+  const ex = px - cx, ey = py - cy;
+  return ex * ex + ey * ey;
 }
 
 document.addEventListener('alpine:init', () => {
@@ -62,11 +142,22 @@ document.addEventListener('alpine:init', () => {
       players:       true,
       hub:           true,
       stamps:        true,
+      buildings:     true,
       purityImpure:  true,
       purityNormal:  true,
       purityPure:    true,
     },
+    // Collapsible filter-panel sections.
+    mapSections: { overlays: true, buildings: true, nodes: true },
+    // Per-resource-type node toggles, keyed by resourceClass (e.g. Desc_OreIron).
+    // Populated dynamically from the loaded nodes (only types present in the save).
+    nodeTypeFilters: {},
+    // Per-building-category toggles + the category list (label/color/count),
+    // both built dynamically from the loaded footprints/splines.
+    categoryFilters: {},
+    buildingCategories: [],
     svMapPins: null,
+    svBuildingFootprints: null,
     // ─────────────────────────────────────────────────────────────────────
 
     // ── Phase 2: Save Viewer ──────────────────────────────────────────────
@@ -162,9 +253,10 @@ document.addEventListener('alpine:init', () => {
       if (tab === 'map') {
         if (this.saveStatus?.loaded) {
           await Promise.all([
-            !this.svPlayers       ? this.loadSvPlayers()       : Promise.resolve(),
-            !this.svResourceNodes ? this.loadSvResourceNodes() : Promise.resolve(),
-            !this.svMapPins       ? this.loadSvMapPins()       : Promise.resolve(),
+            !this.svPlayers            ? this.loadSvPlayers()            : Promise.resolve(),
+            !this.svResourceNodes      ? this.loadSvResourceNodes()      : Promise.resolve(),
+            !this.svMapPins            ? this.loadSvMapPins()            : Promise.resolve(),
+            !this.svBuildingFootprints ? this.loadSvBuildingFootprints() : Promise.resolve(),
           ]);
         }
         await this.$nextTick();
@@ -380,6 +472,7 @@ document.addEventListener('alpine:init', () => {
       this.svPower = null;
       this.svResourceNodes = null;
       this.svMapPins = null;
+      this.svBuildingFootprints = null;
     },
 
     // Single reload action (header button) — reloads whatever the active save source
@@ -482,6 +575,15 @@ document.addEventListener('alpine:init', () => {
       }
     },
 
+    async loadSvBuildingFootprints() {
+      try {
+        this.svBuildingFootprints = await api.save.buildingFootprints();
+      } catch (e) {
+        console.warn('building footprints unavailable:', e.message);
+      }
+      this._ensureBuildingCategories();
+    },
+
     async loadSvBuildings() {
       this.saveDataLoading = true;
       this.saveDataError = null;
@@ -522,6 +624,7 @@ document.addEventListener('alpine:init', () => {
       try {
         this.svResourceNodes = await api.save.resourceNodes();
       } catch { this.svResourceNodes = []; }
+      this._ensureNodeTypeFilters();
     },
 
     connectSaveSSE() {
@@ -549,7 +652,9 @@ document.addEventListener('alpine:init', () => {
             this.clearSvCaches();
             if (this.activeTab === 'saveviewer') await this.loadSaveActiveSubTab();
             if (this.activeTab === 'map') {
-              await Promise.all([this.loadSvPlayers(), this.loadSvResourceNodes(), this.loadSvMapPins()]);
+              await Promise.all([
+                this.loadSvPlayers(), this.loadSvResourceNodes(), this.loadSvMapPins(), this.loadSvBuildingFootprints(),
+              ]);
               this.updateMapMarkers();
             }
           }
@@ -602,6 +707,10 @@ document.addEventListener('alpine:init', () => {
       this.updateMapMarkers();
     },
 
+    toggleMapSection(key) {
+      this.mapSections[key] = !this.mapSections[key];
+    },
+
     toggleAllNodes() {
       const anyOn = this.mapFilters.purityImpure || this.mapFilters.purityNormal || this.mapFilters.purityPure;
       this.mapFilters.purityImpure = !anyOn;
@@ -612,6 +721,97 @@ document.addEventListener('alpine:init', () => {
 
     nodeCountByPurity(purity) {
       return this.svResourceNodes?.filter(n => n.purity === purity && n.icon).length ?? 0;
+    },
+
+    // Distinct resource types present in the save (only those with an icon),
+    // most-common first — drives the type-filter chip grid.
+    nodeTypeList() {
+      if (!this.svResourceNodes) return [];
+      const m = new Map();
+      for (const n of this.svResourceNodes) {
+        if (!n.icon) continue;
+        let e = m.get(n.resourceClass);
+        if (!e) { e = { key: n.resourceClass, label: n.label, icon: n.icon, count: 0 }; m.set(n.resourceClass, e); }
+        e.count++;
+      }
+      return Array.from(m.values()).sort((a, b) => b.count - a.count);
+    },
+
+    // Default any newly-seen resource type to on (reactive add via Alpine proxy).
+    _ensureNodeTypeFilters() {
+      for (const t of this.nodeTypeList()) {
+        if (this.nodeTypeFilters[t.key] === undefined) this.nodeTypeFilters[t.key] = true;
+      }
+    },
+
+    nodeTypesAllOn() {
+      const list = this.nodeTypeList();
+      return list.length > 0 && list.every(t => this.nodeTypeFilters[t.key]);
+    },
+
+    toggleNodeType(key) {
+      this.nodeTypeFilters[key] = !this.nodeTypeFilters[key];
+      this.updateMapMarkers();
+    },
+
+    toggleAllNodeTypes() {
+      const list = this.nodeTypeList();
+      const anyOn = list.some(t => this.nodeTypeFilters[t.key]);
+      for (const t of list) this.nodeTypeFilters[t.key] = !anyOn;
+      this.updateMapMarkers();
+    },
+
+    // ── Building category filters ─────────────────────────────────────────
+    // Build the category list (label/color/count) from the loaded footprints +
+    // splines, defaulting any newly-seen category to on. Most-common first.
+    _ensureBuildingCategories() {
+      const data = this.svBuildingFootprints;
+      if (!data) { this.buildingCategories = []; return; }
+      const m = new Map();
+      const bump = (cat, color, n) => {
+        let e = m.get(cat);
+        if (!e) { e = { category: cat, color, count: 0 }; m.set(cat, e); }
+        e.count += n;
+      };
+      for (let i = 0; i < (data.typeIndex?.length ?? 0); i++) {
+        const t = data.types[data.typeIndex[i]];
+        bump(t.category, t.color, 1);
+      }
+      for (const g of (data.splines ?? [])) bump(g.category, g.color, g.lines.length);
+
+      this.buildingCategories = Array.from(m.values()).sort((a, b) => b.count - a.count);
+      for (const c of this.buildingCategories) {
+        if (this.categoryFilters[c.category] === undefined) this.categoryFilters[c.category] = true;
+      }
+    },
+
+    buildingCategoriesAllOn() {
+      return this.buildingCategories.length > 0 &&
+        this.buildingCategories.every(c => this.categoryFilters[c.category]);
+    },
+
+    toggleBuildingCategory(cat) {
+      this.categoryFilters[cat] = !this.categoryFilters[cat];
+      this.mapFilters.buildings = this.buildingCategories.some(c => this.categoryFilters[c.category]);
+      this._applyCategoryVisibility();
+    },
+
+    toggleAllBuildingCategories() {
+      const anyOn = this.buildingCategories.some(c => this.categoryFilters[c.category]);
+      for (const c of this.buildingCategories) this.categoryFilters[c.category] = !anyOn;
+      this.mapFilters.buildings = !anyOn;
+      this._applyCategoryVisibility();
+    },
+
+    // Flip PIXI visibility of each category's sprite layer + spline graphics to
+    // match categoryFilters, then redraw. `redraw` is false when called mid-draw
+    // (from the rebuild) to avoid re-entering the overlay draw callback.
+    _applyCategoryVisibility(redraw = true) {
+      for (const [cat, objs] of _categoryDisplayObjects) {
+        const vis = this.categoryFilters[cat] !== false;
+        for (const o of objs) o.visible = vis;
+      }
+      if (redraw) _buildingOverlay?.redraw();
     },
 
     mapResetView() {
@@ -627,7 +827,9 @@ document.addEventListener('alpine:init', () => {
       if (this.mapRefreshing || !this.saveStatus?.loaded) return;
       this.mapRefreshing = true;
       try {
-        await Promise.all([this.loadSvPlayers(), this.loadSvResourceNodes(), this.loadSvMapPins()]);
+        await Promise.all([
+          this.loadSvPlayers(), this.loadSvResourceNodes(), this.loadSvMapPins(), this.loadSvBuildingFootprints(),
+        ]);
         this.updateMapMarkers();
       } finally {
         setTimeout(() => { this.mapRefreshing = false; }, 400);
@@ -640,6 +842,7 @@ document.addEventListener('alpine:init', () => {
     initMap() {
       if (_leafletMap) {
         _leafletMap.invalidateSize();
+        this.ensureBuildingOverlay();
         this.updateMapMarkers();
         return;
       }
@@ -675,10 +878,75 @@ document.addEventListener('alpine:init', () => {
         tileSize: TILE_SIZE,
       }).addTo(_leafletMap);
 
-      // Layer z-order: nodes → pins → players (players on top)
+      // Layer z-order: buildings (WebGL, overlayPane) → nodes → pins → players
+      this.ensureBuildingOverlay();
       _resourceNodeLayer = L.layerGroup().addTo(_leafletMap);
       _mapPinLayer       = L.layerGroup().addTo(_leafletMap);
       _playerLayer       = L.layerGroup().addTo(_leafletMap);
+
+      const mapEl = document.getElementById('leaflet-map');
+
+      // Reusable Leaflet tooltip for building hover — lives in the tooltipPane,
+      // so it's always layered above the PIXI overlay. interactive:false keeps it
+      // from stealing pointer events that drive the hover detection.
+      _buildingTooltip = L.tooltip({
+        direction: 'top',
+        offset: [0, -6],
+        opacity: 1,
+        interactive: false,
+        className: 'sf-building-tooltip',
+      });
+
+      // Reusable Leaflet popup for the click detail card — popupPane, above PIXI.
+      _detailPopup = L.popup({
+        className: 'sf-detail-popup',
+        maxWidth: 260,
+        autoPanPadding: [40, 40],
+        offset: [0, -4],
+      });
+      // Hover tooltip is noise while the card is open; suppress it for our popup.
+      _leafletMap.on('popupopen', (e) => {
+        if (e.popup === _detailPopup) { _cardOpen = true; this._endBuildingHover(mapEl); }
+      });
+      _leafletMap.on('popupclose', (e) => {
+        if (e.popup === _detailPopup) { _cardOpen = false; _cardEntry = null; }
+      });
+
+      // Native mousemove fires regardless of whether PIXI canvas absorbed the event.
+      mapEl.addEventListener('mousemove', (e) => {
+        const now = performance.now();
+        if (now - _lastHoverMs < 16) return;
+        _lastHoverMs = now;
+        const cp = _leafletMap.mouseEventToContainerPoint(e);
+        const latlng = _leafletMap.containerPointToLatLng(cp);
+        this._handleBuildingHover(latlng);
+      });
+      mapEl.addEventListener('mouseleave', () => {
+        this._endBuildingHover(mapEl);
+      });
+
+      // Click → detail card. Track pointer-down so a map drag isn't read as a click.
+      mapEl.addEventListener('mousedown', (e) => { _clickDownX = e.clientX; _clickDownY = e.clientY; });
+      mapEl.addEventListener('click', (e) => {
+        // Clicks inside the open card: only the action button does anything; let
+        // Leaflet handle the rest (e.g. its close button).
+        if (e.target.closest?.('.leaflet-popup')) {
+          if (e.target.closest('.sf-card-action') && _cardEntry) this.openInSaveViewer(_cardEntry);
+          return;
+        }
+        if (Math.hypot(e.clientX - _clickDownX, e.clientY - _clickDownY) > 5) return; // was a drag
+        if (!this.mapFilters.buildings) return;
+        const cp = _leafletMap.mouseEventToContainerPoint(e);
+        const latlng = _leafletMap.containerPointToLatLng(cp);
+        const hit = this._pickBuildingAt(latlng);
+        if (!hit) return;
+        const anchor = hit.isSpline ? latlng : gameToLatLng(hit.entry.cx, hit.entry.cy);
+        _detailPopup.setLatLng(anchor).setContent(this._buildingCardHtml(hit.entry, hit.isSpline));
+        _leafletMap.openPopup(_detailPopup);
+        // After openPopup — replacing an existing card fires popupclose, which
+        // nulls _cardEntry; set it last so the action button keeps its reference.
+        _cardEntry = hit.entry;
+      });
 
       const center = bounds.getCenter();
       const frameView = () => {
@@ -704,9 +972,397 @@ document.addEventListener('alpine:init', () => {
 
     updateMapMarkers() {
       if (!_leafletMap) return;
+      this._updateBuildingFootprints();
       this._updatePlayerMarkers();
       this._updateMapPinMarkers();
       this._updateResourceNodeMarkers();
+    },
+
+    // Lazy-loads Pixi and creates the WebGL building-footprint overlay (once per
+    // map instance). The draw callback handles everything from then on: rebuilding
+    // sprites when svBuildingFootprints changes, and applying the filter/zoom LOD
+    // visibility check — both on Leaflet's own zoom-triggered redraws and on our
+    // explicit ones via _updateBuildingFootprints().
+    async ensureBuildingOverlay() {
+      if (_buildingOverlay || !_leafletMap) return;
+      const PIXI = await loadPixiDeps();
+      if (!_leafletMap) return; // map was torn down while Pixi was loading
+
+      const container = new PIXI.Container();
+      _buildingOverlayContainer = container;
+      // Persistent outline graphic, kept as the top-most child so it draws over
+      // the sprites. Created once; survives sprite rebuilds (see _rebuildBuildingSprites).
+      _highlightGfx = new PIXI.Graphics();
+      let builtForData = null;
+
+      _buildingOverlay = L.pixiOverlay((utils) => {
+        _pixiUtils = utils;
+        const data = this.svBuildingFootprints;
+        if (data !== builtForData) {
+          this._rebuildBuildingSprites(PIXI, container, utils, data);
+          builtForData = data;
+        }
+
+        container.visible = !!this.mapFilters.buildings && !!data;
+        container.addChild(_highlightGfx); // re-assert top of z-order each draw
+
+        utils.getRenderer().render(container);
+      }, container);
+
+      _buildingOverlay.addTo(_leafletMap);
+      this._updateBuildingFootprints();
+    },
+
+    // Triggers a redraw of the building overlay (re-runs the draw callback above).
+    // Safe to call before the overlay exists yet — ensureBuildingOverlay() catches
+    // up once Pixi finishes loading.
+    _updateBuildingFootprints() {
+      _buildingOverlay?.redraw();
+    },
+
+    // Rebuilds every building sprite from scratch. Only called when the underlying
+    // data actually changes (new save loaded/reloaded) — not on every redraw — since
+    // positions are static between loads and the overlay handles zoom/pan scaling
+    // on its own (see Leaflet.PixiOverlay's "no need to reproject on zoom" design).
+    _rebuildBuildingSprites(PIXI, container, utils, data) {
+      // Tear down old sprites but keep the persistent highlight graphic alive.
+      for (const child of container.removeChildren()) {
+        if (child !== _highlightGfx) child.destroy();
+      }
+      _highlightGfx?.clear();
+      _buildingHitList = [];
+      _splineHitList = [];
+      _categoryDisplayObjects = new Map();
+      if (!data) return;
+
+      // Game-cm → overlay layer-point is a fixed linear (affine) transform
+      // (CRS.Simple and our gameToLatLng mapping are both pure linear) — derive
+      // it once from three reference points rather than reprojecting per point.
+      const p0 = utils.latLngToLayerPoint(gameToLatLng(0, 0));
+      const p1 = utils.latLngToLayerPoint(gameToLatLng(1000, 0));
+      const p2 = utils.latLngToLayerPoint(gameToLatLng(0, 1000));
+      const unitsPerCm = Math.hypot(p1.x - p0.x, p1.y - p0.y) / 1000;
+      _unitsPerCm = unitsPerCm;
+      // Basis vectors (layer-points per game-cm) for the affine game→layer map.
+      const exX = (p1.x - p0.x) / 1000, exY = (p1.y - p0.y) / 1000;
+      const eyX = (p2.x - p0.x) / 1000, eyY = (p2.y - p0.y) / 1000;
+      const gameToLayer = (gx, gy) => ({ x: p0.x + gx * exX + gy * eyX, y: p0.y + gx * exY + gy * eyY });
+
+      for (const type of data.types) {
+        if (type._tint === undefined) type._tint = parseInt(type.color.slice(1), 16);
+      }
+
+      // Track every display object per category so per-category filters can flip
+      // their visibility without a full rebuild.
+      const registerCategoryObj = (category, obj) => {
+        let arr = _categoryDisplayObjects.get(category);
+        if (!arr) { arr = []; _categoryDisplayObjects.set(category, arr); }
+        arr.push(obj);
+      };
+
+      const categoryLayers = new Map();
+      const categoryContainer = (category) => {
+        let layer = categoryLayers.get(category);
+        if (!layer) {
+          layer = new PIXI.Container();
+          categoryLayers.set(category, layer);
+          container.addChild(layer);
+          registerCategoryObj(category, layer);
+        }
+        return layer;
+      };
+
+      // Shrink each sprite relative to its true footprint so the dark map
+      // background bleeds through as a visible gap between adjacent buildings.
+      // The hit list still uses the full footprint for a generous hover area.
+      const GAP_CM = 25;      // gap per side in game-cm
+      const MIN_RATIO = 0.65; // never shrink below 65 % of the original dimension
+
+      // Structural/passive categories: very numerous and sit flat on the ground,
+      // so their 2-D footprints would block hover access to machines above them.
+      const SKIP_HIT_CATEGORIES = new Set([
+        'Foundations', 'Walls', 'Ramps', 'Stairs & Walkways', 'Roofs & Pillars',
+      ]);
+
+      // Foundations stay sharp-cornered so floor tiles abut cleanly; everything
+      // else gets the softened rounded texture.
+      const SHARP_CATEGORIES = new Set(['Foundations']);
+      const roundedTex = getRoundedTexture(PIXI, utils.getRenderer());
+
+      for (let i = 0; i < data.x.length; i++) {
+        const type = data.types[data.typeIndex[i]];
+        const yaw = data.yaw[i];
+        const fp = type.footprint;
+
+        // Rotate the footprint's local-space offset by yaw before adding to world pos.
+        const cos = Math.cos(yaw), sin = Math.sin(yaw);
+        const worldX = data.x[i] + fp.offsetX * cos - fp.offsetY * sin;
+        const worldY = data.y[i] + fp.offsetX * sin + fp.offsetY * cos;
+        const point = utils.latLngToLayerPoint(gameToLatLng(worldX, worldY));
+
+        const fillW = Math.max(fp.width - GAP_CM * 2, fp.width * MIN_RATIO);
+        const fillH = Math.max(fp.depth - GAP_CM * 2, fp.depth * MIN_RATIO);
+
+        const sprite = new PIXI.Sprite(SHARP_CATEGORIES.has(type.category) ? PIXI.Texture.WHITE : roundedTex);
+        sprite.anchor.set(0.5);
+        sprite.tint = type._tint;
+        sprite.alpha = 0.88;
+        sprite.x = point.x;
+        sprite.y = point.y;
+        sprite.width = Math.max(fillW * unitsPerCm, 1);
+        sprite.height = Math.max(fillH * unitsPerCm, 1);
+        sprite.rotation = yaw;
+
+        categoryContainer(type.category).addChild(sprite);
+
+        // Full footprint for hit testing — generous hover area even for thin belts/pipes.
+        // Skip structural categories: they're numerous, uninteresting, and their
+        // large 2-D footprints would block hover access to machines sitting on top.
+        if (!SKIP_HIT_CATEGORIES.has(type.category)) {
+          const hw = fp.width / 2;
+          const hh = fp.depth / 2;
+          _buildingHitList.push({
+            cx: worldX, cy: worldY, hw, hh, cos, sin,
+            // Layer-point centre + yaw for drawing the outline in the overlay's
+            // (rebuild-zoom) coordinate space, matching how the sprite is placed.
+            lpx: point.x, lpy: point.y, yaw,
+            aabbHW: hw * Math.abs(cos) + hh * Math.abs(sin),
+            aabbHH: hw * Math.abs(sin) + hh * Math.abs(cos),
+            label: type.label,
+            buildClass: type.buildClass,
+            category: type.category,
+          });
+        }
+      }
+
+      // ── Spline buildables (belts/pipes/hypertubes/rails) drawn as lines ────
+      // One PIXI.Graphics per category so each gets its own colour; line width is
+      // in game-cm (× unitsPerCm) so it scales with zoom like the footprints.
+      const SPLINE_WIDTH_CM = {
+        'Conveyors & Belts': 110,
+        'Pipes & Fluids':     75,
+        'Hypertubes':        150,
+        'Trains & Rails':    180,
+      };
+      for (const group of (data.splines ?? [])) {
+        if (!group.lines?.length) continue;
+        const widthCm = SPLINE_WIDTH_CM[group.category] ?? 90;
+        const widthLayer = Math.max(widthCm * unitsPerCm, 1);
+        const tint = parseInt(group.color.slice(1), 16);
+        // Game-cm hover tolerance: half the visual width plus a little padding so
+        // thin belts/pipes are still easy to land on.
+        const halfW = widthCm / 2 + 70;
+        const g = new PIXI.Graphics();
+        g.lineStyle({
+          width: widthLayer,
+          color: tint,
+          alpha: 0.9,
+          cap: PIXI.LINE_CAP.ROUND,
+          join: PIXI.LINE_JOIN.ROUND,
+        });
+        for (const line of group.lines) {
+          if (line.length < 4) continue;
+          const layerPts = new Array(line.length);
+          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+          const start = gameToLayer(line[0], line[1]);
+          layerPts[0] = start.x; layerPts[1] = start.y;
+          g.moveTo(start.x, start.y);
+          for (let k = 2; k < line.length; k += 2) {
+            const pt = gameToLayer(line[k], line[k + 1]);
+            layerPts[k] = pt.x; layerPts[k + 1] = pt.y;
+            g.lineTo(pt.x, pt.y);
+          }
+          for (let k = 0; k < line.length; k += 2) {
+            if (line[k]     < minX) minX = line[k];
+            if (line[k]     > maxX) maxX = line[k];
+            if (line[k + 1] < minY) minY = line[k + 1];
+            if (line[k + 1] > maxY) maxY = line[k + 1];
+          }
+          _splineHitList.push({
+            gamePts: line, layerPts, halfW, halfW2: halfW * halfW, widthLayer, tint,
+            minX, minY, maxX, maxY,
+            label: group.label, buildClass: group.buildClass, category: group.category,
+          });
+        }
+        container.addChild(g);
+        registerCategoryObj(group.category, g);
+      }
+
+      // Apply current per-category visibility to the freshly-built objects
+      // (no redraw — we're already inside the overlay draw callback).
+      this._applyCategoryVisibility(false);
+    },
+
+    // Shared hit-test for hover and click: returns { entry, isSpline } or null.
+    // Machine rectangles take priority (belts/pipes usually run between them).
+    _pickBuildingAt(latlng) {
+      const { x: mx, y: my } = latLngToGame(latlng);
+
+      for (const b of _buildingHitList) {
+        if (this.categoryFilters[b.category] === false) continue; // hidden category
+        const dx = mx - b.cx, dy = my - b.cy;
+        if (Math.abs(dx) > b.aabbHW || Math.abs(dy) > b.aabbHH) continue;
+        const lx = dx * b.cos + dy * b.sin;
+        const ly = -dx * b.sin + dy * b.cos;
+        if (Math.abs(lx) <= b.hw && Math.abs(ly) <= b.hh) return { entry: b, isSpline: false };
+      }
+
+      for (const s of _splineHitList) {
+        if (this.categoryFilters[s.category] === false) continue; // hidden category
+        if (mx < s.minX - s.halfW || mx > s.maxX + s.halfW ||
+            my < s.minY - s.halfW || my > s.maxY + s.halfW) continue;
+        const pts = s.gamePts;
+        for (let k = 0; k < pts.length - 2; k += 2) {
+          if (distSqToSegment(mx, my, pts[k], pts[k + 1], pts[k + 2], pts[k + 3]) <= s.halfW2) {
+            return { entry: s, isSpline: true };
+          }
+        }
+      }
+      return null;
+    },
+
+    _handleBuildingHover(latlng) {
+      const mapEl = document.getElementById('leaflet-map');
+      if (_cardOpen || !this.mapFilters.buildings ||
+          (!_buildingHitList.length && !_splineHitList.length)) {
+        this._endBuildingHover(mapEl);
+        return;
+      }
+      const hit = this._pickBuildingAt(latlng);
+      if (hit) this._showHover(latlng, hit.entry, mapEl, hit.isSpline);
+      else this._endBuildingHover(mapEl);
+    },
+
+    // Show the tooltip + outline for a hovered entry (rectangle building or
+    // spline). Tooltip follows the cursor every frame; content + outline only
+    // refresh when the hovered entry actually changes.
+    _showHover(latlng, entry, mapEl, isSpline) {
+      _buildingTooltip.setLatLng(latlng);
+      if (entry !== _hoveredBuilding) {
+        _hoveredBuilding = entry;
+        _buildingTooltip.setContent(this._buildingTooltipHtml(entry));
+        if (!_leafletMap.hasLayer(_buildingTooltip)) _leafletMap.openTooltip(_buildingTooltip);
+        if (isSpline) this._drawSplineHighlight(entry);
+        else this._drawBuildingHighlight(entry);
+      }
+      mapEl.style.cursor = 'pointer';
+    },
+
+    // Tear down all hover affordances (tooltip, outline, cursor) in one place.
+    _endBuildingHover(mapEl) {
+      if (_hoveredBuilding) {
+        _hoveredBuilding = null;
+        if (_buildingTooltip) _leafletMap?.closeTooltip(_buildingTooltip);
+        this._clearBuildingHighlight();
+      }
+      if (mapEl) mapEl.style.cursor = '';
+    },
+
+    _buildingTooltipHtml(b) {
+      return `<div class="sf-btt">
+        <img class="sf-btt-img" src="/assets/buildings/${b.buildClass}.png" onerror="this.style.display='none'">
+        <div class="sf-btt-text">
+          <p class="sf-btt-label">${b.label}</p>
+          <p class="sf-btt-cat">${b.category}</p>
+          <p class="sf-btt-hint">Click for details</p>
+        </div>
+      </div>`;
+    },
+
+    // Click detail card content. One key fact (position for machines, length for
+    // splines) plus the launch button into the Save Viewer.
+    _buildingCardHtml(entry, isSpline) {
+      let factLabel, factValue;
+      if (isSpline) {
+        let len = 0;
+        const p = entry.gamePts;
+        for (let k = 0; k < p.length - 2; k += 2) {
+          len += Math.hypot(p[k + 2] - p[k], p[k + 3] - p[k + 1]);
+        }
+        factLabel = 'Length';
+        factValue = `${(len / 100).toFixed(0)} m`;
+      } else {
+        factLabel = 'Position';
+        factValue = `${(entry.cx / 100).toFixed(0)} m, ${(entry.cy / 100).toFixed(0)} m`;
+      }
+      return `<div class="sf-card">
+        <div class="sf-card-head">
+          <img class="sf-card-icon" src="/assets/buildings/${entry.buildClass}.png" onerror="this.style.display='none'">
+          <div class="sf-card-headtext">
+            <p class="sf-card-title">${entry.label}</p>
+            <p class="sf-card-sub">${entry.category}</p>
+          </div>
+        </div>
+        <div class="sf-card-body">
+          <div class="sf-card-row"><span class="sf-card-k">${factLabel}</span><span class="sf-card-v">${factValue}</span></div>
+        </div>
+        <button class="sf-card-action" type="button">Open in Save Viewer
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>`;
+    },
+
+    // Jump to the Save Viewer with the Buildings tab filtered to this type. This
+    // is the first-step linkage; locating the exact instance comes later (needs
+    // per-instance rows in the Save Viewer).
+    async openInSaveViewer(entry) {
+      _leafletMap?.closePopup(_detailPopup);
+      this.saveTab = 'buildings';
+      this.buildingsSearch = entry.label;
+      await this.switchTab('saveviewer');
+    },
+
+    // Draws the orange outline as a rotated rect in the overlay's coordinate
+    // space (same placement maths as the sprite: layer-point centre + yaw), so
+    // it pans and zooms with the buildings without per-frame redraws. The line
+    // width is divided by the container scale to stay ~constant on screen.
+    _drawBuildingHighlight(b) {
+      const g = _highlightGfx;
+      if (!g || !_buildingOverlayContainer) return;
+      const scale = _buildingOverlayContainer.scale.x || 1;
+      const w = b.hw * 2 * _unitsPerCm;
+      const h = b.hh * 2 * _unitsPerCm;
+      // Match the sprite's rounded corners (~20% of the shorter side) so the
+      // outline doesn't look squared-off against the rounded fill.
+      const r = 0.2 * Math.min(w, h);
+      g.clear();
+      g.position.set(b.lpx, b.lpy);
+      g.rotation = b.yaw;
+      // Soft outer glow, then the crisp 2px line.
+      g.lineStyle((6 / scale), 0xf97316, 0.25);
+      g.drawRoundedRect(-w / 2, -h / 2, w, h, r);
+      g.lineStyle((2 / scale), 0xf97316, 1);
+      g.drawRoundedRect(-w / 2, -h / 2, w, h, r);
+      _buildingOverlay?.redraw();
+    },
+
+    // Highlights a whole spline path with a thin dark casing and the belt's own
+    // colour restored on top — so it reads as an outlined line rather than a
+    // solid orange fill that hides the belt.
+    _drawSplineHighlight(s) {
+      const g = _highlightGfx;
+      if (!g || !_buildingOverlayContainer) return;
+      const scale = _buildingOverlayContainer.scale.x || 1;
+      const pts = s.layerPts;
+      const border = 3 / scale; // ~3px casing regardless of zoom
+      g.clear();
+      g.position.set(0, 0);
+      g.rotation = 0;
+      const stroke = (width, color, alpha) => {
+        g.lineStyle({ width, color, alpha, cap: 'round', join: 'round' });
+        g.moveTo(pts[0], pts[1]);
+        for (let k = 2; k < pts.length; k += 2) g.lineTo(pts[k], pts[k + 1]);
+      };
+      stroke(s.widthLayer + border * 2, 0x000000, 0.9); // dark outline
+      stroke(s.widthLayer, s.tint, 1);                  // belt colour on top
+      _buildingOverlay?.redraw();
+    },
+
+    _clearBuildingHighlight() {
+      if (_highlightGfx) {
+        _highlightGfx.clear();
+        _buildingOverlay?.redraw();
+      }
     },
 
     _updatePlayerMarkers() {
@@ -794,6 +1450,8 @@ document.addEventListener('alpine:init', () => {
       for (const node of this.svResourceNodes) {
         if (!node.icon) continue;
         if (!this.mapFilters[`purity${node.purity}`]) continue;
+        // Type axis: a node shows only if its resource type is also enabled.
+        if (this.nodeTypeFilters[node.resourceClass] === false) continue;
         const latlng = gameToLatLng(node.position.x, node.position.y);
         const ring = PURITY_RING[node.purity] ?? PURITY_RING.Unknown;
 

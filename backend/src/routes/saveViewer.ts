@@ -17,6 +17,7 @@ import { extractPower } from '../save/extractors/power';
 import { extractResourceNodes } from '../save/extractors/resourceNodes';
 import { extractMapPins } from '../save/extractors/mapPins';
 import { extractStorage } from '../save/extractors/storage';
+import { extractBuildingFootprints } from '../save/extractors/buildingFootprints';
 
 const router = Router();
 
@@ -163,6 +164,21 @@ router.get('/api/save/map-pins', (_req, res) => {
   if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
   try {
     res.json(extractMapPins(save));
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+// GET /api/save/building-footprints — lean, map-specific building data (type
+// table + flat parallel instance arrays) for the WebGL factory overlay.
+// Deliberately not the same shape as /api/save/buildings (tab UI) — that one
+// nests full instance arrays per type, which is the wrong shape and far too
+// heavy a payload at tens of thousands of instances.
+router.get('/api/save/building-footprints', (_req, res) => {
+  const save = getSave();
+  if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
+  try {
+    res.json(extractBuildingFootprints(save));
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }

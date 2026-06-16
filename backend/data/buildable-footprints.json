@@ -1,0 +1,4034 @@
+{
+  "BUILD_Potty_mk1": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "BUILD_SingleDoor_Base_01": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_AlienPowerBuilding": {
+    "width": 3000.0,
+    "depth": 3000.0,
+    "height": 2500.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_AssemblerMk1": {
+    "width": 900.0,
+    "depth": 1600.0,
+    "height": 300.0,
+    "offsetX": 0.0,
+    "offsetY": -50.0
+  },
+  "Build_AutomatedWorkBench": {
+    "width": 600.0,
+    "depth": 240.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": -30.0
+  },
+  "Build_Barrier_Corner": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Barrier_Low_01": {
+    "width": 400.0,
+    "depth": 60.0,
+    "height": 95.99,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Barrier_Tall_01": {
+    "width": 400.0,
+    "depth": 60.0,
+    "height": 95.99,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_BigGarageDoor_16x8": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_BigGarageDoor_16x8_Concrete": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_BigGarageDoor_16x8_Steel": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Blender": {
+    "width": 1200.0,
+    "depth": 1000.0,
+    "height": 680.0,
+    "offsetX": -300.0,
+    "offsetY": 0.0
+  },
+  "Build_Blueprint": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_BlueprintDesigner": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_BlueprintDesigner_MK2": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_BlueprintDesigner_Mk3": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_CatwalkCorner": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_CatwalkCross": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_CatwalkRamp": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 300.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_CatwalkStairs": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 500.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_CatwalkStraight": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_CatwalkT": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_CeilingLight": {
+    "width": 1100.0,
+    "depth": 1200.0,
+    "height": -85.0,
+    "offsetX": 0.0,
+    "offsetY": -50.0
+  },
+  "Build_CentralStorage": {
+    "width": 500.0,
+    "depth": 900.0,
+    "height": 422.99,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ChainLinkFence": {
+    "width": 50.0,
+    "depth": 400.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_CheatFluidPump": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_CheatPowerSource": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_CheatTrainTeleportStation": {
+    "width": 1600.0,
+    "depth": 1600.0,
+    "height": 1200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConcreteConcaveRoundFoundation_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Concrete_Barrier_01": {
+    "width": 50.0,
+    "depth": 400.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConstructorMk1": {
+    "width": 800.0,
+    "depth": 1000.0,
+    "height": 600.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Converter": {
+    "width": 1600.0,
+    "depth": 1600.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorAttachmentMerger": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 260.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorAttachmentMergerLift": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorAttachmentMergerPriority": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 260.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorAttachmentMergerPriorityLift": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 260.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorAttachmentSplitter": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 260.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorAttachmentSplitterLift": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorAttachmentSplitterProgrammable": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 260.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorAttachmentSplitterProgrammableLift": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorAttachmentSplitterSmart": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 260.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorAttachmentSplitterSmartLift": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorBeltMk1": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorBeltMk2": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorBeltMk3": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorBeltMk4": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorBeltMk5": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorBeltMk6": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorCeilingAttachment": {
+    "width": 20.0,
+    "depth": 200.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorLiftMk1": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorLiftMk2": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorLiftMk3": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorLiftMk4": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorLiftMk5": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorLiftMk6": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorMonitor": {
+    "width": 200.0,
+    "depth": 220.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorPole": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorPoleStackable": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorPoleWall": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ConveyorWallHole": {
+    "width": 50.0,
+    "depth": 200.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_DownQuarterPipeInCorner_Asphalt_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_DownQuarterPipeInCorner_ConcretePolished_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_DownQuarterPipeInCorner_Concrete_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_DownQuarterPipeInCorner_Grip_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_DownQuarterPipeOutCorner_Asphalt_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_DownQuarterPipeOutCorner_ConcretePolished_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_DownQuarterPipeOutCorner_Concrete_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_DownQuarterPipeOutCorner_Grip_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_DownQuarterPipe_Asphalt_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_DownQuarterPipe_ConcretePolished_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_DownQuarterPipe_Concrete_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_DownQuarterPipe_Grip_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_DroneStation": {
+    "width": 1700.0,
+    "depth": 2400.0,
+    "height": 350.0,
+    "offsetX": 350.0,
+    "offsetY": 0.0
+  },
+  "Build_Elevator": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ElevatorFloorStop": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_FenceRamp_8x1_L": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_FenceRamp_8x1_R": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_FenceRamp_8x2_L": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_FenceRamp_8x2_R": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_FenceRamp_8x4_L": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_FenceRamp_8x4_R": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Fence_01": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Flat_Frame_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 40.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_FloodlightPole": {
+    "width": 300.0,
+    "depth": 300.0,
+    "height": 3200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_FloodlightWall": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_FluidTruckStation": {
+    "width": 1700.0,
+    "depth": 900.0,
+    "height": 620.0,
+    "offsetX": 250.0,
+    "offsetY": -850.0
+  },
+  "Build_FoundationGlass_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_FoundationPassthrough_Hypertube": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_FoundationPassthrough_Lift": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_FoundationPassthrough_Pipe": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Foundation_8x1_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Foundation_8x2_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Foundation_8x4_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Foundation_8x4_Cheat_Green": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Foundation_Asphalt_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Foundation_Asphalt_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Foundation_Asphalt_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Foundation_ConcretePolished_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Foundation_ConcretePolished_8x2_2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Foundation_ConcretePolished_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Foundation_Concrete_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Foundation_Concrete_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Foundation_Concrete_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Foundation_Frame_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Foundation_Metal_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Foundation_Metal_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Foundation_Metal_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_FoundryMk1": {
+    "width": 1000.0,
+    "depth": 1000.0,
+    "height": 450.0,
+    "offsetX": 0.0,
+    "offsetY": -50.0
+  },
+  "Build_FrackingExtractor": {
+    "width": 500.0,
+    "depth": 500.0,
+    "height": 570.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_FrackingSmasher": {
+    "width": 1500.0,
+    "depth": 1500.0,
+    "height": 2250.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Gate_Automated_8x4": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_GeneratorBiomass": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 570.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_GeneratorBiomass_Automated": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 700.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_GeneratorCoal": {
+    "width": 1000.0,
+    "depth": 2600.0,
+    "height": 900.0,
+    "offsetX": 0.0,
+    "offsetY": -50.0
+  },
+  "Build_GeneratorFuel": {
+    "width": 2200.0,
+    "depth": 400.0,
+    "height": 550.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_GeneratorGeoThermal": {
+    "width": 2000.0,
+    "depth": 1900.0,
+    "height": 3200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_GeneratorIntegratedBiomass": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_GeneratorNuclear": {
+    "width": 1200.0,
+    "depth": 4200.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_HadronCollider": {
+    "width": 1000.0,
+    "depth": 1000.0,
+    "height": 800.0,
+    "offsetX": 1400.0,
+    "offsetY": 800.0
+  },
+  "Build_HubTerminal": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_HyperPoleStackable": {
+    "width": 100.0,
+    "depth": 240.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_HyperTubeJunction": {
+    "width": 200.0,
+    "depth": 350.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 75.0
+  },
+  "Build_HyperTubeWallHole": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_HyperTubeWallSupport": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_HypertubeTJunction": {
+    "width": 500.0,
+    "depth": 200.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_IndustrialTank": {
+    "width": 1400.0,
+    "depth": 1400.0,
+    "height": 1200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_Asphalt_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_Asphalt_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_Asphalt_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_Concrete_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_Concrete_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_Concrete_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_DCorner_Asphalt_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_DCorner_Asphalt_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_DCorner_Asphalt_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_DCorner_Concrete_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_DCorner_Concrete_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_DCorner_Concrete_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_DCorner_Metal_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_DCorner_Metal_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_DCorner_Metal_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_DCorner_Polished_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_DCorner_Polished_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_DCorner_Polished_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_Metal_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_Metal_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_Metal_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_Polished_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_Polished_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_Polished_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_UCorner_Asphalt_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_UCorner_Asphalt_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_UCorner_Asphalt_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_UCorner_Concrete_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_UCorner_Concrete_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_UCorner_Concrete_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_UCorner_Metal_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_UCorner_Metal_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_UCorner_Metal_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_UCorner_Polished_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_UCorner_Polished_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_InvertedRamp_UCorner_Polished_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Inverted_ConcreteFoundation_Convex_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_JumpPad": {
+    "width": 600.0,
+    "depth": 600.0,
+    "height": 600.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_JumpPadAdjustable": {
+    "width": 600.0,
+    "depth": 600.0,
+    "height": 300.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_JumpPadTilted": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ladder": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_LandingPad": {
+    "width": 1000.0,
+    "depth": 1000.0,
+    "height": 500.0,
+    "offsetX": 0.0,
+    "offsetY": 50.0
+  },
+  "Build_LargeFan": {
+    "width": 200.0,
+    "depth": 400.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_LargeVent": {
+    "width": 200.0,
+    "depth": 400.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_LightsControlPanel": {
+    "width": 200.0,
+    "depth": 100.0,
+    "height": 300.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Locker_MK1": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_LookoutTower": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 150.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Mam": {
+    "width": 600.0,
+    "depth": 900.0,
+    "height": 500.0,
+    "offsetX": 50.0,
+    "offsetY": 0.0
+  },
+  "Build_ManufacturerMk1": {
+    "width": 1800.0,
+    "depth": 1200.0,
+    "height": 1100.0,
+    "offsetX": 0.0,
+    "offsetY": 300.0
+  },
+  "Build_MinerMk1": {
+    "width": 600.0,
+    "depth": 1400.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 200.0
+  },
+  "Build_MinerMk2": {
+    "width": 600.0,
+    "depth": 1400.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 200.0
+  },
+  "Build_MinerMk3": {
+    "width": 600.0,
+    "depth": 1400.0,
+    "height": 600.0,
+    "offsetX": 0.0,
+    "offsetY": 200.0
+  },
+  "Build_OilPump": {
+    "width": 800.0,
+    "depth": 1300.0,
+    "height": 1800.0,
+    "offsetX": 0.0,
+    "offsetY": 140.0
+  },
+  "Build_OilRefinery": {
+    "width": 1000.0,
+    "depth": 2200.0,
+    "height": 1500.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Packager": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 1200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PillarBase": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PillarBase_Small": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PillarMiddle": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PillarMiddle_Concrete": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PillarMiddle_Frame": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PillarTop": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Pillar_Small_Concrete": {
+    "width": 200.0,
+    "depth": 200.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Pillar_Small_Frame": {
+    "width": 200.0,
+    "depth": 200.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Pillar_Small_Metal": {
+    "width": 200.0,
+    "depth": 200.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PipeHyper": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PipeHyperStart": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PipeHyperSupport": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PipeStorageTank": {
+    "width": 600.0,
+    "depth": 600.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PipeSupportStackable": {
+    "width": 100.0,
+    "depth": 240.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Pipeline": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PipelineFlowIndicator": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PipelineJunction_Cross": {
+    "width": 240.0,
+    "depth": 240.0,
+    "height": 150.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PipelineJunction_T": {
+    "width": 240.0,
+    "depth": 240.0,
+    "height": 150.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PipelineMK2": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PipelineMK2_NoIndicator": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PipelinePump": {
+    "width": 380.0,
+    "depth": 120.0,
+    "height": 120.0,
+    "offsetX": 22.0,
+    "offsetY": 0.0
+  },
+  "Build_PipelinePumpMK2": {
+    "width": 500.0,
+    "depth": 120.0,
+    "height": 120.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PipelineSupport": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PipelineSupportWall": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PipelineSupportWallHole": {
+    "width": 93.52,
+    "depth": 199.99,
+    "height": 199.99,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Pipeline_NoIndicator": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Portal": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 1200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PortalPotty": {
+    "width": 200.0,
+    "depth": 200.0,
+    "height": 370.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PortalSatellite": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 1000.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PowerLine": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PowerPoleMk1": {
+    "width": 80.0,
+    "depth": 80.0,
+    "height": 760.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PowerPoleMk2": {
+    "width": 80.0,
+    "depth": 80.0,
+    "height": 740.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PowerPoleMk3": {
+    "width": 80.0,
+    "depth": 80.0,
+    "height": 870.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PowerPoleWall": {
+    "width": 89.64,
+    "depth": 56.55,
+    "height": 56.55,
+    "offsetX": 55.34,
+    "offsetY": 0.0
+  },
+  "Build_PowerPoleWallDouble": {
+    "width": 200.31,
+    "depth": 56.55,
+    "height": 56.55,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PowerPoleWallDouble_Mk2": {
+    "width": 200.31,
+    "depth": 56.55,
+    "height": 56.55,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PowerPoleWallDouble_Mk3": {
+    "width": 200.31,
+    "depth": 56.55,
+    "height": 56.55,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PowerPoleWall_Mk2": {
+    "width": 89.64,
+    "depth": 56.55,
+    "height": 56.55,
+    "offsetX": 55.34,
+    "offsetY": 0.0
+  },
+  "Build_PowerPoleWall_Mk3": {
+    "width": 89.64,
+    "depth": 56.55,
+    "height": 56.55,
+    "offsetX": 55.34,
+    "offsetY": 0.0
+  },
+  "Build_PowerStorageMk1": {
+    "width": 600.0,
+    "depth": 600.0,
+    "height": 1200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PowerSwitch": {
+    "width": 200.0,
+    "depth": 100.0,
+    "height": 300.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PowerTower": {
+    "width": 1200.0,
+    "depth": 1200.0,
+    "height": 700.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PowerTowerPlatform": {
+    "width": 1200.0,
+    "depth": 1200.0,
+    "height": 700.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_PriorityPowerSwitch": {
+    "width": 200.0,
+    "depth": 100.0,
+    "height": 300.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuantumEncoder": {
+    "width": 1600.0,
+    "depth": 1100.0,
+    "height": 450.0,
+    "offsetX": 0.0,
+    "offsetY": -1550.0
+  },
+  "Build_QuarterPipe": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeCorner_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeCorner_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeCorner_03": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeCorner_04": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeInCorner_Asphalt_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeInCorner_ConcretePolished_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeInCorner_Concrete_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeInCorner_Grip_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleInCorner_Asphalt_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleInCorner_Asphalt_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleInCorner_Asphalt_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleInCorner_Concrete_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleInCorner_Concrete_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleInCorner_Concrete_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleInCorner_Ficsit_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleInCorner_Ficsit_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleInCorner_Ficsit_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleInCorner_Grip_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleInCorner_Grip_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleInCorner_Grip_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleInCorner_PolishedConcrete_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleInCorner_PolishedConcrete_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleInCorner_PolishedConcrete_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleOutCorner_Asphalt_4x1": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleOutCorner_Asphalt_4x2": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleOutCorner_Asphalt_4x4": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleOutCorner_Concrete_4x1": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleOutCorner_Concrete_4x2": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleOutCorner_Concrete_4x4": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleOutCorner_Ficsit_4x1": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleOutCorner_Ficsit_4x2": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleOutCorner_Ficsit_4x4": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleOutCorner_Grip_4x1": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleOutCorner_Grip_4x2": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleOutCorner_Grip_4x4": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleOutCorner_PolishedConcrete_4x1": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleOutCorner_PolishedConcrete_4x2": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddleOutCorner_PolishedConcrete_4x4": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddle_Asphalt_8x1": {
+    "width": 400.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddle_Asphalt_8x2": {
+    "width": 400.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddle_Asphalt_8x4": {
+    "width": 400.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddle_Concrete_8x1": {
+    "width": 400.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddle_Concrete_8x2": {
+    "width": 400.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddle_Concrete_8x4": {
+    "width": 400.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddle_Ficsit_8x1": {
+    "width": 400.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddle_Ficsit_8x2": {
+    "width": 400.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddle_Ficsit_8x4": {
+    "width": 400.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddle_Grip_8x1": {
+    "width": 400.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddle_Grip_8x2": {
+    "width": 400.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddle_Grip_8x4": {
+    "width": 400.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddle_PolishedConcrete_8x1": {
+    "width": 400.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddle_PolishedConcrete_8x2": {
+    "width": 400.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeMiddle_PolishedConcrete_8x4": {
+    "width": 400.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeOutCorner_Asphalt_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeOutCorner_ConcretePolished_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeOutCorner_Concrete_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipeOutCorner_Grip_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipe_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipe_Asphalt_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipe_ConcretePolished_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipe_Concrete_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_QuarterPipe_Grip_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RadarTower": {
+    "width": 1000.0,
+    "depth": 1000.0,
+    "height": 11800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Railing_01": {
+    "width": 50.0,
+    "depth": 400.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RailroadBlockSignal": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RailroadEndStop": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RailroadPathSignal": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RailroadSwitchControl": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RailroadTrack": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RailroadTrackIntegrated": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampDouble": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampDouble_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampDouble_Asphalt_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampDouble_Asphalt_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampDouble_Asphalt_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampDouble_Concrete_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampDouble_Concrete_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampDouble_Concrete_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampDouble_Metal_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampDouble_Metal_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampDouble_Metal_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampDouble_Polished_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampDouble_Polished_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampDouble_Polished_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampInverted_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampInverted_8x1_Corner_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampInverted_8x1_Corner_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampInverted_8x2_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampInverted_8x2_Corner_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampInverted_8x2_Corner_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampInverted_8x4_Corner_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_RampInverted_8x4_Corner_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_8x1_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_8x2_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_8x4_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_8x4_Inverted_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_8x8x8": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Asphalt_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Asphalt_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Asphalt_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Concrete_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Concrete_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Concrete_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Diagonal_8x1_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Diagonal_8x1_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Diagonal_8x2_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Diagonal_8x2_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Diagonal_8x4_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Diagonal_8x4_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_DownCorner_Asphalt_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_DownCorner_Asphalt_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_DownCorner_Asphalt_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_DownCorner_Concrete_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_DownCorner_Concrete_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_DownCorner_Concrete_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_DownCorner_Metal_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_DownCorner_Metal_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_DownCorner_Metal_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_DownCorner_Polished_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_DownCorner_Polished_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_DownCorner_Polished_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Frame_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Frame_Inverted_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Metal_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Metal_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Metal_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Polished_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Polished_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_Polished_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_UpCorner_Asphalt_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_UpCorner_Asphalt_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_UpCorner_Asphalt_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_UpCorner_Concrete_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_UpCorner_Concrete_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_UpCorner_Concrete_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_UpCorner_Metal_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_UpCorner_Metal_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_UpCorner_Metal_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_UpCorner_Polished_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_UpCorner_Polished_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Ramp_UpCorner_Polished_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_ResourceSink": {
+    "width": 1600.0,
+    "depth": 1400.0,
+    "height": 950.0,
+    "offsetX": 200.0,
+    "offsetY": 0.0
+  },
+  "Build_ResourceSinkShop": {
+    "width": 400.0,
+    "depth": 600.0,
+    "height": 500.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_A_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 50.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_A_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_A_03": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_A_04": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Metal_InCorner_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Metal_InCorner_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Metal_InCorner_03": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Metal_OutCorner_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Metal_OutCorner_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Metal_OutCorner_03": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Orange_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 50.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Orange_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Orange_03": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Orange_04": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Orange_InCorner_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Orange_InCorner_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Orange_InCorner_03": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Orange_OutCorner_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Orange_OutCorner_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Orange_OutCorner_03": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Tar_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 50.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Tar_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Tar_03": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Tar_04": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Tar_InCorner_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Tar_InCorner_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Tar_InCorner_03": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Tar_OutCorner_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Tar_OutCorner_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Tar_OutCorner_03": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Window_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 50.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Window_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Window_03": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Window_04": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Window_InCorner_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Window_InCorner_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Window_InCorner_03": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Window_OutCorner_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Window_OutCorner_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Roof_Window_OutCorner_03": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SM_RailingRamp_8x1_01": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SM_RailingRamp_8x2_01": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SM_RailingRamp_8x4_01": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SignPole": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SignPole_Huge": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SignPole_Large": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SignPole_Medium": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SignPole_Portrait": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SignPole_Small": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SmelterMk1": {
+    "width": 500.0,
+    "depth": 1000.0,
+    "height": 450.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SpaceElevator": {
+    "width": 1500.0,
+    "depth": 4300.0,
+    "height": 550.0,
+    "offsetX": 1500.0,
+    "offsetY": 0.0
+  },
+  "Build_StackableShelf": {
+    "width": 400.0,
+    "depth": 200.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Stair_Asphalt_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Stair_Asphalt_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Stair_Asphalt_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Stair_Concrete_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Stair_Concrete_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Stair_Concrete_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Stair_FicsitSet_8x1_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Stair_FicsitSet_8x2_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Stair_FicsitSet_8x4_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Stair_GripMetal_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Stair_GripMetal_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Stair_GripMetal_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Stair_PolishedConcrete_8x1": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Stair_PolishedConcrete_8x2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Stair_PolishedConcrete_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Stairs_Left_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Stairs_Right_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_StandaloneWidgetSign_Huge": {
+    "width": 1600.0,
+    "depth": 40.0,
+    "height": 800.0,
+    "offsetX": -0.0,
+    "offsetY": 46.0
+  },
+  "Build_StandaloneWidgetSign_Large": {
+    "width": 800.0,
+    "depth": 20.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": -2.0
+  },
+  "Build_StandaloneWidgetSign_Medium": {
+    "width": 200.0,
+    "depth": 18.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_StandaloneWidgetSign_Portrait": {
+    "width": 200.0,
+    "depth": 18.0,
+    "height": 300.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_StandaloneWidgetSign_Small": {
+    "width": 200.0,
+    "depth": 18.0,
+    "height": 50.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_StandaloneWidgetSign_SmallVeryWide": {
+    "width": 400.0,
+    "depth": 18.0,
+    "height": 50.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_StandaloneWidgetSign_SmallWide": {
+    "width": 300.0,
+    "depth": 18.0,
+    "height": 50.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_StandaloneWidgetSign_Square": {
+    "width": 200.0,
+    "depth": 18.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_StandaloneWidgetSign_Square_Small": {
+    "width": 100.0,
+    "depth": 16.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_StandaloneWidgetSign_Square_Tiny": {
+    "width": 50.0,
+    "depth": 16.0,
+    "height": 50.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SteelWall_8x1": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SteelWall_8x4": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SteelWall_8x4_DoorC_01": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SteelWall_8x4_DoorS_01": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SteelWall_8x4_Gate_01": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SteelWall_8x4_Window_01": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SteelWall_8x4_Window_02": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SteelWall_8x4_Window_03": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SteelWall_8x4_Window_04": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SteelWall_FlipTris_8x1": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SteelWall_FlipTris_8x2": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SteelWall_FlipTris_8x4": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SteelWall_FlipTris_8x8": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SteelWall_Tris_8x1": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SteelWall_Tris_8x2": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SteelWall_Tris_8x4": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_SteelWall_Tris_8x8": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_StorageBlueprint": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_StorageContainerMk1": {
+    "width": 500.0,
+    "depth": 1100.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_StorageContainerMk2": {
+    "width": 500.0,
+    "depth": 1100.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_StorageHazard": {
+    "width": 100.0,
+    "depth": 160.0,
+    "height": 80.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_StorageIntegrated": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_StorageMedkit": {
+    "width": 100.0,
+    "depth": 160.0,
+    "height": 80.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_StoragePlayer": {
+    "width": 100.0,
+    "depth": 160.0,
+    "height": 80.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_StreetLight": {
+    "width": 50.0,
+    "depth": 50.0,
+    "height": 930.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_TarpFence": {
+    "width": 50.0,
+    "depth": 400.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_TradingPost": {
+    "width": 1400.0,
+    "depth": 2600.0,
+    "height": 850.0,
+    "offsetX": -100.0,
+    "offsetY": 20.0
+  },
+  "Build_TrainDockingStation": {
+    "width": 1600.0,
+    "depth": 3400.0,
+    "height": 2000.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_TrainDockingStationLiquid": {
+    "width": 1600.0,
+    "depth": 3400.0,
+    "height": 2000.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_TrainPlatformEmpty": {
+    "width": 1600.0,
+    "depth": 3400.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_TrainPlatformEmpty_02": {
+    "width": 1600.0,
+    "depth": 3400.0,
+    "height": 900.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_TrainStation": {
+    "width": 1600.0,
+    "depth": 3400.0,
+    "height": 2100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_TreeGiftProducer": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 1700.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_TruckStation": {
+    "width": 1700.0,
+    "depth": 900.0,
+    "height": 620.0,
+    "offsetX": 250.0,
+    "offsetY": -850.0
+  },
+  "Build_Valve": {
+    "width": 200.0,
+    "depth": 120.0,
+    "height": 120.0,
+    "offsetX": 22.0,
+    "offsetY": 0.0
+  },
+  "Build_VehiclePathNode_Default": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_VehiclePathNode_DockingStation": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_VehiclePath_Base": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_VehiclePath_Explorer": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_VehiclePath_FactoryCart": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_VehiclePath_Tractor": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_VehiclePath_Truck": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_VehiclePath_Universal": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_WalkwayCross": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_WalkwayRamp": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 300.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_WalkwayStraight": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_WalkwayT": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_WalkwayTrun": {
+    "width": 400.0,
+    "depth": 400.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_WallSet_Steel_Angular_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_WallSet_Steel_Angular_8x8": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_8x4_01": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_8x4_02": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_8x1": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_8x4": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_8x4_ConveyorHole_01": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_8x4_ConveyorHole_02": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_8x4_ConveyorHole_03": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_8x4_Corner_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_8x4_Corner_2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_8x4_Window_01": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_8x4_Window_02": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_8x4_Window_03": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_8x4_Window_04": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_8x8_Corner_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_8x8_Corner_2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_Angular_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_Angular_8x8": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_CDoor_8x4": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_FlipTris_8x1": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_FlipTris_8x2": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_FlipTris_8x4": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_FlipTris_8x8": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_Gate_8x4": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_SDoor_8x4": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_Tris_8x1": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_Tris_8x2": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_Tris_8x4": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_Tris_8x8": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_Tris_Curved_8x8": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Concrete_Tris_Glass_8x8": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Conveyor_8x4_01": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Conveyor_8x4_01_Steel": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Conveyor_8x4_02": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Conveyor_8x4_02_Steel": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Conveyor_8x4_03": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Conveyor_8x4_03_Steel": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Conveyor_8x4_04": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Conveyor_8x4_04_Steel": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Door_8x4_01": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Door_8x4_01_Steel": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Door_8x4_03": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Door_8x4_03_Steel": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Frame_01": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Gate_8x4_01": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Inverted_Concrete_Tris_Curved_8x8": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Orange_8x1": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Orange_8x4_Corner_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Orange_8x4_Corner_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Orange_8x8_Corner_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Orange_8x8_Corner_02": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Orange_Angular_8x4": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Orange_Angular_8x8": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Orange_FlipTris_8x1": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Orange_FlipTris_8x2": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Orange_FlipTris_8x4": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Orange_FlipTris_8x8": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Orange_Tris_8x1": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Orange_Tris_8x2": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 200.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Orange_Tris_8x4": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Orange_Tris_8x8": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Steel_8x4_Corner_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Steel_8x4_Corner_2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Steel_8x8_Corner_01": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Steel_8x8_Corner_2": {
+    "width": 800.0,
+    "depth": 800.0,
+    "height": 800.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Window_8x4_01": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Window_8x4_02": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Window_8x4_03": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Window_8x4_04": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Window_8x4_05": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Window_8x4_06": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Window_8x4_07": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Window_Thin_8x4_01": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Wall_Window_Thin_8x4_02": {
+    "width": 50.0,
+    "depth": 800.0,
+    "height": 400.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_WaterPump": {
+    "width": 2000.0,
+    "depth": 1800.0,
+    "height": 1200.0,
+    "offsetX": 0.0,
+    "offsetY": 400.0
+  },
+  "Build_WorkBench": {
+    "width": 400.0,
+    "depth": 600.0,
+    "height": 300.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_WorkBenchIntegrated": {
+    "width": 100.0,
+    "depth": 100.0,
+    "height": 100.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  },
+  "Build_Workshop": {
+    "width": 600.0,
+    "depth": 1000.0,
+    "height": 550.0,
+    "offsetX": 0.0,
+    "offsetY": 0.0
+  }
+}

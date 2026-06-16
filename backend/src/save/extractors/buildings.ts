@@ -237,7 +237,7 @@ const CATEGORY_ORDER: Record<string, number> = {
   'Other':                99,
 };
 
-function categoryFromTypePath(typePath: string): string {
+export function categoryFromTypePath(typePath: string): string {
   // e.g. /Game/FactoryGame/Buildable/Factory/SmelterMk1/Build_SmelterMk1.Build_SmelterMk1_C
   const rest = typePath.slice(BUILDABLE_PREFIX.length);   // Factory/SmelterMk1/Build_...
   const segments = rest.split('/');
@@ -245,12 +245,12 @@ function categoryFromTypePath(typePath: string): string {
   return SUBFOLDER_CATEGORY[subfolder] ?? `Other (${segments[0]})`;
 }
 
-function buildClassFromTypePath(typePath: string): string {
+export function buildClassFromTypePath(typePath: string): string {
   // e.g. ".../Build_SmelterMk1.Build_SmelterMk1_C" → "Build_SmelterMk1"
   return (typePath.split('.')[0]).split('/').pop() ?? '';
 }
 
-function buildingLabel(typePath: string): string {
+export function buildingLabel(typePath: string): string {
   const cls = buildClassFromTypePath(typePath);
   const mapped = getNameMap()[cls];
   if (mapped) return mapped;
@@ -332,14 +332,23 @@ function transformFromRaw(t: any): BuildingInstance {
   };
 }
 
-export function extractBuildings(save: SatisfactorySave): BuildingSummary {
-  const counts = new Map<string, BuildingEntry>();
-
+/**
+ * Walk every buildable instance in the save (both normal/heavy buildables and
+ * lightweight ones — foundations, walls, ramps, etc. stored in
+ * FGLightweightBuildableSubsystem) and invoke `cb` with its typePath + transform.
+ * Shared by extractBuildings (tab summary) and extractBuildingFootprints (map).
+ */
+export function forEachBuildingInstance(
+  save: SatisfactorySave,
+  cb: (typePath: string, instance: BuildingInstance, obj?: any) => void,
+): void {
   for (const level of Object.values(save.levels)) {
     for (const obj of level.objects) {
       // ── Normal (heavy) buildables ───────────────────────────────────────
+      // Pass the raw object too, so callers can reach properties like
+      // mSplineData (belts/pipes) — lightweight buildables have no such data.
       if (obj.typePath.startsWith(BUILDABLE_PREFIX) && isSaveEntity(obj)) {
-        addCount(counts, obj.typePath, transformFromRaw((obj as any).transform));
+        cb(obj.typePath, transformFromRaw((obj as any).transform), obj);
         continue;
       }
 
@@ -352,7 +361,7 @@ export function extractBuildings(save: SatisfactorySave): BuildingSummary {
             const tp: string = buildable.typeReference?.pathName ?? '';
             if (!tp || !tp.startsWith(BUILDABLE_PREFIX)) continue;
             for (const inst of (buildable.instances as any[])) {
-              addCount(counts, tp, transformFromRaw(inst.transform));
+              cb(tp, transformFromRaw(inst.transform));
             }
           }
         }
@@ -360,6 +369,12 @@ export function extractBuildings(save: SatisfactorySave): BuildingSummary {
       }
     }
   }
+}
+
+export function extractBuildings(save: SatisfactorySave): BuildingSummary {
+  const counts = new Map<string, BuildingEntry>();
+
+  forEachBuildingInstance(save, (typePath, instance) => addCount(counts, typePath, instance));
 
   // Group by category
   const catMap = new Map<string, BuildingCategory>();
