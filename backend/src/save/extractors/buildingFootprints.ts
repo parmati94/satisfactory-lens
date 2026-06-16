@@ -78,12 +78,103 @@ function yawFromQuat(rot: BuildingInstance['rot']): number {
   return 2 * Math.atan2(rot.z, rot.w);
 }
 
+// ── Spline buildables (belts, pipes, hypertubes, rails) ─────────────────────
+// These carry an mSplineData property: spline points (local to the object's
+// transform) with arrive/leave tangents. We reconstruct the world-space path so
+// the map can draw them as lines instead of point footprints.
+
+interface V3 { x: number; y: number; z: number; }
+interface P2 { x: number; y: number; }
+
+// Rotate a vector by a quaternion (standard q * v * q⁻¹, expanded).
+function rotateByQuat(q: BuildingInstance['rot'], v: V3): V3 {
+  const tx = 2 * (q.y * v.z - q.z * v.y);
+  const ty = 2 * (q.z * v.x - q.x * v.z);
+  const tz = 2 * (q.x * v.y - q.y * v.x);
+  return {
+    x: v.x + q.w * tx + (q.y * tz - q.z * ty),
+    y: v.y + q.w * ty + (q.z * tx - q.x * tz),
+    z: v.z + q.w * tz + (q.x * ty - q.y * tx),
+  };
+}
+
+// Cubic-Hermite tessellation of one segment, appending [x,y,...] (excluding the
+// start point, which the caller already emitted). Straight segments collapse to
+// a single point; curved ones subdivide in proportion to how much the tangents
+// bend away from the chord, so straight runs stay cheap.
+function tessellateSegment(p0: P2, m0: P2, p1: P2, m1: P2, out: number[]): void {
+  const chordX = p1.x - p0.x, chordY = p1.y - p0.y;
+  const chordLen = Math.hypot(chordX, chordY) || 1;
+  const angleToChord = (mx: number, my: number) => {
+    const ml = Math.hypot(mx, my) || 1;
+    const dot = (mx * chordX + my * chordY) / (ml * chordLen);
+    return Math.acos(Math.max(-1, Math.min(1, dot)));
+  };
+  const maxAngle = Math.max(angleToChord(m0.x, m0.y), angleToChord(m1.x, m1.y));
+  let steps = 1;
+  if (maxAngle > 0.09) steps = Math.min(12, Math.max(2, Math.round(maxAngle / 0.1)));
+
+  for (let s = 1; s <= steps; s++) {
+    const t = s / steps, t2 = t * t, t3 = t2 * t;
+    const h00 = 2 * t3 - 3 * t2 + 1;
+    const h10 = t3 - 2 * t2 + t;
+    const h01 = -2 * t3 + 3 * t2;
+    const h11 = t3 - t2;
+    out.push(
+      Math.round(h00 * p0.x + h10 * m0.x + h01 * p1.x + h11 * m1.x),
+      Math.round(h00 * p0.y + h10 * m0.y + h01 * p1.y + h11 * m1.y),
+    );
+  }
+}
+
+// Build a flat world-space polyline [x0,y0,x1,y1,...] from an object's
+// mSplineData, or null if it has none. Spline points & tangents are local to the
+// object transform, so each is rotated by the transform's quaternion and offset
+// by its translation.
+function worldPolylineFromSpline(obj: any): number[] | null {
+  const values = obj?.properties?.mSplineData?.values;
+  if (!Array.isArray(values) || values.length < 2) return null;
+  const t = obj.transform ?? {};
+  const tr = t.translation ?? { x: 0, y: 0, z: 0 };
+  const q = t.rotation ?? { x: 0, y: 0, z: 0, w: 1 };
+
+  const loc: P2[] = [], leave: P2[] = [], arrive: P2[] = [];
+  for (const v of values) {
+    const p = v?.properties;
+    const l = p?.Location?.value ?? { x: 0, y: 0, z: 0 };
+    const lv = p?.LeaveTangent?.value ?? { x: 0, y: 0, z: 0 };
+    const av = p?.ArriveTangent?.value ?? { x: 0, y: 0, z: 0 };
+    const wl = rotateByQuat(q, l);
+    loc.push({ x: tr.x + wl.x, y: tr.y + wl.y });
+    const rlv = rotateByQuat(q, lv), rav = rotateByQuat(q, av);
+    leave.push({ x: rlv.x, y: rlv.y });
+    arrive.push({ x: rav.x, y: rav.y });
+  }
+
+  const out: number[] = [Math.round(loc[0].x), Math.round(loc[0].y)];
+  for (let i = 0; i < loc.length - 1; i++) {
+    tessellateSegment(loc[i], leave[i], loc[i + 1], arrive[i + 1], out);
+  }
+  return out;
+}
+
 export interface BuildingFootprintType {
   buildClass: string;
   label: string;
   category: string;
   color: string;
   footprint: Footprint;
+}
+
+// One drawable group of spline paths of a single build class (so they share a
+// colour, label and icon). Each entry of `lines` is a flat [x0,y0,x1,y1,...]
+// world-space polyline (game cm) — one whole belt/pipe/rail object.
+export interface BuildingSplineGroup {
+  buildClass: string;
+  label: string;
+  category: string;
+  color: string;
+  lines: number[][];
 }
 
 export interface BuildingFootprints {
@@ -94,6 +185,8 @@ export interface BuildingFootprints {
   x: number[];
   y: number[];
   yaw: number[];
+  // Belts/pipes/hypertubes/rails drawn as lines rather than point footprints.
+  splines: BuildingSplineGroup[];
 }
 
 export function extractBuildingFootprints(save: SatisfactorySave): BuildingFootprints {
@@ -104,8 +197,24 @@ export function extractBuildingFootprints(save: SatisfactorySave): BuildingFootp
   const x: number[] = [];
   const y: number[] = [];
   const yaw: number[] = [];
+  const splineGroups = new Map<string, BuildingSplineGroup>();
 
-  forEachBuildingInstance(save, (typePath, instance) => {
+  forEachBuildingInstance(save, (typePath, instance, obj) => {
+    // Belts/pipes/hypertubes/rails: draw the actual spline path as a line and
+    // skip the point-footprint rectangle entirely.
+    const polyline = obj ? worldPolylineFromSpline(obj) : null;
+    if (polyline) {
+      const buildClass = buildClassFromTypePath(typePath);
+      let group = splineGroups.get(buildClass);
+      if (!group) {
+        const category = categoryFromTypePath(typePath);
+        group = { buildClass, label: buildingLabel(typePath), category, color: categoryColor(category), lines: [] };
+        splineGroups.set(buildClass, group);
+      }
+      group.lines.push(polyline);
+      return;
+    }
+
     const buildClass = buildClassFromTypePath(typePath);
 
     let idx = typeIndexByClass.get(buildClass);
@@ -128,5 +237,5 @@ export function extractBuildingFootprints(save: SatisfactorySave): BuildingFootp
     yaw.push(yawFromQuat(instance.rot));
   });
 
-  return { types, typeIndex, x, y, yaw };
+  return { types, typeIndex, x, y, yaw, splines: Array.from(splineGroups.values()) };
 }

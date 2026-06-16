@@ -340,13 +340,15 @@ function transformFromRaw(t: any): BuildingInstance {
  */
 export function forEachBuildingInstance(
   save: SatisfactorySave,
-  cb: (typePath: string, instance: BuildingInstance) => void,
+  cb: (typePath: string, instance: BuildingInstance, obj?: any) => void,
 ): void {
   for (const level of Object.values(save.levels)) {
     for (const obj of level.objects) {
       // ── Normal (heavy) buildables ───────────────────────────────────────
+      // Pass the raw object too, so callers can reach properties like
+      // mSplineData (belts/pipes) — lightweight buildables have no such data.
       if (obj.typePath.startsWith(BUILDABLE_PREFIX) && isSaveEntity(obj)) {
-        cb(obj.typePath, transformFromRaw((obj as any).transform));
+        cb(obj.typePath, transformFromRaw((obj as any).transform), obj);
         continue;
       }
 

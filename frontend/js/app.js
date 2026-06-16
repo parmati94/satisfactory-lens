@@ -11,6 +11,7 @@ let _mapPinLayer = null;
 let _buildingOverlay = null;
 let _buildingOverlayContainer = null;
 let _buildingHitList = [];
+let _splineHitList = [];
 let _lastHoverMs = 0;
 // Hover outline is drawn as a PIXI.Graphics inside the building overlay (the
 // overlayPane, z-index 400) rather than a separate HTML canvas, so the Leaflet
@@ -88,6 +89,18 @@ function gameToLatLng(gameX, gameY) {
 function latLngToGame(latlng) {
   const p = _leafletMap.project(latlng, MAP_ZOOM_RATIO);
   return { x: p.x * MAP_X_MAX / MAP_BG_SIZE + MAP_W, y: p.y * MAP_Y_MAX / MAP_BG_SIZE + MAP_N };
+}
+
+// Squared distance from point (px,py) to segment (ax,ay)-(bx,by). Squared form
+// avoids a sqrt per segment in the hover hit-test hot loop.
+function distSqToSegment(px, py, ax, ay, bx, by) {
+  const dx = bx - ax, dy = by - ay;
+  const len2 = dx * dx + dy * dy;
+  let t = len2 ? ((px - ax) * dx + (py - ay) * dy) / len2 : 0;
+  t = t < 0 ? 0 : t > 1 ? 1 : t;
+  const cx = ax + t * dx, cy = ay + t * dy;
+  const ex = px - cx, ey = py - cy;
+  return ex * ex + ey * ey;
 }
 
 document.addEventListener('alpine:init', () => {
@@ -866,15 +879,21 @@ document.addEventListener('alpine:init', () => {
       }
       _highlightGfx?.clear();
       _buildingHitList = [];
-      if (!data?.x?.length) return;
+      _splineHitList = [];
+      if (!data) return;
 
-      // Game-cm → overlay layer-point is a fixed linear scale (CRS.Simple and our
-      // gameToLatLng mapping are both pure linear transforms) — compute it once
-      // from two reference points rather than reprojecting per building.
+      // Game-cm → overlay layer-point is a fixed linear (affine) transform
+      // (CRS.Simple and our gameToLatLng mapping are both pure linear) — derive
+      // it once from three reference points rather than reprojecting per point.
       const p0 = utils.latLngToLayerPoint(gameToLatLng(0, 0));
       const p1 = utils.latLngToLayerPoint(gameToLatLng(1000, 0));
+      const p2 = utils.latLngToLayerPoint(gameToLatLng(0, 1000));
       const unitsPerCm = Math.hypot(p1.x - p0.x, p1.y - p0.y) / 1000;
       _unitsPerCm = unitsPerCm;
+      // Basis vectors (layer-points per game-cm) for the affine game→layer map.
+      const exX = (p1.x - p0.x) / 1000, exY = (p1.y - p0.y) / 1000;
+      const eyX = (p2.x - p0.x) / 1000, eyY = (p2.y - p0.y) / 1000;
+      const gameToLayer = (gx, gy) => ({ x: p0.x + gx * exX + gy * eyX, y: p0.y + gx * exY + gy * eyY });
 
       for (const type of data.types) {
         if (type._tint === undefined) type._tint = parseInt(type.color.slice(1), 16);
@@ -953,40 +972,110 @@ document.addEventListener('alpine:init', () => {
           });
         }
       }
+
+      // ── Spline buildables (belts/pipes/hypertubes/rails) drawn as lines ────
+      // One PIXI.Graphics per category so each gets its own colour; line width is
+      // in game-cm (× unitsPerCm) so it scales with zoom like the footprints.
+      const SPLINE_WIDTH_CM = {
+        'Conveyors & Belts': 110,
+        'Pipes & Fluids':     75,
+        'Hypertubes':        150,
+        'Trains & Rails':    180,
+      };
+      for (const group of (data.splines ?? [])) {
+        if (!group.lines?.length) continue;
+        const widthCm = SPLINE_WIDTH_CM[group.category] ?? 90;
+        const widthLayer = Math.max(widthCm * unitsPerCm, 1);
+        const tint = parseInt(group.color.slice(1), 16);
+        // Game-cm hover tolerance: half the visual width plus a little padding so
+        // thin belts/pipes are still easy to land on.
+        const halfW = widthCm / 2 + 70;
+        const g = new PIXI.Graphics();
+        g.lineStyle({
+          width: widthLayer,
+          color: tint,
+          alpha: 0.9,
+          cap: PIXI.LINE_CAP.ROUND,
+          join: PIXI.LINE_JOIN.ROUND,
+        });
+        for (const line of group.lines) {
+          if (line.length < 4) continue;
+          const layerPts = new Array(line.length);
+          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+          const start = gameToLayer(line[0], line[1]);
+          layerPts[0] = start.x; layerPts[1] = start.y;
+          g.moveTo(start.x, start.y);
+          for (let k = 2; k < line.length; k += 2) {
+            const pt = gameToLayer(line[k], line[k + 1]);
+            layerPts[k] = pt.x; layerPts[k + 1] = pt.y;
+            g.lineTo(pt.x, pt.y);
+          }
+          for (let k = 0; k < line.length; k += 2) {
+            if (line[k]     < minX) minX = line[k];
+            if (line[k]     > maxX) maxX = line[k];
+            if (line[k + 1] < minY) minY = line[k + 1];
+            if (line[k + 1] > maxY) maxY = line[k + 1];
+          }
+          _splineHitList.push({
+            gamePts: line, layerPts, halfW, halfW2: halfW * halfW, widthLayer, tint,
+            minX, minY, maxX, maxY,
+            label: group.label, buildClass: group.buildClass, category: group.category,
+          });
+        }
+        container.addChild(g);
+      }
     },
 
     _handleBuildingHover(latlng) {
       const mapEl = document.getElementById('leaflet-map');
-      if (!this.mapFilters.buildings || !_buildingHitList.length) {
+      if (!this.mapFilters.buildings || (!_buildingHitList.length && !_splineHitList.length)) {
         this._endBuildingHover(mapEl);
         return;
       }
 
       const { x: mx, y: my } = latLngToGame(latlng);
 
+      // 1) Machine rectangles take priority (belts/pipes usually run between them).
       for (const b of _buildingHitList) {
         const dx = mx - b.cx, dy = my - b.cy;
         if (Math.abs(dx) > b.aabbHW || Math.abs(dy) > b.aabbHH) continue;
         const lx = dx * b.cos + dy * b.sin;
         const ly = -dx * b.sin + dy * b.cos;
         if (Math.abs(lx) <= b.hw && Math.abs(ly) <= b.hh) {
-          // Tooltip tracks the cursor for a smooth follow; only refill its content
-          // and redraw the outline when the hovered building actually changes.
-          _buildingTooltip.setLatLng(latlng);
-          if (b !== _hoveredBuilding) {
-            _hoveredBuilding = b;
-            _buildingTooltip.setContent(this._buildingTooltipHtml(b));
-            if (!_leafletMap.hasLayer(_buildingTooltip)) {
-              _leafletMap.openTooltip(_buildingTooltip);
-            }
-            this._drawBuildingHighlight(b);
-          }
-          mapEl.style.cursor = 'pointer';
+          this._showHover(latlng, b, mapEl, false);
           return;
         }
       }
 
+      // 2) Spline paths (belts/pipes/hypertubes/rails) — whole object as one unit.
+      for (const s of _splineHitList) {
+        if (mx < s.minX - s.halfW || mx > s.maxX + s.halfW ||
+            my < s.minY - s.halfW || my > s.maxY + s.halfW) continue;
+        const pts = s.gamePts;
+        for (let k = 0; k < pts.length - 2; k += 2) {
+          if (distSqToSegment(mx, my, pts[k], pts[k + 1], pts[k + 2], pts[k + 3]) <= s.halfW2) {
+            this._showHover(latlng, s, mapEl, true);
+            return;
+          }
+        }
+      }
+
       this._endBuildingHover(mapEl);
+    },
+
+    // Show the tooltip + outline for a hovered entry (rectangle building or
+    // spline). Tooltip follows the cursor every frame; content + outline only
+    // refresh when the hovered entry actually changes.
+    _showHover(latlng, entry, mapEl, isSpline) {
+      _buildingTooltip.setLatLng(latlng);
+      if (entry !== _hoveredBuilding) {
+        _hoveredBuilding = entry;
+        _buildingTooltip.setContent(this._buildingTooltipHtml(entry));
+        if (!_leafletMap.hasLayer(_buildingTooltip)) _leafletMap.openTooltip(_buildingTooltip);
+        if (isSpline) this._drawSplineHighlight(entry);
+        else this._drawBuildingHighlight(entry);
+      }
+      mapEl.style.cursor = 'pointer';
     },
 
     // Tear down all hover affordances (tooltip, outline, cursor) in one place.
@@ -1019,14 +1108,39 @@ document.addEventListener('alpine:init', () => {
       const scale = _buildingOverlayContainer.scale.x || 1;
       const w = b.hw * 2 * _unitsPerCm;
       const h = b.hh * 2 * _unitsPerCm;
+      // Match the sprite's rounded corners (~20% of the shorter side) so the
+      // outline doesn't look squared-off against the rounded fill.
+      const r = 0.2 * Math.min(w, h);
       g.clear();
       g.position.set(b.lpx, b.lpy);
       g.rotation = b.yaw;
       // Soft outer glow, then the crisp 2px line.
       g.lineStyle((6 / scale), 0xf97316, 0.25);
-      g.drawRect(-w / 2, -h / 2, w, h);
+      g.drawRoundedRect(-w / 2, -h / 2, w, h, r);
       g.lineStyle((2 / scale), 0xf97316, 1);
-      g.drawRect(-w / 2, -h / 2, w, h);
+      g.drawRoundedRect(-w / 2, -h / 2, w, h, r);
+      _buildingOverlay?.redraw();
+    },
+
+    // Highlights a whole spline path with a thin dark casing and the belt's own
+    // colour restored on top — so it reads as an outlined line rather than a
+    // solid orange fill that hides the belt.
+    _drawSplineHighlight(s) {
+      const g = _highlightGfx;
+      if (!g || !_buildingOverlayContainer) return;
+      const scale = _buildingOverlayContainer.scale.x || 1;
+      const pts = s.layerPts;
+      const border = 3 / scale; // ~3px casing regardless of zoom
+      g.clear();
+      g.position.set(0, 0);
+      g.rotation = 0;
+      const stroke = (width, color, alpha) => {
+        g.lineStyle({ width, color, alpha, cap: 'round', join: 'round' });
+        g.moveTo(pts[0], pts[1]);
+        for (let k = 2; k < pts.length; k += 2) g.lineTo(pts[k], pts[k + 1]);
+      };
+      stroke(s.widthLayer + border * 2, 0x000000, 0.9); // dark outline
+      stroke(s.widthLayer, s.tint, 1);                  // belt colour on top
       _buildingOverlay?.redraw();
     },
 
