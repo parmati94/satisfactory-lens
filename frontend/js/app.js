@@ -650,12 +650,15 @@ document.addEventListener('alpine:init', () => {
         this.clearSvCaches();
         await this.loadSaveActiveSubTab();
         if (this.sfStatus.connected) { try { await this.loadSaves(); } catch { /* ignore */ } }
-        this.actionResult = {
-          ok: true,
-          message: mode === 'load'
-            ? `Saved & loaded "${result.saveName}" to the server.`
-            : `Saved a copy: "${result.saveName}".`,
-        };
+        let message;
+        if (result.target === 'mount') {
+          message = `Saved "${result.saveName}.sav" to the mounted save directory.`;
+        } else if (mode === 'load') {
+          message = `Uploaded "${result.saveName}" — the server is now loading it (players reconnect once it's ready).`;
+        } else {
+          message = `Saved a copy "${result.saveName}" to the server's save list — not loaded (your current save is unchanged).`;
+        }
+        this.actionResult = { ok: true, message };
       } catch (e) {
         this.persistModal.error = e.message;
       } finally {
