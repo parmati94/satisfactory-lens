@@ -24,7 +24,7 @@ services:
       # Save viewer — uncomment the volume above and set SAVE_MOUNT_PATH to enable
       - SAVE_MOUNT_PATH=/app/saves
       - SAVE_FILE_NAME=        # specific .sav filename; blank = auto-select newest
-      - ENABLE_AUTO_WATCH=true # watch mounted file for changes and auto-reload
+      - ENABLE_AUTO_WATCH=true # watch the save dir and flag (not auto-reload) when a newer save appears
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
