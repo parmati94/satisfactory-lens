@@ -23,8 +23,8 @@
       <div>
         <h2 class="text-base font-semibold text-gray-200">Save Files</h2>
         <p class="text-xs text-gray-500 mt-0.5" x-show="saves?.sessions?.length">
-          <span x-text="saves.sessions.length"></span> world<span x-show="saves.sessions.length !== 1">s</span>
-          · <span x-text="saves.sessions.reduce((n, s) => n + (s.saveHeaders?.length ?? 0), 0)"></span> saves total
+          <span x-text="saves?.sessions?.length ?? 0"></span> world<span x-show="(saves?.sessions?.length ?? 0) !== 1">s</span>
+          · <span x-text="saves?.sessions?.reduce((n, s) => n + (s.saveHeaders?.length ?? 0), 0) ?? 0"></span> saves total
         </p>
       </div>
       <div class="flex items-center gap-2">
@@ -72,10 +72,10 @@
           x-data="{
             get isActive() { return session.sessionName.toLowerCase() === $store?.app?.serverState?.serverGameState?.activeSessionName?.toLowerCase()
               || session.sessionName === serverState?.serverGameState?.activeSessionName; },
-            get open() { return this.isActive || saves.sessions.length === 1; },
+            get open() { return this.isActive || (saves?.sessions?.length ?? 0) === 1; },
             set open(v) { this._open = v; },
             _open: null,
-            get expanded() { return this._open !== null ? this._open : (this.isActive || saves.sessions.length === 1); },
+            get expanded() { return this._open !== null ? this._open : (this.isActive || (saves?.sessions?.length ?? 0) === 1); },
             toggle() { this._open = !this.expanded; },
             isAutosave(saveName) { return /_autosave_\d+$/i.test(saveName); },
             manualSaves(headers) { return headers.filter(s => !this.isAutosave(s.saveName)); },
