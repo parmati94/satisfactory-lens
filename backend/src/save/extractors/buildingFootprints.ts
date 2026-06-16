@@ -36,32 +36,35 @@ function getFootprintMap(): Record<string, Footprint> {
   return _footprintMap!;
 }
 
-// Muted for structural/passive categories (foundations, walls, etc. — the
-// "factory floor" rather than the machines on it), vivid for everything active.
+// Muted "cartographic" palette: harmonized saturation/lightness so colours read
+// as a designed set rather than clashing primaries on the dark map. Active
+// categories keep moderate saturation to stay legible; structural/passive ones
+// (foundations, walls, roofs — the "factory floor") recede into dark slate so the
+// machines on top of them are what the eye lands on.
 const CATEGORY_COLOR: Record<string, string> = {
-  'Production':             '#f97316', // orange
-  'Miners & Extractors':    '#a16207', // brown
-  'Power':                  '#facc15', // yellow
-  'Power Infrastructure':   '#eab308', // dim yellow
-  'Conveyors & Belts':      '#94a3b8', // slate
-  'Pipes & Fluids':         '#3b82f6', // blue
-  'Hypertubes':             '#06b6d4', // cyan
-  'Trains & Rails':         '#a855f7', // purple
-  'Logistics':              '#ec4899', // pink
-  'Storage':                '#22c55e', // green
-  'Foundations':            '#52525b', // muted gray
-  'Walls':                  '#71717a', // muted gray
-  'Ramps':                  '#71717a',
-  'Stairs & Walkways':      '#71717a',
-  'Roofs & Pillars':        '#71717a',
-  'Lights':                 '#fde68a', // pale yellow
-  'Signs & Displays':       '#ef4444', // red
-  'Workbenches & Research': '#14b8a6', // teal
-  'HUB & Milestones':       '#fb923c', // bright orange
-  'Decor':                  '#86efac', // pale green
-  'Miscellaneous':          '#9ca3af', // gray
+  'Production':             '#cf7a4d', // terracotta
+  'Miners & Extractors':    '#a8795a', // clay brown
+  'Power':                  '#d9b24a', // muted gold
+  'Power Infrastructure':   '#bd9a3f', // dim gold
+  'Conveyors & Belts':      '#8a98a8', // slate
+  'Pipes & Fluids':         '#5d86b0', // dusty blue
+  'Hypertubes':             '#5aa6ad', // muted teal
+  'Trains & Rails':         '#9a83c0', // dusty purple
+  'Logistics':              '#c47fa3', // dusty rose
+  'Storage':                '#6fae84', // sage green
+  'Foundations':            '#3a3f4b', // dark slate (recede)
+  'Walls':                  '#474d5a', // slate (recede)
+  'Ramps':                  '#474d5a',
+  'Stairs & Walkways':      '#474d5a',
+  'Roofs & Pillars':        '#474d5a',
+  'Lights':                 '#ddca8e', // warm sand
+  'Signs & Displays':       '#c66b5e', // muted red
+  'Workbenches & Research': '#4fa593', // teal
+  'HUB & Milestones':       '#d98a4a', // amber landmark
+  'Decor':                  '#92bd96', // pale sage
+  'Miscellaneous':          '#828b99', // gray
 };
-const DEFAULT_COLOR = '#9ca3af';
+const DEFAULT_COLOR = '#828b99';
 
 function categoryColor(category: string): string {
   return CATEGORY_COLOR[category] ?? DEFAULT_COLOR;
