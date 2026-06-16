@@ -90,7 +90,9 @@ document.addEventListener('alpine:init', () => {
     downloadError: null,
     sseConnected: false,
     _eventSource: null,
-    tooltip: { visible: false, x: 0, y: 0, name: '', count: null },
+    newerSaveAvailable: false,
+    newerSaveName: null,
+    tooltip: { visible: false, x: 0, y: 0, name: '', count: null, placement: 'top' },
     buildingsSearch: '',
     // ─────────────────────────────────────────────────────────────────────
 
@@ -304,14 +306,35 @@ document.addEventListener('alpine:init', () => {
       return Array.from({ length: totalSlots }, (_, i) => bySlot[i] ?? null);
     },
 
-    showItemTooltip(event, item) {
-      if (!item) return;
+    showTooltip(event, name, count = null, placement = 'top') {
       const rect = event.currentTarget.getBoundingClientRect();
-      this.tooltip = { visible: true, x: rect.left + rect.width / 2, y: rect.top, name: item.displayName, count: item.count };
+      // 'top' (default) anchors above the element — good for elements with room above it.
+      // 'bottom' anchors below — use for elements near the top of the viewport (e.g. header).
+      const y = placement === 'bottom' ? rect.bottom : rect.top;
+      const x = rect.left + rect.width / 2;
+      this.tooltip = { visible: true, x, y, name, count, placement };
+      // Tooltip is centered on `x`, but long text can overflow the viewport on narrow
+      // windows — nudge it back on-screen once we know its actual rendered width.
+      this.$nextTick(() => {
+        const el = this.$refs.tooltipBox;
+        if (!el) return;
+        const margin = 8;
+        const halfWidth = el.offsetWidth / 2;
+        const vw = window.innerWidth;
+        let clampedX = x;
+        if (clampedX - halfWidth < margin) clampedX = halfWidth + margin;
+        if (clampedX + halfWidth > vw - margin) clampedX = vw - margin - halfWidth;
+        this.tooltip.x = clampedX;
+      });
     },
 
-    hideItemTooltip() {
+    hideTooltip() {
       this.tooltip.visible = false;
+    },
+
+    showItemTooltip(event, item) {
+      if (!item) return;
+      this.showTooltip(event, item.displayName, item.count);
     },
 
     filteredBuildingCategories() {
@@ -323,9 +346,17 @@ document.addEventListener('alpine:init', () => {
         .filter(cat => cat.types.length > 0);
     },
 
+    reloadTooltipText() {
+      if (this.newerSaveAvailable && this.newerSaveName) return `Newer save available: ${this.newerSaveName}`;
+      if (this.saveStatus?.sourceName) return `Reload ${this.saveStatus.sourceName}`;
+      return 'Reload save file';
+    },
+
     async loadSaveStatus() {
       try {
         this.saveStatus = await api.save.status();
+        this.newerSaveAvailable = !!this.saveStatus?.newerSaveAvailable;
+        this.newerSaveName = this.saveStatus?.newerSaveName ?? null;
       } catch { this.saveStatus = null; }
     },
 
@@ -333,6 +364,8 @@ document.addEventListener('alpine:init', () => {
       this.saveDataLoading = true;
       try {
         this.saveStatus = await api.save.reload();
+        this.newerSaveAvailable = !!this.saveStatus?.newerSaveAvailable;
+        this.newerSaveName = this.saveStatus?.newerSaveName ?? null;
         this.svPlayers = null;
         this.svBuildings = null;
         this.svResources = null;
@@ -350,6 +383,8 @@ document.addEventListener('alpine:init', () => {
       this.headerReloading = true;
       try {
         this.saveStatus = await api.save.reload();
+        this.newerSaveAvailable = !!this.saveStatus?.newerSaveAvailable;
+        this.newerSaveName = this.saveStatus?.newerSaveName ?? null;
         this.svPlayers = null;
         this.svBuildings = null;
         this.svResources = null;
@@ -377,6 +412,8 @@ document.addEventListener('alpine:init', () => {
       this.downloadError = null;
       try {
         this.saveStatus = await api.save.download(this.downloadSaveName.trim());
+        this.newerSaveAvailable = !!this.saveStatus?.newerSaveAvailable;
+        this.newerSaveName = this.saveStatus?.newerSaveName ?? null;
         this.showDownloadModal = false;
         this.downloadSaveName = '';
         this.svPlayers = null;
@@ -493,6 +530,17 @@ document.addEventListener('alpine:init', () => {
       es.onmessage = async (e) => {
         try {
           const msg = JSON.parse(e.data);
+          if (msg.event === 'connected') {
+            this.newerSaveAvailable = !!msg.newerSaveAvailable;
+            this.newerSaveName = msg.newerSaveName ?? null;
+          }
+          if (msg.event === 'save_available') {
+            // The mounted save dir changed (e.g. a new autosave landed). We never
+            // auto-reload — that could clobber in-progress edits — just flag it so
+            // the user can reload manually when ready.
+            this.newerSaveAvailable = !!msg.newerSaveAvailable;
+            this.newerSaveName = msg.newerSaveName ?? null;
+          }
           if (msg.event === 'save_reloaded') {
             await this.loadSaveStatus();
             this.svPlayers = null;
