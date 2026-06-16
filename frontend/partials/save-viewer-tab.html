@@ -214,18 +214,20 @@
                 </div>
               </div>
 
-              <!-- Main inventory -->
+              <!-- Main inventory (click a slot to edit) -->
               <div class="px-4 pt-3 pb-1">
-                <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Inventory</p>
+                <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Inventory <span class="text-gray-600 normal-case tracking-normal">· click a slot to edit</span></p>
                 <div x-show="!player.inventorySlots" class="text-xs text-gray-600 pb-2">Empty</div>
                 <div class="flex flex-wrap gap-1.5 pb-3">
-                  <template x-for="(slot, idx) in slotGrid(player.inventory, player.inventorySlots)" :key="idx">
-                    <div x-data="{ imgErr: false }" class="relative cursor-pointer"
+                  <template x-for="(slot, idx) in effectiveSlotGrid(player.inventoryName, player.inventory, player.inventorySlots)" :key="idx">
+                    <button type="button" x-data="{ imgErr: false }" class="relative"
+                         @click="openSlotEditor(player.inventoryName, idx, player.playerName + ' · Inventory', slotGrid(player.inventory, player.inventorySlots)[idx])"
                          @mouseenter="slot && showItemTooltip($event, slot)"
                          @mouseleave="hideTooltip()">
                       <template x-if="slot !== null">
                         <div>
-                          <div class="w-12 h-12 bg-gray-700/50 rounded-lg border border-gray-600/40 overflow-hidden flex items-center justify-center hover:border-gray-500/60 transition-colors">
+                          <div class="w-12 h-12 bg-gray-700/50 rounded-lg border overflow-hidden flex items-center justify-center transition-colors"
+                               :class="isSlotEdited(player.inventoryName, idx) ? 'border-orange-500/70' : 'border-gray-600/40 hover:border-gray-500/60'">
                             <img x-show="!imgErr"
                                  :src="'/assets/items/' + slot.itemClass + '.png'"
                                  :alt="slot.displayName"
@@ -239,9 +241,10 @@
                         </div>
                       </template>
                       <template x-if="slot === null">
-                        <div class="w-12 h-12 rounded-lg border border-dashed border-gray-700/50 hover:border-gray-600/60 transition-colors"></div>
+                        <div class="w-12 h-12 rounded-lg border border-dashed transition-colors"
+                             :class="isSlotEdited(player.inventoryName, idx) ? 'border-orange-500/60' : 'border-gray-700/50 hover:border-gray-600/60'"></div>
                       </template>
-                    </div>
+                    </button>
                   </template>
                 </div>
               </div>
@@ -347,14 +350,17 @@
                  x-transition:enter-end="opacity-100 translate-y-0"
                  class="border-t border-gray-700/60 px-4 py-3">
               <div x-show="!c.totalSlots" class="text-xs text-gray-600">Nothing stored here.</div>
+              <p x-show="c.totalSlots" class="text-[10px] text-gray-600 mb-2">Click a slot to edit</p>
               <div class="flex flex-wrap gap-1.5">
-                <template x-for="(slot, idx) in slotGrid(c.contents, c.totalSlots)" :key="idx">
-                  <div x-data="{ imgErr: false }" class="relative cursor-pointer"
+                <template x-for="(slot, idx) in effectiveSlotGrid(c.inventoryName, c.contents, c.totalSlots)" :key="idx">
+                  <button type="button" x-data="{ imgErr: false }" class="relative"
+                       @click="openSlotEditor(c.inventoryName, idx, c.label, slotGrid(c.contents, c.totalSlots)[idx])"
                        @mouseenter="slot && showItemTooltip($event, slot)"
                        @mouseleave="hideTooltip()">
                     <template x-if="slot !== null">
                       <div>
-                        <div class="w-12 h-12 bg-gray-700/50 rounded-lg border border-gray-600/40 overflow-hidden flex items-center justify-center hover:border-gray-500/60 transition-colors">
+                        <div class="w-12 h-12 bg-gray-700/50 rounded-lg border overflow-hidden flex items-center justify-center transition-colors"
+                             :class="isSlotEdited(c.inventoryName, idx) ? 'border-orange-500/70' : 'border-gray-600/40 hover:border-gray-500/60'">
                           <img x-show="!imgErr"
                                :src="'/assets/items/' + slot.itemClass + '.png'"
                                :alt="slot.displayName"
@@ -368,9 +374,10 @@
                       </div>
                     </template>
                     <template x-if="slot === null">
-                      <div class="w-12 h-12 rounded-lg border border-dashed border-gray-700/50 hover:border-gray-600/60 transition-colors"></div>
+                      <div class="w-12 h-12 rounded-lg border border-dashed transition-colors"
+                           :class="isSlotEdited(c.inventoryName, idx) ? 'border-orange-500/60' : 'border-gray-700/50 hover:border-gray-600/60'"></div>
                     </template>
-                  </div>
+                  </button>
                 </template>
               </div>
             </div>
@@ -626,15 +633,13 @@
 
       <!-- Change summary -->
       <div class="mb-4 max-h-40 overflow-y-auto rounded-lg border border-gray-700/50 bg-gray-800/40 divide-y divide-gray-700/40">
-        <template x-for="e in editList()" :key="e.target">
+        <template x-for="[key, e] in Object.entries(editBuffer)" :key="key">
           <div class="flex items-center gap-2 px-3 py-2 text-xs">
             <svg class="text-orange-300/80 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:12px;height:12px">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <span class="text-gray-300 font-medium" x-text="e.label"></span>
-            <span class="text-gray-500">teleport →</span>
-            <span class="font-mono text-gray-400"
-                  x-text="`${(e.value.x/100).toFixed(0)}, ${(e.value.y/100).toFixed(0)}, ${(e.value.z/100).toFixed(0)} m`"></span>
+            <span class="text-gray-300 font-medium truncate" x-text="e.label"></span>
+            <span class="text-gray-400 truncate" x-text="e.changeText"></span>
           </div>
         </template>
       </div>
@@ -701,14 +706,8 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
             <div class="flex-1 min-w-0">
-              <p class="text-gray-300 font-medium truncate">
-                <span x-text="e.label"></span> <span class="text-gray-500 font-normal">· teleport</span>
-              </p>
-              <p class="font-mono text-[11px] mt-0.5">
-                <span class="text-gray-600" x-text="_baselinePosition(e.target) ? `${(_baselinePosition(e.target).x/100).toFixed(0)}, ${(_baselinePosition(e.target).y/100).toFixed(0)}, ${(_baselinePosition(e.target).z/100).toFixed(0)}` : '—'"></span>
-                <span class="text-gray-500"> → </span>
-                <span class="text-orange-300" x-text="`${(e.value.x/100).toFixed(0)}, ${(e.value.y/100).toFixed(0)}, ${(e.value.z/100).toFixed(0)} m`"></span>
-              </p>
+              <p class="text-gray-300 font-medium truncate" x-text="e.label"></p>
+              <p class="text-[11px] mt-0.5 text-orange-300 truncate" x-text="e.changeText"></p>
             </div>
             <button @click="revertEdit(key)" title="Revert this change"
               class="flex-shrink-0 text-[11px] font-medium px-2 py-1 rounded-md text-gray-400 hover:text-red-300 hover:bg-red-900/20 transition-colors">
@@ -725,6 +724,68 @@
           class="text-sm font-semibold px-3 py-2 rounded-lg bg-orange-500 hover:bg-orange-400 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
           Save changes…
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Inventory slot editor modal ───────────────────────────────────────── -->
+  <div x-show="slotEditor.show" x-transition.opacity
+       class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+       @click.self="slotEditor.show = false" style="display:none">
+    <div class="w-full max-w-lg mx-4 bg-gray-900 border border-gray-700/60 rounded-2xl shadow-2xl p-5 flex flex-col" style="max-height:85vh">
+      <div class="flex items-center justify-between mb-1">
+        <h3 class="text-base font-semibold text-gray-100">Edit slot <span x-text="slotEditor.slot"></span></h3>
+        <button @click="slotEditor.show = false" class="text-gray-500 hover:text-gray-300 transition-colors">✕</button>
+      </div>
+      <p class="text-xs text-gray-500 mb-4" x-text="slotEditor.contextLabel"></p>
+
+      <!-- Selected item + quantity -->
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-14 h-14 rounded-lg border border-gray-700 bg-gray-800/60 flex items-center justify-center flex-shrink-0 overflow-hidden">
+          <template x-if="slotEditor.selClass">
+            <img :src="'/assets/items/' + slotEditor.selClass + '.png'" class="w-full h-full object-contain" @error="$el.style.display='none'">
+          </template>
+          <template x-if="!slotEditor.selClass">
+            <span class="text-[10px] text-gray-600">Empty</span>
+          </template>
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-medium text-gray-200 truncate"
+             x-text="slotEditor.selClass ? (itemCatalog?.[slotEditor.selClass]?.name ?? slotEditor.selClass) : 'No item selected'"></p>
+          <div class="flex items-center gap-2 mt-1.5">
+            <label class="text-xs text-gray-500">Qty</label>
+            <input type="number" min="0" x-model.number="slotEditor.count"
+                   class="w-24 px-2 py-1 rounded-md bg-gray-800 border border-gray-700 text-sm text-gray-200 focus:outline-none focus:border-orange-500/60">
+            <button x-show="slotEditor.selClass" @click="slotEditor.count = (itemCatalog?.[slotEditor.selClass]?.stack ?? 1)"
+                    class="text-[11px] text-gray-500 hover:text-orange-300 transition-colors">
+              max <span x-text="'(' + (itemCatalog?.[slotEditor.selClass]?.stack ?? '') + ')'"></span>
+            </button>
+            <button @click="slotEditor.selClass = ''; slotEditor.count = 0"
+                    class="text-[11px] text-gray-500 hover:text-red-300 transition-colors ml-auto">Clear slot</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item picker -->
+      <input type="text" x-model="slotEditor.search" placeholder="Search items…"
+             class="w-full px-3 py-2 mb-2 rounded-lg bg-gray-800 border border-gray-700 text-sm text-gray-200 focus:outline-none focus:border-orange-500/60">
+      <div class="flex-1 overflow-y-auto rounded-lg border border-gray-700/50 bg-gray-800/30 p-2 grid grid-cols-6 gap-1.5" style="min-height:140px">
+        <template x-for="it in slotEditorItems()" :key="it.cls">
+          <button @click="selectSlotItem(it.cls)" :title="it.name"
+            class="aspect-square rounded-md border flex items-center justify-center p-1 transition-all"
+            :class="slotEditor.selClass === it.cls ? 'bg-orange-500/20 border-orange-500/60' : 'bg-gray-800/40 border-gray-700/40 hover:border-gray-600'">
+            <img :src="'/assets/items/' + it.cls + '.png'" class="w-full h-full object-contain" @error="$el.style.visibility='hidden'">
+          </button>
+        </template>
+        <p x-show="slotEditorItems().length === 0" class="col-span-6 text-center text-xs text-gray-600 py-6">No matching items</p>
+      </div>
+      <p class="text-[10px] text-gray-600 mt-1">Showing up to 120 results — refine with search.</p>
+
+      <div class="flex items-center justify-end gap-2 mt-4">
+        <button @click="slotEditor.show = false"
+          class="text-sm px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 transition-colors">Cancel</button>
+        <button @click="applySlotEdit()"
+          class="text-sm font-semibold px-3 py-2 rounded-lg bg-orange-500 hover:bg-orange-400 text-white transition-colors">Apply</button>
       </div>
     </div>
   </div>

@@ -183,9 +183,11 @@ document.addEventListener('alpine:init', () => {
     tooltip: { visible: false, x: 0, y: 0, name: '', count: null, placement: 'top' },
     buildingsSearch: '',
     // ── Save editing (override dictionary over the loaded baseline) ────────
-    editBuffer: {},   // key → { kind, target, value, label }
+    editBuffer: {},   // key → { kind, target, value, label, changeText }
     persistModal: { show: false, saveName: '', overwrite: false, loading: false, error: null },
     changesModal: { show: false },
+    itemCatalog: null, // { itemClass: { path, name, stack } } for the slot picker
+    slotEditor: { show: false, invName: '', slot: 0, contextLabel: '', search: '', selClass: '', count: 1, baseline: null },
     get editCount() { return Object.keys(this.editBuffer).length; },
     // ─────────────────────────────────────────────────────────────────────
 
@@ -589,12 +591,98 @@ document.addEventListener('alpine:init', () => {
       } else {
         this.editBuffer = {
           ...this.editBuffer,
-          [key]: { kind: 'SetPlayerPosition', target: player.instanceName, value: next, label: player.playerName },
+          [key]: {
+            kind: 'SetPlayerPosition', target: player.instanceName, value: next,
+            label: player.playerName,
+            changeText: `Teleport → ${(next.x / 100).toFixed(0)}, ${(next.y / 100).toFixed(0)}, ${(next.z / 100).toFixed(0)} m`,
+          },
         };
       }
     },
 
     editList() { return Object.values(this.editBuffer); },
+
+    // ── Inventory slot editing ────────────────────────────────────────────
+    async loadItemCatalog() {
+      if (this.itemCatalog) return;
+      try { this.itemCatalog = await api.items(); } catch { this.itemCatalog = {}; }
+    },
+
+    _slotKey(invName, slot) { return `inv:${invName}:slot:${slot}`; },
+
+    isSlotEdited(invName, slot) { return !!this.editBuffer[this._slotKey(invName, slot)]; },
+
+    // Effective slot for display: override if present (or null if cleared), else baseline.
+    effectiveSlot(invName, slot, baselineSlot) {
+      const e = this.editBuffer[this._slotKey(invName, slot)];
+      if (!e) return baselineSlot;
+      const v = e.value;
+      if (!v.item || !(v.count > 0)) return null; // cleared
+      const cls = v.item.split('.').pop().replace(/_C$/, '');
+      return { slotIndex: slot, itemClass: cls, displayName: this.itemCatalog?.[cls]?.name ?? cls, count: v.count };
+    },
+
+    // baseline slot grid overlaid with staged overrides.
+    effectiveSlotGrid(invName, contents, totalSlots) {
+      return this.slotGrid(contents, totalSlots).map((slot, idx) => this.effectiveSlot(invName, idx, slot));
+    },
+
+    async openSlotEditor(invName, slot, contextLabel, baselineSlot) {
+      await this.loadItemCatalog();
+      const eff = this.effectiveSlot(invName, slot, baselineSlot);
+      this.slotEditor = {
+        show: true, invName, slot, contextLabel,
+        search: '',
+        selClass: eff?.itemClass ?? '',
+        count: eff?.count ?? 1,
+        baseline: baselineSlot ?? null,
+      };
+    },
+
+    // Filtered, capped item list for the picker grid.
+    slotEditorItems() {
+      if (!this.itemCatalog) return [];
+      const q = this.slotEditor.search.toLowerCase().trim();
+      const all = Object.entries(this.itemCatalog).map(([cls, v]) => ({ cls, name: v.name }));
+      const filtered = q ? all.filter(i => i.name.toLowerCase().includes(q) || i.cls.toLowerCase().includes(q)) : all;
+      filtered.sort((a, b) => a.name.localeCompare(b.name));
+      return filtered.slice(0, 120);
+    },
+
+    selectSlotItem(cls) {
+      this.slotEditor.selClass = cls;
+      if (!(Number(this.slotEditor.count) > 0)) this.slotEditor.count = 1;
+    },
+
+    applySlotEdit() {
+      const { invName, slot, selClass, count, baseline, contextLabel } = this.slotEditor;
+      const key = this._slotKey(invName, slot);
+      const cls = selClass;
+      const item = cls ? (this.itemCatalog?.[cls]?.path ?? null) : null;
+      const cnt = Math.max(0, Math.round(Number(count) || 0));
+      const clearing = !item || cnt <= 0;
+
+      // Net-zero vs baseline → drop the override.
+      const baseClass = baseline?.itemClass ?? null;
+      const baseCount = baseline?.count ?? 0;
+      const sameAsBaseline = clearing ? baseClass === null : (cls === baseClass && cnt === baseCount);
+      if (sameAsBaseline) {
+        const { [key]: _, ...rest } = this.editBuffer;
+        this.editBuffer = rest;
+      } else {
+        const name = clearing ? null : (this.itemCatalog?.[cls]?.name ?? cls);
+        this.editBuffer = {
+          ...this.editBuffer,
+          [key]: {
+            kind: 'SetInventorySlot', target: invName,
+            value: { slot, item: clearing ? null : item, count: clearing ? 0 : cnt },
+            label: contextLabel,
+            changeText: clearing ? `Slot ${slot}: cleared` : `Slot ${slot}: ${name} ×${cnt}`,
+          },
+        };
+      }
+      this.slotEditor.show = false;
+    },
 
     // Loaded save name without extension — the basis for save-name defaults.
     originalSaveBase() { return (this.saveStatus?.sourceName ?? 'save').replace(/\.sav$/i, ''); },
