@@ -18,6 +18,7 @@ import { extractResourceNodes } from '../save/extractors/resourceNodes';
 import { extractMapPins } from '../save/extractors/mapPins';
 import { extractStorage } from '../save/extractors/storage';
 import { extractBuildingFootprints } from '../save/extractors/buildingFootprints';
+import { persistEdits, type SaveEdit } from '../save/editor';
 
 const router = Router();
 
@@ -180,6 +181,33 @@ router.get('/api/save/building-footprints', (_req, res) => {
   try {
     res.json(extractBuildingFootprints(save));
   } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+// POST /api/save/edit/persist — apply staged edits to the in-memory save and
+// persist (upload to the server, optionally loading live; or write to the mount).
+router.post('/api/save/edit/persist', async (req, res) => {
+  const { saveName, mode, edits } = req.body as {
+    saveName?: string;
+    mode?: string;
+    edits?: SaveEdit[];
+  };
+  if (!saveName) { res.status(400).json({ error: 'saveName is required' }); return; }
+  if (mode !== 'copy' && mode !== 'load') { res.status(400).json({ error: 'mode must be "copy" or "load"' }); return; }
+  if (!Array.isArray(edits) || edits.length === 0) { res.status(400).json({ error: 'No edits provided' }); return; }
+
+  try {
+    const result = await persistEdits({ saveName, mode, edits });
+    // If we loaded the edited save live, the server's active save changed.
+    if (mode === 'load') {
+      broadcastSaveReloaded({ sourceName: getSaveStatus().sourceName });
+    }
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    // Discard the partial in-memory mutation so the viewer doesn't show
+    // un-persisted edits (edits are idempotent, so a later retry is safe too).
+    try { await loadLatest(); } catch { /* ignore */ }
     res.status(500).json({ error: (err as Error).message });
   }
 });

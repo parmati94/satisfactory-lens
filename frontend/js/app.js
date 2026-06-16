@@ -181,6 +181,11 @@ document.addEventListener('alpine:init', () => {
     newerSaveName: null,
     tooltip: { visible: false, x: 0, y: 0, name: '', count: null, placement: 'top' },
     buildingsSearch: '',
+    // ── Save editing (override dictionary over the loaded baseline) ────────
+    editBuffer: {},   // key → { kind, target, value, label }
+    persistModal: { show: false, saveName: '', overwrite: false, loading: false, error: null },
+    changesModal: { show: false },
+    get editCount() { return Object.keys(this.editBuffer).length; },
     // ─────────────────────────────────────────────────────────────────────
 
     async init() {
@@ -551,6 +556,109 @@ document.addEventListener('alpine:init', () => {
         this.saveDataError = e.message;
       } finally {
         this.saveDataLoading = false;
+      }
+    },
+
+    // ── Save editing ──────────────────────────────────────────────────────
+    // Override dictionary keyed by stable target; values are absolute (set-
+    // semantics). Display = baseline (svPlayers) overlaid with overrides. Undo =
+    // remove the key; net-zero (back to baseline) auto-removes. No reverse replay.
+
+    _posKey(player) { return `player:${player.instanceName}:position`; },
+
+    // Effective position = override if present, else the loaded baseline (cm).
+    effectivePosition(player) {
+      return this.editBuffer[this._posKey(player)]?.value ?? player.position;
+    },
+
+    isPositionEdited(player) {
+      return !!this.editBuffer[this._posKey(player)];
+    },
+
+    // Set one axis from a meters input; stores cm (game units) to match the save.
+    setPlayerPositionAxis(player, axis, meters) {
+      const cm = Math.round((parseFloat(meters) || 0) * 100);
+      const next = { ...this.effectivePosition(player), [axis]: cm };
+      const base = player.position;
+      const key = this._posKey(player);
+      if (next.x === base.x && next.y === base.y && next.z === base.z) {
+        // Net-zero vs baseline → drop the override entirely.
+        const { [key]: _, ...rest } = this.editBuffer;
+        this.editBuffer = rest;
+      } else {
+        this.editBuffer = {
+          ...this.editBuffer,
+          [key]: { kind: 'SetPlayerPosition', target: player.instanceName, value: next, label: player.playerName },
+        };
+      }
+    },
+
+    editList() { return Object.values(this.editBuffer); },
+
+    // Loaded save name without extension — the basis for save-name defaults.
+    originalSaveBase() { return (this.saveStatus?.sourceName ?? 'save').replace(/\.sav$/i, ''); },
+
+    // Baseline (pre-edit) position for a staged edit's target player, in cm.
+    _baselinePosition(target) {
+      return this.svPlayers?.find(p => p.instanceName === target)?.position ?? null;
+    },
+
+    // Revert a single staged change — just drop its key (no inverse needed).
+    revertEdit(key) {
+      const { [key]: _, ...rest } = this.editBuffer;
+      this.editBuffer = rest;
+    },
+
+    async cancelEdits() {
+      if (this.editCount === 0) return;
+      const ok = await this.showConfirm({
+        title: 'Discard changes',
+        message: `Discard <strong class="text-white">${this.editCount}</strong> unsaved change${this.editCount !== 1 ? 's' : ''}?`,
+        confirmLabel: 'Discard',
+        danger: true,
+      });
+      if (!ok) return;
+      this.editBuffer = {};
+    },
+
+    openPersistModal() {
+      if (this.editCount === 0) return;
+      this.changesModal.show = false;
+      this.persistModal = { show: true, saveName: `${this.originalSaveBase()}_edited`, overwrite: false, loading: false, error: null };
+    },
+
+    // Toggle the save name between the original (overwrite) and `<name>_edited`.
+    setOverwrite(on) {
+      this.persistModal.overwrite = on;
+      this.persistModal.saveName = on ? this.originalSaveBase() : `${this.originalSaveBase()}_edited`;
+    },
+
+    async persistEdits(mode) {
+      if (this.editCount === 0) return;
+      const saveName = this.persistModal.saveName.trim();
+      if (!saveName) { this.persistModal.error = 'Save name is required.'; return; }
+      this.persistModal.loading = true;
+      this.persistModal.error = null;
+      try {
+        const edits = this.editList().map(e => ({ kind: e.kind, target: e.target, value: e.value }));
+        const result = await api.save.persistEdits({ saveName, mode, edits });
+        this.editBuffer = {};
+        this.persistModal.show = false;
+        // The in-memory save now reflects the edits — resync status + viewer data.
+        await this.loadSaveStatus();
+        this.clearSvCaches();
+        await this.loadSaveActiveSubTab();
+        if (this.sfStatus.connected) { try { await this.loadSaves(); } catch { /* ignore */ } }
+        this.actionResult = {
+          ok: true,
+          message: mode === 'load'
+            ? `Saved & loaded "${result.saveName}" to the server.`
+            : `Saved a copy: "${result.saveName}".`,
+        };
+      } catch (e) {
+        this.persistModal.error = e.message;
+      } finally {
+        this.persistModal.loading = false;
       }
     },
 
