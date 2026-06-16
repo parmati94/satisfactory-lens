@@ -45,8 +45,9 @@
         x-show="sfStatus.connected && saveStatus?.loaded"
         @click="headerReloadSave()"
         :disabled="headerReloading"
-        title="Reload save file"
-        class="p-1.5 hover:bg-gray-700/60 rounded-lg transition-colors group disabled:opacity-50"
+        @mouseenter="showTooltip($event, reloadTooltipText(), null, 'bottom')"
+        @mouseleave="hideTooltip()"
+        class="relative p-1.5 hover:bg-gray-700/60 rounded-lg transition-colors group disabled:opacity-50"
       >
         <svg
           class="w-5 h-5 text-gray-400 group-hover:text-gray-200 transition-colors"
@@ -55,6 +56,10 @@
         >
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
+        <span
+          x-show="newerSaveAvailable"
+          class="absolute top-1 right-1 w-2 h-2 rounded-full bg-amber-400 ring-2 ring-gray-900 animate-pulse"
+        ></span>
       </button>
       <button
         @click="showSettings = true; if (sfStatus.connected && !serverOptions) loadSettings()"

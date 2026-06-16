@@ -10,10 +10,7 @@ import { settingsRouter } from './routes/settings';
 import { autoConnect } from './api/sfClient';
 import { saveViewerRouter } from './routes/saveViewer';
 import { mapTilesRouter } from './routes/mapTiles';
-import { loadFromDisk } from './save/loader';
-import { startWatching, broadcastSaveReloaded } from './save/watcher';
-import { getSaveStatus } from './save/saveState';
-import { findMountedSave } from './save/loader';
+import { autoLoadSaveIfNeeded } from './save/autoLoad';
 
 const app = express();
 
@@ -39,24 +36,17 @@ app.get('/api/health', (_req, res) => {
 // Auto-connect to SF server if SF_HOST is pre-configured via env
 if (config.sfHost) {
   autoConnect()
-    .then(() => console.log(`[sf] Connected to ${config.sfHost}:${config.sfPort}`))
+    .then(async () => {
+      console.log(`[sf] Connected to ${config.sfHost}:${config.sfPort}`);
+      // Covers the no-mount case: nothing to load at listen-time below since the
+      // connection hadn't resolved yet, so this is our first chance to auto-load via the API.
+      await autoLoadSaveIfNeeded();
+    })
     .catch((err: Error) => console.error('[sf] Auto-connect failed:', err.message));
 }
 
 app.listen(config.port, '127.0.0.1', async () => {
   console.log(`Satisfactory Lens backend listening on port ${config.port}`);
-
-  // Auto-load save from mounted path on startup
-  if (findMountedSave()) {
-    await loadFromDisk();
-    const status = getSaveStatus();
-    if (status.loaded) {
-      console.log(`[save] Auto-loaded "${status.sourceName}"`);
-      if (config.enableAutoWatch) {
-        startWatching();
-      }
-    } else {
-      console.warn(`[save] Auto-load failed: ${status.error}`);
-    }
-  }
+  // Auto-load from the mount if present; otherwise via the API if already connected.
+  await autoLoadSaveIfNeeded();
 });

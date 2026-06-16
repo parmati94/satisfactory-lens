@@ -27,6 +27,7 @@ services:
       - SF_PORT=7777
       - SF_PASSWORD=
       - SF_ALLOW_SELF_SIGNED=true
+      - SAVE_POLL_INTERVAL_SECONDS=30
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]

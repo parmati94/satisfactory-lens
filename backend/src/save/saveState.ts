@@ -7,6 +7,8 @@ interface SaveState {
   save: SatisfactorySave | null;
   loadedAt: Date | null;
   sourceName: string | null;
+  sourceMtimeMs: number | null;
+  sourceSaveDateTime: string | null;
   error: string | null;
   loading: boolean;
 }
@@ -15,6 +17,8 @@ const state: SaveState = {
   save: null,
   loadedAt: null,
   sourceName: null,
+  sourceMtimeMs: null,
+  sourceSaveDateTime: null,
   error: null,
   loading: false,
 };
@@ -33,10 +37,27 @@ export function getSaveStatus() {
   };
 }
 
-export function setSave(save: SatisfactorySave, sourceName: string): void {
+/** mtime (ms) of the on-disk file backing the currently loaded save, if loaded from the mount. */
+export function getLoadedSourceMtimeMs(): number | null {
+  return state.sourceMtimeMs;
+}
+
+/** saveDateTime of the currently loaded save, if loaded via the SF API's resolved-latest path. */
+export function getLoadedSourceSaveDateTime(): string | null {
+  return state.sourceSaveDateTime;
+}
+
+export function setSave(
+  save: SatisfactorySave,
+  sourceName: string,
+  sourceMtimeMs: number | null = null,
+  sourceSaveDateTime: string | null = null,
+): void {
   state.save = save;
   state.loadedAt = new Date();
   state.sourceName = sourceName;
+  state.sourceMtimeMs = sourceMtimeMs;
+  state.sourceSaveDateTime = sourceSaveDateTime;
   state.error = null;
   state.loading = false;
 }
@@ -55,6 +76,8 @@ export function clearSave(): void {
   state.save = null;
   state.loadedAt = null;
   state.sourceName = null;
+  state.sourceMtimeMs = null;
+  state.sourceSaveDateTime = null;
   state.error = null;
   state.loading = false;
 }

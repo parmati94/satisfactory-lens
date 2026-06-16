@@ -16,8 +16,10 @@ export const config = {
   sfPassword: process.env.SF_PASSWORD ?? '',
   sfAllowSelfSigned: (process.env.SF_ALLOW_SELF_SIGNED ?? 'true').toLowerCase() !== 'false',
 
-  // Save file (Phase 2)
-  saveMountPath: process.env.SAVE_MOUNT_PATH ?? '/app/saves',
-  saveFileName: process.env.SAVE_FILE_NAME ?? '',  // specific .sav filename; blank = auto-select newest
+  // Save file (Phase 2). Fixed mount point inside the container — point a docker-compose
+  // volume at it if you want local-disk access; not env-configurable, nothing to set here.
+  saveMountPath: '/app/saves',
   enableAutoWatch: (process.env.ENABLE_AUTO_WATCH ?? 'true').toLowerCase() === 'true',
+  // How often (seconds) to poll the SF API for a newer save when no mount is present
+  savePollIntervalSeconds: parseInt(process.env.SAVE_POLL_INTERVAL_SECONDS ?? '30', 10),
 } as const;
