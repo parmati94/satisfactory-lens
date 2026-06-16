@@ -144,6 +144,11 @@ document.addEventListener('alpine:init', () => {
       purityNormal:  true,
       purityPure:    true,
     },
+    // Collapsible filter-panel sections.
+    mapSections: { overlays: true, nodes: true },
+    // Per-resource-type node toggles, keyed by resourceClass (e.g. Desc_OreIron).
+    // Populated dynamically from the loaded nodes (only types present in the save).
+    nodeTypeFilters: {},
     svMapPins: null,
     svBuildingFootprints: null,
     // ─────────────────────────────────────────────────────────────────────
@@ -611,6 +616,7 @@ document.addEventListener('alpine:init', () => {
       try {
         this.svResourceNodes = await api.save.resourceNodes();
       } catch { this.svResourceNodes = []; }
+      this._ensureNodeTypeFilters();
     },
 
     connectSaveSSE() {
@@ -693,6 +699,10 @@ document.addEventListener('alpine:init', () => {
       this.updateMapMarkers();
     },
 
+    toggleMapSection(key) {
+      this.mapSections[key] = !this.mapSections[key];
+    },
+
     toggleAllNodes() {
       const anyOn = this.mapFilters.purityImpure || this.mapFilters.purityNormal || this.mapFilters.purityPure;
       this.mapFilters.purityImpure = !anyOn;
@@ -703,6 +713,44 @@ document.addEventListener('alpine:init', () => {
 
     nodeCountByPurity(purity) {
       return this.svResourceNodes?.filter(n => n.purity === purity && n.icon).length ?? 0;
+    },
+
+    // Distinct resource types present in the save (only those with an icon),
+    // most-common first — drives the type-filter chip grid.
+    nodeTypeList() {
+      if (!this.svResourceNodes) return [];
+      const m = new Map();
+      for (const n of this.svResourceNodes) {
+        if (!n.icon) continue;
+        let e = m.get(n.resourceClass);
+        if (!e) { e = { key: n.resourceClass, label: n.label, icon: n.icon, count: 0 }; m.set(n.resourceClass, e); }
+        e.count++;
+      }
+      return Array.from(m.values()).sort((a, b) => b.count - a.count);
+    },
+
+    // Default any newly-seen resource type to on (reactive add via Alpine proxy).
+    _ensureNodeTypeFilters() {
+      for (const t of this.nodeTypeList()) {
+        if (this.nodeTypeFilters[t.key] === undefined) this.nodeTypeFilters[t.key] = true;
+      }
+    },
+
+    nodeTypesAllOn() {
+      const list = this.nodeTypeList();
+      return list.length > 0 && list.every(t => this.nodeTypeFilters[t.key]);
+    },
+
+    toggleNodeType(key) {
+      this.nodeTypeFilters[key] = !this.nodeTypeFilters[key];
+      this.updateMapMarkers();
+    },
+
+    toggleAllNodeTypes() {
+      const list = this.nodeTypeList();
+      const anyOn = list.some(t => this.nodeTypeFilters[t.key]);
+      for (const t of list) this.nodeTypeFilters[t.key] = !anyOn;
+      this.updateMapMarkers();
     },
 
     mapResetView() {
@@ -1324,6 +1372,8 @@ document.addEventListener('alpine:init', () => {
       for (const node of this.svResourceNodes) {
         if (!node.icon) continue;
         if (!this.mapFilters[`purity${node.purity}`]) continue;
+        // Type axis: a node shows only if its resource type is also enabled.
+        if (this.nodeTypeFilters[node.resourceClass] === false) continue;
         const latlng = gameToLatLng(node.position.x, node.position.y);
         const ring = PURITY_RING[node.purity] ?? PURITY_RING.Unknown;
 
