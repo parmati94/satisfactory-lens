@@ -188,6 +188,10 @@ document.addEventListener('alpine:init', () => {
     changesModal: { show: false },
     itemCatalog: null, // { itemClass: { path, name, stack } } for the slot picker
     slotEditor: { show: false, invName: '', slot: 0, contextLabel: '', search: '', selClass: '', count: 1, baseline: null },
+    svSchematics: null,       // baseline purchased set (path → true)
+    schematicCatalog: null,   // full progression catalog (array)
+    schematicsSearch: '',
+    progOpen: {},             // expanded category sections in the Progression tab
     get editCount() { return Object.keys(this.editBuffer).length; },
     // ─────────────────────────────────────────────────────────────────────
 
@@ -481,6 +485,7 @@ document.addEventListener('alpine:init', () => {
       this.svResourceNodes = null;
       this.svMapPins = null;
       this.svBuildingFootprints = null;
+      this.svSchematics = null;
     },
 
     // Single reload action (header button) — reloads whatever the active save source
@@ -547,6 +552,22 @@ document.addEventListener('alpine:init', () => {
       if (this.saveTab === 'buildings' && !this.svBuildings) await this.loadSvBuildings();
       if (this.saveTab === 'resources' && !this.svResources) await this.loadSvResources();
       if (this.saveTab === 'power'     && !this.svPower)     await this.loadSvPower();
+      if (this.saveTab === 'progression' && !this.svSchematics) await this.loadSvSchematics();
+    },
+
+    async loadSvSchematics() {
+      this.saveDataLoading = true;
+      this.saveDataError = null;
+      try {
+        if (!this.schematicCatalog) this.schematicCatalog = await api.schematicCatalog();
+        const data = await api.save.schematics();
+        // plain object map (path → true) — Alpine proxies don't play well with Set
+        this.svSchematics = Object.fromEntries((data.purchased ?? []).map((p) => [p, true]));
+      } catch (e) {
+        this.saveDataError = e.message;
+      } finally {
+        this.saveDataLoading = false;
+      }
     },
 
     async loadSvPlayers() {
@@ -703,6 +724,60 @@ document.addEventListener('alpine:init', () => {
       }
       this.slotEditor.show = false;
     },
+
+    // ── Schematic (progression) editing ───────────────────────────────────
+    _schKey(path) { return `sch:${path}`; },
+    effectivePurchased(path) {
+      const e = this.editBuffer[this._schKey(path)];
+      return e ? e.value.purchased : !!this.svSchematics?.[path];
+    },
+    isSchematicEdited(path) { return !!this.editBuffer[this._schKey(path)]; },
+    setSchematicPurchased(sch, purchased) {
+      const path = sch.path, key = this._schKey(path);
+      const baseline = !!this.svSchematics?.[path];
+      if (purchased === baseline) {
+        const { [key]: _, ...rest } = this.editBuffer;
+        this.editBuffer = rest;
+      } else {
+        this.editBuffer = {
+          ...this.editBuffer,
+          [key]: {
+            kind: 'SetSchematicPurchased', target: path, value: { purchased },
+            label: sch.name, changeText: purchased ? 'Unlock' : 'Re-lock',
+          },
+        };
+      }
+    },
+    toggleSchematic(sch) { this.setSchematicPurchased(sch, !this.effectivePurchased(sch.path)); },
+
+    // Progression grouping: catalog → [{ category, count, groups:[{group, items}] }], search-filtered.
+    groupedSchematics() {
+      if (!this.schematicCatalog) return [];
+      const q = this.schematicsSearch.toLowerCase().trim();
+      const cats = new Map();
+      for (const s of this.schematicCatalog) {
+        if (q && !s.name.toLowerCase().includes(q)) continue;
+        let c = cats.get(s.category);
+        if (!c) { c = { category: s.category, groups: new Map() }; cats.set(s.category, c); }
+        let g = c.groups.get(s.group);
+        if (!g) { g = { group: s.group, items: [] }; c.groups.set(s.group, g); }
+        g.items.push(s);
+      }
+      return Array.from(cats.values()).map(c => ({
+        category: c.category,
+        count: Array.from(c.groups.values()).reduce((n, g) => n + g.items.length, 0),
+        groups: Array.from(c.groups.values()),
+      }));
+    },
+    schematicCategoryUnlocked(cat) {
+      let on = 0, total = 0;
+      for (const g of cat.groups) for (const s of g.items) { total++; if (this.effectivePurchased(s.path)) on++; }
+      return { on, total };
+    },
+    setGroupPurchased(items, purchased) {
+      for (const s of items) this.setSchematicPurchased(s, purchased);
+    },
+    toggleProg(cat) { this.progOpen[cat] = !this.progOpen[cat]; },
 
     // Loaded save name without extension — the basis for save-name defaults.
     originalSaveBase() { return (this.saveStatus?.sourceName ?? 'save').replace(/\.sav$/i, ''); },

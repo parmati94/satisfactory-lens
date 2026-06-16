@@ -20,6 +20,7 @@ import { extractStorage } from '../save/extractors/storage';
 import { extractBuildingFootprints } from '../save/extractors/buildingFootprints';
 import { persistEdits, type SaveEdit } from '../save/editor';
 import { groundZ } from '../save/worldHeight';
+import { extractPurchasedSchematics } from '../save/extractors/schematics';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -214,6 +215,30 @@ router.get('/api/items', (_req, res) => {
     }
   }
   res.json(_itemCatalog);
+});
+
+// GET /api/schematics — static schematic catalog (progression tree) for the editor.
+let _schematicCatalog: unknown = null;
+router.get('/api/schematics', (_req, res) => {
+  if (!_schematicCatalog) {
+    try {
+      _schematicCatalog = JSON.parse(readFileSync(join(__dirname, '../../data/schematics.json'), 'utf-8'));
+    } catch {
+      _schematicCatalog = [];
+    }
+  }
+  res.json(_schematicCatalog);
+});
+
+// GET /api/save/schematics — which schematics are purchased (unlocked) in the loaded save.
+router.get('/api/save/schematics', (_req, res) => {
+  const save = getSave();
+  if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
+  try {
+    res.json({ purchased: extractPurchasedSchematics(save) });
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
 });
 
 // POST /api/save/edit/persist — apply staged edits to the in-memory save and

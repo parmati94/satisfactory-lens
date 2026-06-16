@@ -109,6 +109,11 @@
         class="px-4 py-2.5 text-sm font-medium transition-colors -mb-px"
       >Players</button>
       <button
+        @click="switchSaveTab('progression')"
+        :class="saveTab === 'progression' ? 'border-b-2 border-orange-400 text-orange-400' : 'text-gray-500 hover:text-gray-300'"
+        class="px-4 py-2.5 text-sm font-medium transition-colors -mb-px"
+      >Progression</button>
+      <button
         @click="switchSaveTab('storage')"
         :class="saveTab === 'storage' ? 'border-b-2 border-orange-400 text-orange-400' : 'text-gray-500 hover:text-gray-300'"
         class="px-4 py-2.5 text-sm font-medium transition-colors -mb-px"
@@ -627,6 +632,84 @@
       <div x-show="svPower && !svPower?.circuits?.length" class="text-center py-10 text-gray-500 text-sm">
         No power circuit data found in save.
       </div>
+    </div>
+
+    <!-- ── Progression (MAM / milestones / unlocks) ─────────────────────── -->
+    <div x-show="saveTab === 'progression' && !saveDataLoading">
+      <input type="text" x-model="schematicsSearch" placeholder="Search schematics…"
+             class="w-full px-3 py-2 mb-4 rounded-lg bg-gray-800 border border-gray-700 text-sm text-gray-200 focus:outline-none focus:border-orange-500/60 transition-colors">
+
+      <template x-for="cat in groupedSchematics()" :key="cat.category">
+        <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden mb-3">
+          <button @click="toggleProg(cat.category)"
+            class="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-700/40 transition-colors text-left">
+            <span class="font-semibold text-white text-sm" x-text="cat.category"></span>
+            <span class="flex items-center gap-3">
+              <span class="text-xs text-gray-500 tabular-nums"
+                    x-text="schematicCategoryUnlocked(cat).on + ' / ' + cat.count + ' unlocked'"></span>
+              <svg class="w-4 h-4 text-gray-500 transition-transform" :class="(progOpen[cat.category] || schematicsSearch) ? 'rotate-180' : ''"
+                   fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </span>
+          </button>
+
+          <template x-if="progOpen[cat.category] || !!schematicsSearch">
+            <div class="border-t border-gray-700/60 px-4 py-3 space-y-4">
+              <template x-for="g in cat.groups" :key="g.group">
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500" x-text="g.group || cat.category"></p>
+                    <div class="flex gap-3 text-[10px] font-medium">
+                      <button @click="setGroupPurchased(g.items, true)" class="text-gray-500 hover:text-green-300 transition-colors">unlock all</button>
+                      <button @click="setGroupPurchased(g.items, false)" class="text-gray-500 hover:text-red-300 transition-colors">lock all</button>
+                    </div>
+                  </div>
+                  <div class="grid gap-2" style="grid-template-columns:repeat(auto-fill,minmax(86px,1fr))">
+                    <template x-for="s in g.items" :key="s.class">
+                      <button @click="toggleSchematic(s)" :title="(effectivePurchased(s.path) ? 'Unlocked — ' : 'Locked — ') + s.name"
+                        class="relative flex flex-col items-center gap-1 p-2 rounded-lg border transition-all"
+                        :class="effectivePurchased(s.path) ? 'bg-gray-800/70 border-gray-600/60' : 'bg-gray-900/40 border-gray-800 hover:border-gray-700'">
+                        <!-- icon -->
+                        <div class="w-11 h-11 flex items-center justify-center">
+                          <template x-if="s.icon">
+                            <img :src="'/assets/items/' + s.icon + '.png'"
+                                 class="w-full h-full object-contain transition-all"
+                                 :class="effectivePurchased(s.path) ? '' : 'grayscale opacity-40'"
+                                 @error="$el.style.visibility='hidden'">
+                          </template>
+                          <template x-if="!s.icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-7 h-7"
+                                 :class="effectivePurchased(s.path) ? 'text-gray-400' : 'text-gray-700'">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 7h10v10H7z"/>
+                            </svg>
+                          </template>
+                        </div>
+                        <!-- name -->
+                        <span class="text-[10px] leading-tight text-center line-clamp-2"
+                              :class="effectivePurchased(s.path) ? 'text-gray-200' : 'text-gray-500'"
+                              x-text="s.name"></span>
+                        <!-- state badge -->
+                        <span x-show="effectivePurchased(s.path)"
+                              class="absolute top-1 right-1 w-4 h-4 rounded-full bg-green-500 flex items-center justify-center shadow">
+                          <svg viewBox="0 0 24 24" class="w-2.5 h-2.5" fill="none" stroke="white" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        </span>
+                        <svg x-show="!effectivePurchased(s.path)" class="absolute top-1 right-1 w-3 h-3 text-gray-600" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 1a5 5 0 00-5 5v3H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-1V6a5 5 0 00-5-5zm3 8H9V6a3 3 0 016 0v3z"/>
+                        </svg>
+                        <!-- staged-edit ring -->
+                        <span x-show="isSchematicEdited(s.path)" class="absolute inset-0 rounded-lg ring-2 ring-orange-400/70 pointer-events-none"></span>
+                      </button>
+                    </template>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+      </template>
+
+      <div x-show="schematicCatalog && groupedSchematics().length === 0" class="text-center py-10 text-gray-500 text-sm">No schematics match your search.</div>
     </div>
 
   </div>
