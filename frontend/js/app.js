@@ -20,6 +20,26 @@ let _lastHoverMs = 0;
 let _highlightGfx = null;
 let _pixiUtils = null;
 let _unitsPerCm = 1;
+// One shared rounded-rect white texture, generated once, used (tinted) for every
+// non-foundation building sprite. Same draw cost/batching as PIXI.Texture.WHITE —
+// the corner radius simply scales with each footprint when the texture stretches.
+let _roundedTex = null;
+function getRoundedTexture(PIXI, renderer) {
+  if (_roundedTex) return _roundedTex;
+  const S = 96;
+  const R = Math.round(S * 0.2); // 20% corner radius reads as soft, not blobby
+  const g = new PIXI.Graphics();
+  g.beginFill(0xffffff);
+  g.drawRoundedRect(0, 0, S, S, R);
+  g.endFill();
+  // resolution >1 supersamples so the corners stay smooth when scaled down.
+  _roundedTex = renderer.generateTexture(g, {
+    resolution: 3,
+    scaleMode: PIXI.SCALE_MODES.LINEAR,
+  });
+  g.destroy(true);
+  return _roundedTex;
+}
 
 // Building hover tooltip — a Leaflet tooltip rather than our own DOM/Alpine
 // element. Leaflet renders it into the tooltipPane, which it always stacks above
@@ -883,6 +903,11 @@ document.addEventListener('alpine:init', () => {
         'Foundations', 'Walls', 'Ramps', 'Stairs & Walkways', 'Roofs & Pillars',
       ]);
 
+      // Foundations stay sharp-cornered so floor tiles abut cleanly; everything
+      // else gets the softened rounded texture.
+      const SHARP_CATEGORIES = new Set(['Foundations']);
+      const roundedTex = getRoundedTexture(PIXI, utils.getRenderer());
+
       for (let i = 0; i < data.x.length; i++) {
         const type = data.types[data.typeIndex[i]];
         const yaw = data.yaw[i];
@@ -897,7 +922,7 @@ document.addEventListener('alpine:init', () => {
         const fillW = Math.max(fp.width - GAP_CM * 2, fp.width * MIN_RATIO);
         const fillH = Math.max(fp.depth - GAP_CM * 2, fp.depth * MIN_RATIO);
 
-        const sprite = new PIXI.Sprite(PIXI.Texture.WHITE);
+        const sprite = new PIXI.Sprite(SHARP_CATEGORIES.has(type.category) ? PIXI.Texture.WHITE : roundedTex);
         sprite.anchor.set(0.5);
         sprite.tint = type._tint;
         sprite.alpha = 0.88;
