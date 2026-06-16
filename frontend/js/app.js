@@ -602,6 +602,26 @@ document.addEventListener('alpine:init', () => {
 
     editList() { return Object.values(this.editBuffer); },
 
+    // Snap the player's Z to terrain height (+3 m safety) at its current X/Y, so
+    // teleporting drops you just above the ground instead of into a mountain/midair.
+    async snapToGround(player) {
+      const pos = this.effectivePosition(player);
+      try {
+        const r = await api.groundHeight(pos.x, pos.y);
+        if (r && typeof r.z === 'number') {
+          let z = r.z + 300; // terrain + 3 m safety
+          // The heightmap is terrain-only (no player-built foundations). If you're
+          // snapping in place and already standing higher than terrain (e.g. on a
+          // foundation), keep that footing rather than dropping you into it.
+          const inPlace = pos.x === player.position.x && pos.y === player.position.y;
+          if (inPlace && player.position.z > z) z = player.position.z;
+          this.setPlayerPositionAxis(player, 'z', z / 100);
+        }
+      } catch {
+        this.actionResult = { ok: false, message: 'No ground height there (outside the mapped world).' };
+      }
+    },
+
     // ── Inventory slot editing ────────────────────────────────────────────
     async loadItemCatalog() {
       if (this.itemCatalog) return;
