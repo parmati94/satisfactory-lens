@@ -8,6 +8,39 @@ let _leafletMap = null;
 let _playerLayer = null;
 let _resourceNodeLayer = null;
 let _mapPinLayer = null;
+let _buildingOverlay = null;
+let _buildingOverlayContainer = null;
+let _buildingHitList = [];
+let _lastHoverMs = 0;
+// Hover outline is drawn as a PIXI.Graphics inside the building overlay (the
+// overlayPane, z-index 400) rather than a separate HTML canvas, so the Leaflet
+// tooltipPane (650) naturally renders above it and PIXI handles all pan/zoom
+// reprojection. _pixiUtils/_unitsPerCm are captured at sprite-rebuild time so
+// the outline shares the sprites' coordinate space.
+let _highlightGfx = null;
+let _pixiUtils = null;
+let _unitsPerCm = 1;
+
+// Building hover tooltip — a Leaflet tooltip rather than our own DOM/Alpine
+// element. Leaflet renders it into the tooltipPane, which it always stacks above
+// the tile and PIXI overlay panes, so the WebGL canvas can never obscure it
+// (the same reason the marker bindPopup() tooltips are never covered). Anchored
+// to the hovered building's centre, like a marker popup anchors to its marker.
+let _buildingTooltip = null;
+let _hoveredBuilding = null;
+
+// pixi.js + leaflet-pixi-overlay add ~500KB — only users who open the Map tab
+// should pay for the WebGL building-footprint renderer, so load it lazily.
+let _PIXI = null;
+async function loadPixiDeps() {
+  if (_PIXI) return _PIXI;
+  const [PIXI] = await Promise.all([
+    import('pixi.js'),
+    import('leaflet-pixi-overlay'),
+  ]);
+  _PIXI = PIXI;
+  return _PIXI;
+}
 
 // Satisfactory world bounds in Unreal cm
 const MAP_WEST  = -324698.832031;
@@ -25,10 +58,16 @@ const MAP_X_MAX      = Math.abs(MAP_WEST) + Math.abs(MAP_EAST);
 const MAP_Y_MAX      = Math.abs(MAP_NORTH) + Math.abs(MAP_SOUTH);
 const MAP_ZOOM_RATIO = Math.round(Math.log2(MAP_BG_SIZE / TILE_SIZE)); // 6
 
+
 function gameToLatLng(gameX, gameY) {
   const rasterX = (gameX - MAP_W) * MAP_BG_SIZE / MAP_X_MAX;
   const rasterY = (gameY - MAP_N) * MAP_BG_SIZE / MAP_Y_MAX;
   return _leafletMap.unproject([rasterX, rasterY], MAP_ZOOM_RATIO);
+}
+
+function latLngToGame(latlng) {
+  const p = _leafletMap.project(latlng, MAP_ZOOM_RATIO);
+  return { x: p.x * MAP_X_MAX / MAP_BG_SIZE + MAP_W, y: p.y * MAP_Y_MAX / MAP_BG_SIZE + MAP_N };
 }
 
 document.addEventListener('alpine:init', () => {
@@ -62,11 +101,13 @@ document.addEventListener('alpine:init', () => {
       players:       true,
       hub:           true,
       stamps:        true,
+      buildings:     true,
       purityImpure:  true,
       purityNormal:  true,
       purityPure:    true,
     },
     svMapPins: null,
+    svBuildingFootprints: null,
     // ─────────────────────────────────────────────────────────────────────
 
     // ── Phase 2: Save Viewer ──────────────────────────────────────────────
@@ -162,9 +203,10 @@ document.addEventListener('alpine:init', () => {
       if (tab === 'map') {
         if (this.saveStatus?.loaded) {
           await Promise.all([
-            !this.svPlayers       ? this.loadSvPlayers()       : Promise.resolve(),
-            !this.svResourceNodes ? this.loadSvResourceNodes() : Promise.resolve(),
-            !this.svMapPins       ? this.loadSvMapPins()       : Promise.resolve(),
+            !this.svPlayers            ? this.loadSvPlayers()            : Promise.resolve(),
+            !this.svResourceNodes      ? this.loadSvResourceNodes()      : Promise.resolve(),
+            !this.svMapPins            ? this.loadSvMapPins()            : Promise.resolve(),
+            !this.svBuildingFootprints ? this.loadSvBuildingFootprints() : Promise.resolve(),
           ]);
         }
         await this.$nextTick();
@@ -380,6 +422,7 @@ document.addEventListener('alpine:init', () => {
       this.svPower = null;
       this.svResourceNodes = null;
       this.svMapPins = null;
+      this.svBuildingFootprints = null;
     },
 
     // Single reload action (header button) — reloads whatever the active save source
@@ -482,6 +525,14 @@ document.addEventListener('alpine:init', () => {
       }
     },
 
+    async loadSvBuildingFootprints() {
+      try {
+        this.svBuildingFootprints = await api.save.buildingFootprints();
+      } catch (e) {
+        console.warn('building footprints unavailable:', e.message);
+      }
+    },
+
     async loadSvBuildings() {
       this.saveDataLoading = true;
       this.saveDataError = null;
@@ -549,7 +600,9 @@ document.addEventListener('alpine:init', () => {
             this.clearSvCaches();
             if (this.activeTab === 'saveviewer') await this.loadSaveActiveSubTab();
             if (this.activeTab === 'map') {
-              await Promise.all([this.loadSvPlayers(), this.loadSvResourceNodes(), this.loadSvMapPins()]);
+              await Promise.all([
+                this.loadSvPlayers(), this.loadSvResourceNodes(), this.loadSvMapPins(), this.loadSvBuildingFootprints(),
+              ]);
               this.updateMapMarkers();
             }
           }
@@ -627,7 +680,9 @@ document.addEventListener('alpine:init', () => {
       if (this.mapRefreshing || !this.saveStatus?.loaded) return;
       this.mapRefreshing = true;
       try {
-        await Promise.all([this.loadSvPlayers(), this.loadSvResourceNodes(), this.loadSvMapPins()]);
+        await Promise.all([
+          this.loadSvPlayers(), this.loadSvResourceNodes(), this.loadSvMapPins(), this.loadSvBuildingFootprints(),
+        ]);
         this.updateMapMarkers();
       } finally {
         setTimeout(() => { this.mapRefreshing = false; }, 400);
@@ -640,6 +695,7 @@ document.addEventListener('alpine:init', () => {
     initMap() {
       if (_leafletMap) {
         _leafletMap.invalidateSize();
+        this.ensureBuildingOverlay();
         this.updateMapMarkers();
         return;
       }
@@ -675,10 +731,37 @@ document.addEventListener('alpine:init', () => {
         tileSize: TILE_SIZE,
       }).addTo(_leafletMap);
 
-      // Layer z-order: nodes → pins → players (players on top)
+      // Layer z-order: buildings (WebGL, overlayPane) → nodes → pins → players
+      this.ensureBuildingOverlay();
       _resourceNodeLayer = L.layerGroup().addTo(_leafletMap);
       _mapPinLayer       = L.layerGroup().addTo(_leafletMap);
       _playerLayer       = L.layerGroup().addTo(_leafletMap);
+
+      const mapEl = document.getElementById('leaflet-map');
+
+      // Reusable Leaflet tooltip for building hover — lives in the tooltipPane,
+      // so it's always layered above the PIXI overlay. interactive:false keeps it
+      // from stealing pointer events that drive the hover detection.
+      _buildingTooltip = L.tooltip({
+        direction: 'top',
+        offset: [0, -6],
+        opacity: 1,
+        interactive: false,
+        className: 'sf-building-tooltip',
+      });
+
+      // Native mousemove fires regardless of whether PIXI canvas absorbed the event.
+      mapEl.addEventListener('mousemove', (e) => {
+        const now = performance.now();
+        if (now - _lastHoverMs < 16) return;
+        _lastHoverMs = now;
+        const cp = _leafletMap.mouseEventToContainerPoint(e);
+        const latlng = _leafletMap.containerPointToLatLng(cp);
+        this._handleBuildingHover(latlng);
+      });
+      mapEl.addEventListener('mouseleave', () => {
+        this._endBuildingHover(mapEl);
+      });
 
       const center = bounds.getCenter();
       const frameView = () => {
@@ -704,9 +787,229 @@ document.addEventListener('alpine:init', () => {
 
     updateMapMarkers() {
       if (!_leafletMap) return;
+      this._updateBuildingFootprints();
       this._updatePlayerMarkers();
       this._updateMapPinMarkers();
       this._updateResourceNodeMarkers();
+    },
+
+    // Lazy-loads Pixi and creates the WebGL building-footprint overlay (once per
+    // map instance). The draw callback handles everything from then on: rebuilding
+    // sprites when svBuildingFootprints changes, and applying the filter/zoom LOD
+    // visibility check — both on Leaflet's own zoom-triggered redraws and on our
+    // explicit ones via _updateBuildingFootprints().
+    async ensureBuildingOverlay() {
+      if (_buildingOverlay || !_leafletMap) return;
+      const PIXI = await loadPixiDeps();
+      if (!_leafletMap) return; // map was torn down while Pixi was loading
+
+      const container = new PIXI.Container();
+      _buildingOverlayContainer = container;
+      // Persistent outline graphic, kept as the top-most child so it draws over
+      // the sprites. Created once; survives sprite rebuilds (see _rebuildBuildingSprites).
+      _highlightGfx = new PIXI.Graphics();
+      let builtForData = null;
+
+      _buildingOverlay = L.pixiOverlay((utils) => {
+        _pixiUtils = utils;
+        const data = this.svBuildingFootprints;
+        if (data !== builtForData) {
+          this._rebuildBuildingSprites(PIXI, container, utils, data);
+          builtForData = data;
+        }
+
+        container.visible = !!this.mapFilters.buildings && !!data;
+        container.addChild(_highlightGfx); // re-assert top of z-order each draw
+
+        utils.getRenderer().render(container);
+      }, container);
+
+      _buildingOverlay.addTo(_leafletMap);
+      this._updateBuildingFootprints();
+    },
+
+    // Triggers a redraw of the building overlay (re-runs the draw callback above).
+    // Safe to call before the overlay exists yet — ensureBuildingOverlay() catches
+    // up once Pixi finishes loading.
+    _updateBuildingFootprints() {
+      _buildingOverlay?.redraw();
+    },
+
+    // Rebuilds every building sprite from scratch. Only called when the underlying
+    // data actually changes (new save loaded/reloaded) — not on every redraw — since
+    // positions are static between loads and the overlay handles zoom/pan scaling
+    // on its own (see Leaflet.PixiOverlay's "no need to reproject on zoom" design).
+    _rebuildBuildingSprites(PIXI, container, utils, data) {
+      // Tear down old sprites but keep the persistent highlight graphic alive.
+      for (const child of container.removeChildren()) {
+        if (child !== _highlightGfx) child.destroy();
+      }
+      _highlightGfx?.clear();
+      _buildingHitList = [];
+      if (!data?.x?.length) return;
+
+      // Game-cm → overlay layer-point is a fixed linear scale (CRS.Simple and our
+      // gameToLatLng mapping are both pure linear transforms) — compute it once
+      // from two reference points rather than reprojecting per building.
+      const p0 = utils.latLngToLayerPoint(gameToLatLng(0, 0));
+      const p1 = utils.latLngToLayerPoint(gameToLatLng(1000, 0));
+      const unitsPerCm = Math.hypot(p1.x - p0.x, p1.y - p0.y) / 1000;
+      _unitsPerCm = unitsPerCm;
+
+      for (const type of data.types) {
+        if (type._tint === undefined) type._tint = parseInt(type.color.slice(1), 16);
+      }
+
+      const categoryLayers = new Map();
+      const categoryContainer = (category) => {
+        let layer = categoryLayers.get(category);
+        if (!layer) {
+          layer = new PIXI.Container();
+          categoryLayers.set(category, layer);
+          container.addChild(layer);
+        }
+        return layer;
+      };
+
+      // Shrink each sprite relative to its true footprint so the dark map
+      // background bleeds through as a visible gap between adjacent buildings.
+      // The hit list still uses the full footprint for a generous hover area.
+      const GAP_CM = 25;      // gap per side in game-cm
+      const MIN_RATIO = 0.65; // never shrink below 65 % of the original dimension
+
+      // Structural/passive categories: very numerous and sit flat on the ground,
+      // so their 2-D footprints would block hover access to machines above them.
+      const SKIP_HIT_CATEGORIES = new Set([
+        'Foundations', 'Walls', 'Ramps', 'Stairs & Walkways', 'Roofs & Pillars',
+      ]);
+
+      for (let i = 0; i < data.x.length; i++) {
+        const type = data.types[data.typeIndex[i]];
+        const yaw = data.yaw[i];
+        const fp = type.footprint;
+
+        // Rotate the footprint's local-space offset by yaw before adding to world pos.
+        const cos = Math.cos(yaw), sin = Math.sin(yaw);
+        const worldX = data.x[i] + fp.offsetX * cos - fp.offsetY * sin;
+        const worldY = data.y[i] + fp.offsetX * sin + fp.offsetY * cos;
+        const point = utils.latLngToLayerPoint(gameToLatLng(worldX, worldY));
+
+        const fillW = Math.max(fp.width - GAP_CM * 2, fp.width * MIN_RATIO);
+        const fillH = Math.max(fp.depth - GAP_CM * 2, fp.depth * MIN_RATIO);
+
+        const sprite = new PIXI.Sprite(PIXI.Texture.WHITE);
+        sprite.anchor.set(0.5);
+        sprite.tint = type._tint;
+        sprite.alpha = 0.88;
+        sprite.x = point.x;
+        sprite.y = point.y;
+        sprite.width = Math.max(fillW * unitsPerCm, 1);
+        sprite.height = Math.max(fillH * unitsPerCm, 1);
+        sprite.rotation = yaw;
+
+        categoryContainer(type.category).addChild(sprite);
+
+        // Full footprint for hit testing — generous hover area even for thin belts/pipes.
+        // Skip structural categories: they're numerous, uninteresting, and their
+        // large 2-D footprints would block hover access to machines sitting on top.
+        if (!SKIP_HIT_CATEGORIES.has(type.category)) {
+          const hw = fp.width / 2;
+          const hh = fp.depth / 2;
+          _buildingHitList.push({
+            cx: worldX, cy: worldY, hw, hh, cos, sin,
+            // Layer-point centre + yaw for drawing the outline in the overlay's
+            // (rebuild-zoom) coordinate space, matching how the sprite is placed.
+            lpx: point.x, lpy: point.y, yaw,
+            aabbHW: hw * Math.abs(cos) + hh * Math.abs(sin),
+            aabbHH: hw * Math.abs(sin) + hh * Math.abs(cos),
+            label: type.label,
+            buildClass: type.buildClass,
+            category: type.category,
+          });
+        }
+      }
+    },
+
+    _handleBuildingHover(latlng) {
+      const mapEl = document.getElementById('leaflet-map');
+      if (!this.mapFilters.buildings || !_buildingHitList.length) {
+        this._endBuildingHover(mapEl);
+        return;
+      }
+
+      const { x: mx, y: my } = latLngToGame(latlng);
+
+      for (const b of _buildingHitList) {
+        const dx = mx - b.cx, dy = my - b.cy;
+        if (Math.abs(dx) > b.aabbHW || Math.abs(dy) > b.aabbHH) continue;
+        const lx = dx * b.cos + dy * b.sin;
+        const ly = -dx * b.sin + dy * b.cos;
+        if (Math.abs(lx) <= b.hw && Math.abs(ly) <= b.hh) {
+          // Tooltip tracks the cursor for a smooth follow; only refill its content
+          // and redraw the outline when the hovered building actually changes.
+          _buildingTooltip.setLatLng(latlng);
+          if (b !== _hoveredBuilding) {
+            _hoveredBuilding = b;
+            _buildingTooltip.setContent(this._buildingTooltipHtml(b));
+            if (!_leafletMap.hasLayer(_buildingTooltip)) {
+              _leafletMap.openTooltip(_buildingTooltip);
+            }
+            this._drawBuildingHighlight(b);
+          }
+          mapEl.style.cursor = 'pointer';
+          return;
+        }
+      }
+
+      this._endBuildingHover(mapEl);
+    },
+
+    // Tear down all hover affordances (tooltip, outline, cursor) in one place.
+    _endBuildingHover(mapEl) {
+      if (_hoveredBuilding) {
+        _hoveredBuilding = null;
+        if (_buildingTooltip) _leafletMap?.closeTooltip(_buildingTooltip);
+        this._clearBuildingHighlight();
+      }
+      if (mapEl) mapEl.style.cursor = '';
+    },
+
+    _buildingTooltipHtml(b) {
+      return `<div class="sf-btt">
+        <img class="sf-btt-img" src="/assets/buildings/${b.buildClass}.png" onerror="this.style.display='none'">
+        <div class="sf-btt-text">
+          <p class="sf-btt-label">${b.label}</p>
+          <p class="sf-btt-cat">${b.category}</p>
+        </div>
+      </div>`;
+    },
+
+    // Draws the orange outline as a rotated rect in the overlay's coordinate
+    // space (same placement maths as the sprite: layer-point centre + yaw), so
+    // it pans and zooms with the buildings without per-frame redraws. The line
+    // width is divided by the container scale to stay ~constant on screen.
+    _drawBuildingHighlight(b) {
+      const g = _highlightGfx;
+      if (!g || !_buildingOverlayContainer) return;
+      const scale = _buildingOverlayContainer.scale.x || 1;
+      const w = b.hw * 2 * _unitsPerCm;
+      const h = b.hh * 2 * _unitsPerCm;
+      g.clear();
+      g.position.set(b.lpx, b.lpy);
+      g.rotation = b.yaw;
+      // Soft outer glow, then the crisp 2px line.
+      g.lineStyle((6 / scale), 0xf97316, 0.25);
+      g.drawRect(-w / 2, -h / 2, w, h);
+      g.lineStyle((2 / scale), 0xf97316, 1);
+      g.drawRect(-w / 2, -h / 2, w, h);
+      _buildingOverlay?.redraw();
+    },
+
+    _clearBuildingHighlight() {
+      if (_highlightGfx) {
+        _highlightGfx.clear();
+        _buildingOverlay?.redraw();
+      }
     },
 
     _updatePlayerMarkers() {
