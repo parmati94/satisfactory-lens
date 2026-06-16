@@ -13,6 +13,11 @@ let _buildingOverlayContainer = null;
 let _buildingHitList = [];
 let _splineHitList = [];
 let _lastHoverMs = 0;
+let _clickDownX = 0; // pointer-down position, to tell a click from a map drag
+let _clickDownY = 0;
+let _detailPopup = null; // reusable Leaflet popup for the click detail card
+let _cardEntry = null;   // hit entry currently shown in the card
+let _cardOpen = false;   // suppress the hover tooltip while the card is open
 // Hover outline is drawn as a PIXI.Graphics inside the building overlay (the
 // overlayPane, z-index 400) rather than a separate HTML canvas, so the Leaflet
 // tooltipPane (650) naturally renders above it and PIXI handles all pan/zoom
@@ -783,6 +788,21 @@ document.addEventListener('alpine:init', () => {
         className: 'sf-building-tooltip',
       });
 
+      // Reusable Leaflet popup for the click detail card — popupPane, above PIXI.
+      _detailPopup = L.popup({
+        className: 'sf-detail-popup',
+        maxWidth: 260,
+        autoPanPadding: [40, 40],
+        offset: [0, -4],
+      });
+      // Hover tooltip is noise while the card is open; suppress it for our popup.
+      _leafletMap.on('popupopen', (e) => {
+        if (e.popup === _detailPopup) { _cardOpen = true; this._endBuildingHover(mapEl); }
+      });
+      _leafletMap.on('popupclose', (e) => {
+        if (e.popup === _detailPopup) { _cardOpen = false; _cardEntry = null; }
+      });
+
       // Native mousemove fires regardless of whether PIXI canvas absorbed the event.
       mapEl.addEventListener('mousemove', (e) => {
         const now = performance.now();
@@ -794,6 +814,29 @@ document.addEventListener('alpine:init', () => {
       });
       mapEl.addEventListener('mouseleave', () => {
         this._endBuildingHover(mapEl);
+      });
+
+      // Click → detail card. Track pointer-down so a map drag isn't read as a click.
+      mapEl.addEventListener('mousedown', (e) => { _clickDownX = e.clientX; _clickDownY = e.clientY; });
+      mapEl.addEventListener('click', (e) => {
+        // Clicks inside the open card: only the action button does anything; let
+        // Leaflet handle the rest (e.g. its close button).
+        if (e.target.closest?.('.leaflet-popup')) {
+          if (e.target.closest('.sf-card-action') && _cardEntry) this.openInSaveViewer(_cardEntry);
+          return;
+        }
+        if (Math.hypot(e.clientX - _clickDownX, e.clientY - _clickDownY) > 5) return; // was a drag
+        if (!this.mapFilters.buildings) return;
+        const cp = _leafletMap.mouseEventToContainerPoint(e);
+        const latlng = _leafletMap.containerPointToLatLng(cp);
+        const hit = this._pickBuildingAt(latlng);
+        if (!hit) return;
+        const anchor = hit.isSpline ? latlng : gameToLatLng(hit.entry.cx, hit.entry.cy);
+        _detailPopup.setLatLng(anchor).setContent(this._buildingCardHtml(hit.entry, hit.isSpline));
+        _leafletMap.openPopup(_detailPopup);
+        // After openPopup — replacing an existing card fires popupclose, which
+        // nulls _cardEntry; set it last so the action button keeps its reference.
+        _cardEntry = hit.entry;
       });
 
       const center = bounds.getCenter();
@@ -1026,41 +1069,42 @@ document.addEventListener('alpine:init', () => {
       }
     },
 
-    _handleBuildingHover(latlng) {
-      const mapEl = document.getElementById('leaflet-map');
-      if (!this.mapFilters.buildings || (!_buildingHitList.length && !_splineHitList.length)) {
-        this._endBuildingHover(mapEl);
-        return;
-      }
-
+    // Shared hit-test for hover and click: returns { entry, isSpline } or null.
+    // Machine rectangles take priority (belts/pipes usually run between them).
+    _pickBuildingAt(latlng) {
       const { x: mx, y: my } = latLngToGame(latlng);
 
-      // 1) Machine rectangles take priority (belts/pipes usually run between them).
       for (const b of _buildingHitList) {
         const dx = mx - b.cx, dy = my - b.cy;
         if (Math.abs(dx) > b.aabbHW || Math.abs(dy) > b.aabbHH) continue;
         const lx = dx * b.cos + dy * b.sin;
         const ly = -dx * b.sin + dy * b.cos;
-        if (Math.abs(lx) <= b.hw && Math.abs(ly) <= b.hh) {
-          this._showHover(latlng, b, mapEl, false);
-          return;
-        }
+        if (Math.abs(lx) <= b.hw && Math.abs(ly) <= b.hh) return { entry: b, isSpline: false };
       }
 
-      // 2) Spline paths (belts/pipes/hypertubes/rails) — whole object as one unit.
       for (const s of _splineHitList) {
         if (mx < s.minX - s.halfW || mx > s.maxX + s.halfW ||
             my < s.minY - s.halfW || my > s.maxY + s.halfW) continue;
         const pts = s.gamePts;
         for (let k = 0; k < pts.length - 2; k += 2) {
           if (distSqToSegment(mx, my, pts[k], pts[k + 1], pts[k + 2], pts[k + 3]) <= s.halfW2) {
-            this._showHover(latlng, s, mapEl, true);
-            return;
+            return { entry: s, isSpline: true };
           }
         }
       }
+      return null;
+    },
 
-      this._endBuildingHover(mapEl);
+    _handleBuildingHover(latlng) {
+      const mapEl = document.getElementById('leaflet-map');
+      if (_cardOpen || !this.mapFilters.buildings ||
+          (!_buildingHitList.length && !_splineHitList.length)) {
+        this._endBuildingHover(mapEl);
+        return;
+      }
+      const hit = this._pickBuildingAt(latlng);
+      if (hit) this._showHover(latlng, hit.entry, mapEl, hit.isSpline);
+      else this._endBuildingHover(mapEl);
     },
 
     // Show the tooltip + outline for a hovered entry (rectangle building or
@@ -1094,8 +1138,52 @@ document.addEventListener('alpine:init', () => {
         <div class="sf-btt-text">
           <p class="sf-btt-label">${b.label}</p>
           <p class="sf-btt-cat">${b.category}</p>
+          <p class="sf-btt-hint">Click for details</p>
         </div>
       </div>`;
+    },
+
+    // Click detail card content. One key fact (position for machines, length for
+    // splines) plus the launch button into the Save Viewer.
+    _buildingCardHtml(entry, isSpline) {
+      let factLabel, factValue;
+      if (isSpline) {
+        let len = 0;
+        const p = entry.gamePts;
+        for (let k = 0; k < p.length - 2; k += 2) {
+          len += Math.hypot(p[k + 2] - p[k], p[k + 3] - p[k + 1]);
+        }
+        factLabel = 'Length';
+        factValue = `${(len / 100).toFixed(0)} m`;
+      } else {
+        factLabel = 'Position';
+        factValue = `${(entry.cx / 100).toFixed(0)} m, ${(entry.cy / 100).toFixed(0)} m`;
+      }
+      return `<div class="sf-card">
+        <div class="sf-card-head">
+          <img class="sf-card-icon" src="/assets/buildings/${entry.buildClass}.png" onerror="this.style.display='none'">
+          <div class="sf-card-headtext">
+            <p class="sf-card-title">${entry.label}</p>
+            <p class="sf-card-sub">${entry.category}</p>
+          </div>
+        </div>
+        <div class="sf-card-body">
+          <div class="sf-card-row"><span class="sf-card-k">${factLabel}</span><span class="sf-card-v">${factValue}</span></div>
+        </div>
+        <button class="sf-card-action" type="button">Open in Save Viewer
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>`;
+    },
+
+    // Jump to the Save Viewer with the Buildings tab filtered to this type. This
+    // is the first-step linkage; locating the exact instance comes later (needs
+    // per-instance rows in the Save Viewer).
+    async openInSaveViewer(entry) {
+      _leafletMap?.closePopup(_detailPopup);
+      this.saveTab = 'buildings';
+      this.buildingsSearch = entry.label;
+      await this.switchTab('saveviewer');
     },
 
     // Draws the orange outline as a rotated rect in the overlay's coordinate

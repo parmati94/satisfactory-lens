@@ -36,3 +36,69 @@
   font-size: 10px; color: #6b7280; margin: 2px 0 0;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.sf-btt-hint {
+  font-size: 9.5px; color: #6b7280; margin: 3px 0 0; font-style: italic;
+  white-space: nowrap;
+}
+
+/* Click detail card (Leaflet popup content) — built on the dark popup theme. */
+.sf-detail-popup .leaflet-popup-content { margin: 0; }
+.sf-card { width: 212px; }
+.sf-card-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px 10px; }
+.sf-card-icon {
+  width: 40px; height: 40px; flex-shrink: 0; object-fit: contain;
+  border-radius: 8px; background: rgba(31, 41, 55, 0.6); padding: 3px;
+  image-rendering: pixelated;
+}
+.sf-card-headtext { min-width: 0; }
+.sf-card-title {
+  margin: 0; font-size: 13px; font-weight: 600; color: #f3f4f6; line-height: 1.3;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sf-card-sub { margin: 2px 0 0; font-size: 11px; color: #9ca3af; }
+.sf-card-body { padding: 0 14px; }
+.sf-card-row {
+  display: flex; justify-content: space-between; gap: 12px;
+  padding: 6px 0; font-size: 12px; border-top: 1px solid rgba(55, 65, 81, 0.4);
+}
+.sf-card-k { color: #9ca3af; }
+.sf-card-v { color: #e5e7eb; font-variant-numeric: tabular-nums; }
+.sf-card-action {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: calc(100% - 24px); margin: 10px 12px 12px; padding: 8px;
+  font-size: 12px; font-weight: 600; color: #fdba74;
+  background: rgba(249, 115, 22, 0.12); border: 1px solid rgba(249, 115, 22, 0.3);
+  border-radius: 8px; cursor: pointer; transition: all 0.15s;
+}
+.sf-card-action:hover {
+  background: rgba(249, 115, 22, 0.2); border-color: rgba(249, 115, 22, 0.5); color: #fed7aa;
+}
+
+/* Marker click popups (HUB / players / nodes / stamps) — dark theme matching the
+   building hover tooltip so the two don't clash. Leaflet's own popup rules ship
+   in the JS-bundled leaflet.css at equal specificity, so we need !important (the
+   same reason .leaflet-container above does) to win regardless of load order. */
+.leaflet-popup .leaflet-popup-content-wrapper {
+  background: rgba(17, 24, 39, 0.97) !important; /* gray-900 */
+  color: #d1d5db;                                /* gray-300 */
+  border: 1px solid rgba(55, 65, 81, 0.5);       /* gray-700/50 */
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+.leaflet-popup .leaflet-popup-content {
+  margin: 9px 13px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #d1d5db;
+}
+.leaflet-popup .leaflet-popup-content strong { color: #f3f4f6; font-weight: 600; }
+/* The little pointer triangle — match the bubble fill (it has no border, so no
+   seam shows where it meets the wrapper). */
+.leaflet-popup .leaflet-popup-tip {
+  background: rgba(17, 24, 39, 0.97) !important;
+  border: none;
+  box-shadow: none;
+}
+.leaflet-container a.leaflet-popup-close-button { color: #9ca3af !important; }
+.leaflet-container a.leaflet-popup-close-button:hover { color: #f3f4f6 !important; }
