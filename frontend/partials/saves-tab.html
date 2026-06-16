@@ -142,9 +142,24 @@
                 </div>
                 <div class="px-3 pb-3 divide-y divide-gray-800/60">
                   <template x-for="save in manualSaves(session.saveHeaders ?? [])" :key="save.saveName">
-                    <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800/60 transition-colors group">
+                    <div
+                      class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group"
+                      :class="saveStatus?.sourceName === save.saveName
+                        ? 'bg-green-500/5 hover:bg-green-500/10 border border-green-500/10'
+                        : (save.saveName === globalLatestSaveName() ? 'bg-orange-500/5 hover:bg-orange-500/10 border border-orange-500/10' : 'hover:bg-gray-800/60')"
+                    >
                       <div class="min-w-0 flex-1">
-                        <div class="text-sm text-white font-medium truncate" x-text="save.saveName"></div>
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm text-white font-medium truncate" x-text="save.saveName"></span>
+                          <span
+                            x-show="saveStatus?.sourceName === save.saveName"
+                            class="text-xs px-1.5 py-0.5 rounded bg-green-900/40 text-green-400 border border-green-500/30 shrink-0"
+                          >loaded</span>
+                          <span
+                            x-show="save.saveName === globalLatestSaveName()"
+                            class="text-xs px-1.5 py-0.5 rounded bg-orange-900/40 text-orange-400 border border-orange-500/30 shrink-0"
+                          >latest</span>
+                        </div>
                         <div class="flex items-center gap-2 mt-0.5">
                           <span class="text-xs text-gray-400" x-text="formatSaveDate(save.saveDateTime)"></span>
                           <span class="text-xs text-gray-600">·</span>
@@ -189,18 +204,22 @@
                   Autosaves
                 </div>
                 <div class="px-3 pb-3 divide-y divide-gray-800/60">
-                  <template x-for="(save, idx) in autosaves(session.saveHeaders ?? [])" :key="save.saveName">
+                  <template x-for="save in autosaves(session.saveHeaders ?? [])" :key="save.saveName">
                     <div
                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group"
-                      :class="idx === 0 && manualSaves(session.saveHeaders ?? []).length === 0
-                        ? 'bg-orange-500/5 hover:bg-orange-500/10 border border-orange-500/10'
-                        : 'hover:bg-gray-800/60'"
+                      :class="saveStatus?.sourceName === save.saveName
+                        ? 'bg-green-500/5 hover:bg-green-500/10 border border-green-500/10'
+                        : (save.saveName === globalLatestSaveName() ? 'bg-orange-500/5 hover:bg-orange-500/10 border border-orange-500/10' : 'hover:bg-gray-800/60')"
                     >
                       <div class="min-w-0 flex-1">
                         <div class="flex items-center gap-2">
                           <span class="text-sm text-white font-medium truncate" x-text="save.saveName"></span>
                           <span
-                            x-show="idx === 0 && manualSaves(session.saveHeaders ?? []).length === 0"
+                            x-show="saveStatus?.sourceName === save.saveName"
+                            class="text-xs px-1.5 py-0.5 rounded bg-green-900/40 text-green-400 border border-green-500/30 shrink-0"
+                          >loaded</span>
+                          <span
+                            x-show="save.saveName === globalLatestSaveName()"
                             class="text-xs px-1.5 py-0.5 rounded bg-orange-900/40 text-orange-400 border border-orange-500/30 shrink-0"
                           >latest</span>
                         </div>

@@ -86,6 +86,7 @@ document.addEventListener('alpine:init', () => {
     confirmDialog: { show: false, title: '', message: '', confirmLabel: 'Confirm', danger: true, resolve: null },
     showDownloadModal: false,
     downloadSaveName: '',
+    downloadSaveDateTime: null,
     downloadLoading: false,
     downloadError: null,
     sseConnected: false,
@@ -110,7 +111,8 @@ document.addEventListener('alpine:init', () => {
         await this.loadDashboard();
       }
 
-      // Always load save status and connect SSE (save viewer works independently of SF connection)
+      // Always load save status and connect SSE — works with a mounted save with no SF
+      // connection at all, or via the API once connected (status reflects whichever applies)
       await this.loadSaveStatus();
       this.connectSaveSSE();
     },
@@ -187,6 +189,18 @@ document.addEventListener('alpine:init', () => {
       } finally {
         this.loading = false;
       }
+    },
+
+    // The single most recent save across the whole server (by saveDateTime), regardless
+    // of which session it's in — distinct from "Loaded" (whatever's in Lens right now).
+    globalLatestSaveName() {
+      let latest = null;
+      for (const session of this.saves?.sessions ?? []) {
+        for (const save of session.saveHeaders ?? []) {
+          if (!latest || save.saveDateTime > latest.saveDateTime) latest = save;
+        }
+      }
+      return latest?.saveName ?? null;
     },
 
     async loadSaves() {
@@ -360,27 +374,12 @@ document.addEventListener('alpine:init', () => {
       } catch { this.saveStatus = null; }
     },
 
-    async reloadSave() {
-      this.saveDataLoading = true;
-      try {
-        this.saveStatus = await api.save.reload();
-        this.newerSaveAvailable = !!this.saveStatus?.newerSaveAvailable;
-        this.newerSaveName = this.saveStatus?.newerSaveName ?? null;
-        this.svPlayers = null;
-        this.svBuildings = null;
-        this.svResources = null;
-        this.svPower = null;
-        this.svResourceNodes = null;
-        if (this.saveStatus?.loaded) await this.loadSaveActiveSubTab();
-      } catch (e) {
-        this.saveDataError = e.message;
-      } finally {
-        this.saveDataLoading = false;
-      }
-    },
-
+    // Single reload action (header button) — reloads whatever the active save source
+    // resolves to (mount, or latest via the API). The Save Viewer tab's own content area
+    // also shows the loading skeleton while it runs, if that tab happens to be active.
     async headerReloadSave() {
       this.headerReloading = true;
+      this.saveDataLoading = true;
       try {
         this.saveStatus = await api.save.reload();
         this.newerSaveAvailable = !!this.saveStatus?.newerSaveAvailable;
@@ -403,7 +402,18 @@ document.addEventListener('alpine:init', () => {
         this.saveDataError = e.message;
       } finally {
         this.headerReloading = false;
+        this.saveDataLoading = false;
       }
+    },
+
+    // Opens the "load a different save" modal, fetching the save list first if needed
+    // (it's only otherwise loaded when the user has visited the Saves tab).
+    async openDownloadModal() {
+      this.showDownloadModal = true;
+      this.downloadSaveName = '';
+      this.downloadSaveDateTime = null;
+      this.downloadError = null;
+      if (this.sfStatus.connected && !this.saves) await this.loadSaves();
     },
 
     async downloadSave() {
@@ -411,7 +421,10 @@ document.addEventListener('alpine:init', () => {
       this.downloadLoading = true;
       this.downloadError = null;
       try {
-        this.saveStatus = await api.save.download(this.downloadSaveName.trim());
+        // Pass along the saveDateTime we already know from the picker, so the backend can
+        // keep comparing against it for newer-save polling — otherwise that check has
+        // nothing to compare against until the next full reload.
+        this.saveStatus = await api.save.download(this.downloadSaveName.trim(), this.downloadSaveDateTime);
         this.newerSaveAvailable = !!this.saveStatus?.newerSaveAvailable;
         this.newerSaveName = this.saveStatus?.newerSaveName ?? null;
         this.showDownloadModal = false;

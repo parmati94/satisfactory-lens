@@ -51,8 +51,8 @@ export const api = {
   save: {
     status: () => apiFetch('/api/save/status'),
     reload: () => apiFetch('/api/save/reload', { method: 'POST' }),
-    download: (saveName) =>
-      apiFetch('/api/save/download', { method: 'POST', body: { saveName } }),
+    download: (saveName, saveDateTime) =>
+      apiFetch('/api/save/download', { method: 'POST', body: { saveName, saveDateTime } }),
     watch: () => apiFetch('/api/save/watch', { method: 'POST' }),
     players: () => apiFetch('/api/save/players'),
     buildings: () => apiFetch('/api/save/buildings'),
