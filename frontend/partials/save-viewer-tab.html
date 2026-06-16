@@ -23,6 +23,19 @@
     </button>
   </div>
 
+  <!-- Action result banner (save/persist outcomes) -->
+  <div x-show="actionResult" x-transition
+       :class="actionResult?.ok ? 'bg-green-900/30 border-green-800 text-green-300' : 'bg-red-900/30 border-red-800 text-red-300'"
+       class="flex items-start justify-between gap-3 p-3 border rounded-lg text-sm mb-5">
+    <div class="flex items-start gap-2">
+      <svg x-show="actionResult?.ok" class="flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:16px;height:16px">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span x-text="actionResult?.message"></span>
+    </div>
+    <button @click="actionResult = null" class="text-current opacity-60 hover:opacity-100 flex-shrink-0">✕</button>
+  </div>
+
   <!-- Status bar -->
   <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
     <div class="flex items-center gap-3">
