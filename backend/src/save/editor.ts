@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { Parser } from '@etothepii/satisfactory-file-parser';
 import { getSave, getSaveStatus, setSave } from './saveState';
+import { findSchematicManager } from './extractors/schematics';
 import { getSaveSourceMode } from './loader';
 import { config } from '../config';
 import { uploadSavegame, isConnected } from '../api/sfClient';
@@ -72,9 +73,25 @@ function applySetInventorySlot(save: SatisfactorySave, edit: SaveEdit): void {
   }
 }
 
+// Unlock/re-lock a schematic. target: schematic pathName, value: { purchased: bool }.
+function applySetSchematicPurchased(save: SatisfactorySave, edit: SaveEdit): void {
+  const v = edit.value as { purchased: boolean };
+  const path = edit.target;
+  const mgr = findSchematicManager(save);
+  const arr = mgr?.properties?.mPurchasedSchematics?.values;
+  if (!Array.isArray(arr)) throw new Error('SetSchematicPurchased: schematic manager not found');
+  const idx = arr.findIndex((r: any) => r?.pathName === path);
+  if (v?.purchased) {
+    if (idx === -1) arr.push({ levelName: '', pathName: path });
+  } else if (idx !== -1) {
+    arr.splice(idx, 1);
+  }
+}
+
 const MUTATORS: Record<string, (save: SatisfactorySave, edit: SaveEdit) => void> = {
   SetPlayerPosition: applySetPlayerPosition,
   SetInventorySlot: applySetInventorySlot,
+  SetSchematicPurchased: applySetSchematicPurchased,
 };
 
 export function applyEdits(save: SatisfactorySave, edits: SaveEdit[]): void {
