@@ -19,6 +19,8 @@ import { extractMapPins } from '../save/extractors/mapPins';
 import { extractStorage } from '../save/extractors/storage';
 import { extractBuildingFootprints } from '../save/extractors/buildingFootprints';
 import { persistEdits, type SaveEdit } from '../save/editor';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 const router = Router();
 
@@ -183,6 +185,20 @@ router.get('/api/save/building-footprints', (_req, res) => {
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }
+});
+
+// GET /api/items — static item catalog (class → { path, name, stack }) for the
+// inventory editor's item picker. Loaded once and cached for the process.
+let _itemCatalog: unknown = null;
+router.get('/api/items', (_req, res) => {
+  if (!_itemCatalog) {
+    try {
+      _itemCatalog = JSON.parse(readFileSync(join(__dirname, '../../data/items.json'), 'utf-8'));
+    } catch {
+      _itemCatalog = {};
+    }
+  }
+  res.json(_itemCatalog);
 });
 
 // POST /api/save/edit/persist — apply staged edits to the in-memory save and

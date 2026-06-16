@@ -44,8 +44,37 @@ function applySetPlayerPosition(save: SatisfactorySave, edit: SaveEdit): void {
   obj.transform.translation.z = v.z;
 }
 
+// Set (or clear) one inventory slot. value: { slot, item, count }. `item` is the
+// full item path (/Game/...Desc_X_C) or null/empty to clear. Empty and filled
+// slots share the same structure in the save, so we only set pathName + NumItems.
+function applySetInventorySlot(save: SatisfactorySave, edit: SaveEdit): void {
+  const v = edit.value as { slot: number; item: string | null; count: number };
+  if (!v || typeof v.slot !== 'number') {
+    throw new Error(`SetInventorySlot: invalid value for ${edit.target}`);
+  }
+  const obj = findEntity(save, edit.target);
+  const stacks = obj?.properties?.mInventoryStacks?.values;
+  if (!Array.isArray(stacks)) {
+    throw new Error(`SetInventorySlot: inventory not found (${edit.target})`);
+  }
+  const stack = stacks[v.slot];
+  const itemRef = stack?.properties?.Item?.value?.itemReference;
+  if (!itemRef || !stack?.properties?.NumItems) {
+    throw new Error(`SetInventorySlot: slot ${v.slot} not editable (${edit.target})`);
+  }
+  if (!v.item || !(v.count > 0)) {
+    itemRef.pathName = '';
+    itemRef.levelName = '';
+    stack.properties.NumItems.value = 0;
+  } else {
+    itemRef.pathName = v.item;
+    stack.properties.NumItems.value = Math.round(v.count);
+  }
+}
+
 const MUTATORS: Record<string, (save: SatisfactorySave, edit: SaveEdit) => void> = {
   SetPlayerPosition: applySetPlayerPosition,
+  SetInventorySlot: applySetInventorySlot,
 };
 
 export function applyEdits(save: SatisfactorySave, edits: SaveEdit[]): void {

@@ -65,4 +65,6 @@ export const api = {
     persistEdits: ({ saveName, mode, edits }) =>
       apiFetch('/api/save/edit/persist', { method: 'POST', body: { saveName, mode, edits } }),
   },
+
+  items: () => apiFetch('/api/items'),
 };
