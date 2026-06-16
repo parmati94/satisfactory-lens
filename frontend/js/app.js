@@ -84,11 +84,6 @@ document.addEventListener('alpine:init', () => {
     showSettings: false,
     headerReloading: false,
     confirmDialog: { show: false, title: '', message: '', confirmLabel: 'Confirm', danger: true, resolve: null },
-    showDownloadModal: false,
-    downloadSaveName: '',
-    downloadSaveDateTime: null,
-    downloadLoading: false,
-    downloadError: null,
     sseConnected: false,
     _eventSource: null,
     newerSaveAvailable: false,
@@ -282,9 +277,9 @@ document.addEventListener('alpine:init', () => {
 
     async loadSave(sessionName, saveName) {
       const ok = await this.showConfirm({
-        title: 'Load Save',
-        message: `Switch to <strong class="text-white">${saveName}</strong>? The server will load this save and connected players will be disconnected.`,
-        confirmLabel: 'Load Save',
+        title: 'Load to Server',
+        message: `Switch the live server to <strong class="text-white">${saveName}</strong>? Connected players will be disconnected while it loads. This only affects the server — it won't change anything in the Save Viewer.`,
+        confirmLabel: 'Load to Server',
         danger: true,
       });
       if (!ok) return;
@@ -374,6 +369,19 @@ document.addEventListener('alpine:init', () => {
       } catch { this.saveStatus = null; }
     },
 
+    // Save Viewer's per-tab data is stale the moment the loaded save changes — clear it
+    // all so each sub-tab re-fetches next time it's viewed. Shared by reload, inspect,
+    // and the SSE save_reloaded handler so the three stay in sync.
+    clearSvCaches() {
+      this.svPlayers = null;
+      this.svStorage = null;
+      this.svBuildings = null;
+      this.svResources = null;
+      this.svPower = null;
+      this.svResourceNodes = null;
+      this.svMapPins = null;
+    },
+
     // Single reload action (header button) — reloads whatever the active save source
     // resolves to (mount, or latest via the API). The Save Viewer tab's own content area
     // also shows the loading skeleton while it runs, if that tab happens to be active.
@@ -384,11 +392,7 @@ document.addEventListener('alpine:init', () => {
         this.saveStatus = await api.save.reload();
         this.newerSaveAvailable = !!this.saveStatus?.newerSaveAvailable;
         this.newerSaveName = this.saveStatus?.newerSaveName ?? null;
-        this.svPlayers = null;
-        this.svBuildings = null;
-        this.svResources = null;
-        this.svPower = null;
-        this.svResourceNodes = null;
+        this.clearSvCaches();
         // Refresh saves list so it reflects latest autosave
         if (this.sfStatus.connected) {
           const data = await api.saves.list();
@@ -406,39 +410,25 @@ document.addEventListener('alpine:init', () => {
       }
     },
 
-    // Opens the "load a different save" modal, fetching the save list first if needed
-    // (it's only otherwise loaded when the user has visited the Saves tab).
-    async openDownloadModal() {
-      this.showDownloadModal = true;
-      this.downloadSaveName = '';
-      this.downloadSaveDateTime = null;
-      this.downloadError = null;
-      if (this.sfStatus.connected && !this.saves) await this.loadSaves();
-    },
-
-    async downloadSave() {
-      if (!this.downloadSaveName.trim()) return;
-      this.downloadLoading = true;
-      this.downloadError = null;
+    // Inspect a specific save in the Save Viewer — the one place this is triggered from is
+    // the Saves tab's "Inspect" button. This only loads the save into Lens for viewing; it
+    // never touches the live server (that's what "Load to Server" is for).
+    async inspectSave(saveName, saveDateTime) {
+      this.actionLoading = true;
+      this.actionResult = null;
       try {
-        // Pass along the saveDateTime we already know from the picker, so the backend can
-        // keep comparing against it for newer-save polling — otherwise that check has
+        // Pass along the saveDateTime we already know from the Saves list, so the backend
+        // can keep comparing against it for newer-save polling — otherwise that check has
         // nothing to compare against until the next full reload.
-        this.saveStatus = await api.save.download(this.downloadSaveName.trim(), this.downloadSaveDateTime);
+        this.saveStatus = await api.save.download(saveName, saveDateTime);
         this.newerSaveAvailable = !!this.saveStatus?.newerSaveAvailable;
         this.newerSaveName = this.saveStatus?.newerSaveName ?? null;
-        this.showDownloadModal = false;
-        this.downloadSaveName = '';
-        this.svPlayers = null;
-        this.svBuildings = null;
-        this.svResources = null;
-        this.svPower = null;
-        this.svResourceNodes = null;
-        if (this.saveStatus?.loaded) await this.loadSaveActiveSubTab();
+        this.clearSvCaches();
+        await this.switchTab('saveviewer');
       } catch (e) {
-        this.downloadError = e.message;
+        this.actionResult = { ok: false, message: `Failed to load "${saveName}" for inspection: ${e.message}` };
       } finally {
-        this.downloadLoading = false;
+        this.actionLoading = false;
       }
     },
 
@@ -556,13 +546,7 @@ document.addEventListener('alpine:init', () => {
           }
           if (msg.event === 'save_reloaded') {
             await this.loadSaveStatus();
-            this.svPlayers = null;
-            this.svStorage = null;
-            this.svBuildings = null;
-            this.svResources = null;
-            this.svPower = null;
-            this.svResourceNodes = null;
-            this.svMapPins = null;
+            this.clearSvCaches();
             if (this.activeTab === 'saveviewer') await this.loadSaveActiveSubTab();
             if (this.activeTab === 'map') {
               await Promise.all([this.loadSvPlayers(), this.loadSvResourceNodes(), this.loadSvMapPins()]);
