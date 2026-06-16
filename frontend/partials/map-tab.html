@@ -28,6 +28,17 @@
       <!-- Leaflet map fills the wrapper -->
       <div id="leaflet-map" class="h-full w-full" style="background: #030712;"></div>
 
+      <!-- Live coordinate readout — bottom-left, follows the cursor's map position -->
+      <div x-show="mouseCoord.x !== null"
+           class="absolute bottom-4 left-4 flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-gray-900/90 backdrop-blur-md border border-gray-700/50 shadow-lg font-mono text-xs pointer-events-none"
+           style="z-index:1000">
+        <span class="text-gray-500">X</span>
+        <span class="text-gray-200 tabular-nums" x-text="((mouseCoord.x ?? 0) / 100).toFixed(0) + ' m'"></span>
+        <span class="text-gray-700">·</span>
+        <span class="text-gray-500">Y</span>
+        <span class="text-gray-200 tabular-nums" x-text="((mouseCoord.y ?? 0) / 100).toFixed(0) + ' m'"></span>
+      </div>
+
 
       <!-- ── Filter panel — top-left ─────────────────────────────────────── -->
       <div class="absolute top-4 left-4 flex flex-col gap-1.5" style="z-index:1000">
