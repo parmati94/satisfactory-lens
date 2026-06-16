@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Parser } from '@etothepii/satisfactory-file-parser';
-import { getSave, getSaveStatus } from './saveState';
+import { getSave, getSaveStatus, setSave } from './saveState';
 import { getSaveSourceMode } from './loader';
 import { config } from '../config';
 import { uploadSavegame, isConnected } from '../api/sfClient';
@@ -69,6 +69,11 @@ export function serializeSave(save: SatisfactorySave): Buffer {
   return Buffer.concat(parts);
 }
 
+/** Exact-sized ArrayBuffer for a Buffer (avoids passing a pooled/over-sized backing store). */
+function toArrayBuffer(buf: Buffer): ArrayBuffer {
+  return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
+}
+
 // ── Persist orchestration ───────────────────────────────────────────────────
 
 export interface PersistOptions {
@@ -85,48 +90,61 @@ export interface PersistResult {
 }
 
 /**
- * Apply staged edits to the in-memory save and persist:
- *  1. If overwriting the original name, back it up first; for a new-name copy the
- *     original file is itself the backup, so we skip the (redundant) snapshot.
- *  2. Apply edits (idempotent set-value ops).
- *  3. Serialize the edited save.
- *  4. Upload via the SF API (`UploadSavegame`, optionally loading it live), or — in
- *     mount-only mode with no API — write the .sav into the mount dir.
- * On failure the caller should reload from source to discard the partial in-memory
- * mutation (edits are idempotent, so a retry is also safe).
+ * Apply staged edits and persist, without ever mutating the loaded save in place:
+ *  1. Parse an isolated working copy from the current save's bytes (also the
+ *     overwrite backup), apply edits to it, and serialize that.
+ *  2. Upload via the SF API (`UploadSavegame`, optionally loading it live), or —
+ *     in mount-only mode with no API — write the .sav into the mount dir.
+ *  3. Settle what the viewer shows:
+ *       - load (any name): we're now viewing the edited save → switch to it.
+ *       - copy + overwrite: the original file now holds the edits → view edited under same name.
+ *       - copy + new name: a side-copy that doesn't change what we're viewing → keep the original.
+ * Because the loaded save is never mutated, a failed persist leaves state intact.
  */
 export async function persistEdits(opts: PersistOptions): Promise<PersistResult> {
-  const save = getSave();
-  if (!save) throw new Error('No save loaded.');
+  const original = getSave();
+  if (!original) throw new Error('No save loaded.');
   const saveName = opts.saveName.trim();
   if (!saveName) throw new Error('Save name is required.');
   if (!opts.edits?.length) throw new Error('No edits to persist.');
 
-  // 1) Back up only when overwriting the loaded save — otherwise the untouched
-  //    original already serves as the backup and a snapshot would just be clutter.
   const loadedName = (getSaveStatus().sourceName ?? 'save').replace(/\.sav$/i, '');
   const overwriting = saveName.toLowerCase() === loadedName.toLowerCase();
+
+  // 1) Isolated working copy (round-trip from the current bytes), then edit it.
+  const preEditBytes = serializeSave(original);
+  const working = Parser.ParseSave(loadedName, toArrayBuffer(preEditBytes));
+  applyEdits(working, opts.edits);
+  const editedBytes = serializeSave(working);
+
+  // Back up only when overwriting the loaded save — otherwise the untouched
+  // original already serves as the backup and a snapshot would just be clutter.
   let backupPath: string | null = null;
   if (overwriting) {
     const backupDir = path.join(__dirname, '../../data/backups');
     fs.mkdirSync(backupDir, { recursive: true });
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');
     backupPath = path.join(backupDir, `${loadedName}-${stamp}.pre-edit.sav`);
-    fs.writeFileSync(backupPath, serializeSave(save));
+    fs.writeFileSync(backupPath, preEditBytes);
   }
 
-  // 2) Apply + 3) serialize.
-  applyEdits(save, opts.edits);
-  const buffer = serializeSave(save);
-
-  // 4) Persist by active mode.
+  // 2) Persist by active mode.
+  let target: 'api' | 'mount';
   if (isConnected()) {
-    await uploadSavegame(saveName, buffer, opts.mode === 'load');
-    return { saveName, mode: opts.mode, target: 'api', backupPath };
+    await uploadSavegame(saveName, editedBytes, opts.mode === 'load');
+    target = 'api';
+  } else if (getSaveSourceMode() === 'mount') {
+    fs.writeFileSync(path.join(config.saveMountPath, `${saveName}.sav`), editedBytes);
+    target = 'mount';
+  } else {
+    throw new Error('No persist target: connect to the server to upload, or mount a save directory.');
   }
-  if (getSaveSourceMode() === 'mount') {
-    fs.writeFileSync(path.join(config.saveMountPath, `${saveName}.sav`), buffer);
-    return { saveName, mode: opts.mode, target: 'mount', backupPath };
+
+  // 3) Settle the viewed save. A plain new-name copy doesn't change what we're
+  //    viewing (keep the original); loading or overwriting does.
+  if (opts.mode === 'load' || overwriting) {
+    setSave(working, saveName);
   }
-  throw new Error('No persist target: connect to the server to upload, or mount a save directory.');
+
+  return { saveName, mode: opts.mode, target, backupPath };
 }
