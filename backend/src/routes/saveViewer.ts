@@ -199,15 +199,14 @@ router.post('/api/save/edit/persist', async (req, res) => {
 
   try {
     const result = await persistEdits({ saveName, mode, edits });
-    // If we loaded the edited save live, the server's active save changed.
+    // If we loaded the edited save live (or overwrote the loaded one), the
+    // viewer's active save changed — let other clients refresh too.
     if (mode === 'load') {
       broadcastSaveReloaded({ sourceName: getSaveStatus().sourceName });
     }
     res.json({ ok: true, ...result });
   } catch (err) {
-    // Discard the partial in-memory mutation so the viewer doesn't show
-    // un-persisted edits (edits are idempotent, so a later retry is safe too).
-    try { await loadLatest(); } catch { /* ignore */ }
+    // persistEdits never mutates the loaded save in place, so nothing to roll back.
     res.status(500).json({ error: (err as Error).message });
   }
 });
