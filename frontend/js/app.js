@@ -158,6 +158,7 @@ document.addEventListener('alpine:init', () => {
     buildingCategories: [],
     svMapPins: null,
     svBuildingFootprints: null,
+    mouseCoord: { x: null, y: null }, // live game coords under the cursor (cm)
     // ─────────────────────────────────────────────────────────────────────
 
     // ── Phase 2: Save Viewer ──────────────────────────────────────────────
@@ -1027,9 +1028,12 @@ document.addEventListener('alpine:init', () => {
         _lastHoverMs = now;
         const cp = _leafletMap.mouseEventToContainerPoint(e);
         const latlng = _leafletMap.containerPointToLatLng(cp);
+        const g = latLngToGame(latlng);
+        this.mouseCoord = { x: Math.round(g.x), y: Math.round(g.y) };
         this._handleBuildingHover(latlng);
       });
       mapEl.addEventListener('mouseleave', () => {
+        this.mouseCoord = { x: null, y: null };
         this._endBuildingHover(mapEl);
       });
 
