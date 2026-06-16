@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { config } from '../config';
 import * as sf from '../api/sfClient';
+import { autoLoadSaveIfNeeded } from '../save/autoLoad';
 
 const router = Router();
 
@@ -22,6 +23,9 @@ router.post('/api/sf/connect', async (req, res) => {
       port || config.sfPort,
       password ?? config.sfPassword,
     );
+    // No mount? This is the user's "connect" moment — auto-load the latest save via the API,
+    // same as mount mode does automatically on startup.
+    await autoLoadSaveIfNeeded();
     res.json({ ok: true, ...sf.getConnectionInfo() });
   } catch (err) {
     res.status(502).json({ error: (err as Error).message });

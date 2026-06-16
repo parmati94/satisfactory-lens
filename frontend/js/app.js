@@ -84,13 +84,11 @@ document.addEventListener('alpine:init', () => {
     showSettings: false,
     headerReloading: false,
     confirmDialog: { show: false, title: '', message: '', confirmLabel: 'Confirm', danger: true, resolve: null },
-    showDownloadModal: false,
-    downloadSaveName: '',
-    downloadLoading: false,
-    downloadError: null,
     sseConnected: false,
     _eventSource: null,
-    tooltip: { visible: false, x: 0, y: 0, name: '', count: null },
+    newerSaveAvailable: false,
+    newerSaveName: null,
+    tooltip: { visible: false, x: 0, y: 0, name: '', count: null, placement: 'top' },
     buildingsSearch: '',
     // ─────────────────────────────────────────────────────────────────────
 
@@ -108,7 +106,8 @@ document.addEventListener('alpine:init', () => {
         await this.loadDashboard();
       }
 
-      // Always load save status and connect SSE (save viewer works independently of SF connection)
+      // Always load save status and connect SSE — works with a mounted save with no SF
+      // connection at all, or via the API once connected (status reflects whichever applies)
       await this.loadSaveStatus();
       this.connectSaveSSE();
     },
@@ -185,6 +184,18 @@ document.addEventListener('alpine:init', () => {
       } finally {
         this.loading = false;
       }
+    },
+
+    // The single most recent save across the whole server (by saveDateTime), regardless
+    // of which session it's in — distinct from "Loaded" (whatever's in Lens right now).
+    globalLatestSaveName() {
+      let latest = null;
+      for (const session of this.saves?.sessions ?? []) {
+        for (const save of session.saveHeaders ?? []) {
+          if (!latest || save.saveDateTime > latest.saveDateTime) latest = save;
+        }
+      }
+      return latest?.saveName ?? null;
     },
 
     async loadSaves() {
@@ -266,9 +277,9 @@ document.addEventListener('alpine:init', () => {
 
     async loadSave(sessionName, saveName) {
       const ok = await this.showConfirm({
-        title: 'Load Save',
-        message: `Switch to <strong class="text-white">${saveName}</strong>? The server will load this save and connected players will be disconnected.`,
-        confirmLabel: 'Load Save',
+        title: 'Load to Server',
+        message: `Switch the live server to <strong class="text-white">${saveName}</strong>? Connected players will be disconnected while it loads. This only affects the server — it won't change anything in the Save Viewer.`,
+        confirmLabel: 'Load to Server',
         danger: true,
       });
       if (!ok) return;
@@ -304,14 +315,35 @@ document.addEventListener('alpine:init', () => {
       return Array.from({ length: totalSlots }, (_, i) => bySlot[i] ?? null);
     },
 
-    showItemTooltip(event, item) {
-      if (!item) return;
+    showTooltip(event, name, count = null, placement = 'top') {
       const rect = event.currentTarget.getBoundingClientRect();
-      this.tooltip = { visible: true, x: rect.left + rect.width / 2, y: rect.top, name: item.displayName, count: item.count };
+      // 'top' (default) anchors above the element — good for elements with room above it.
+      // 'bottom' anchors below — use for elements near the top of the viewport (e.g. header).
+      const y = placement === 'bottom' ? rect.bottom : rect.top;
+      const x = rect.left + rect.width / 2;
+      this.tooltip = { visible: true, x, y, name, count, placement };
+      // Tooltip is centered on `x`, but long text can overflow the viewport on narrow
+      // windows — nudge it back on-screen once we know its actual rendered width.
+      this.$nextTick(() => {
+        const el = this.$refs.tooltipBox;
+        if (!el) return;
+        const margin = 8;
+        const halfWidth = el.offsetWidth / 2;
+        const vw = window.innerWidth;
+        let clampedX = x;
+        if (clampedX - halfWidth < margin) clampedX = halfWidth + margin;
+        if (clampedX + halfWidth > vw - margin) clampedX = vw - margin - halfWidth;
+        this.tooltip.x = clampedX;
+      });
     },
 
-    hideItemTooltip() {
+    hideTooltip() {
       this.tooltip.visible = false;
+    },
+
+    showItemTooltip(event, item) {
+      if (!item) return;
+      this.showTooltip(event, item.displayName, item.count);
     },
 
     filteredBuildingCategories() {
@@ -323,38 +355,44 @@ document.addEventListener('alpine:init', () => {
         .filter(cat => cat.types.length > 0);
     },
 
+    reloadTooltipText() {
+      if (this.newerSaveAvailable && this.newerSaveName) return `Newer save available: ${this.newerSaveName}`;
+      if (this.saveStatus?.sourceName) return `Reload ${this.saveStatus.sourceName}`;
+      return 'Reload save file';
+    },
+
     async loadSaveStatus() {
       try {
         this.saveStatus = await api.save.status();
+        this.newerSaveAvailable = !!this.saveStatus?.newerSaveAvailable;
+        this.newerSaveName = this.saveStatus?.newerSaveName ?? null;
       } catch { this.saveStatus = null; }
     },
 
-    async reloadSave() {
+    // Save Viewer's per-tab data is stale the moment the loaded save changes — clear it
+    // all so each sub-tab re-fetches next time it's viewed. Shared by reload, inspect,
+    // and the SSE save_reloaded handler so the three stay in sync.
+    clearSvCaches() {
+      this.svPlayers = null;
+      this.svStorage = null;
+      this.svBuildings = null;
+      this.svResources = null;
+      this.svPower = null;
+      this.svResourceNodes = null;
+      this.svMapPins = null;
+    },
+
+    // Single reload action (header button) — reloads whatever the active save source
+    // resolves to (mount, or latest via the API). The Save Viewer tab's own content area
+    // also shows the loading skeleton while it runs, if that tab happens to be active.
+    async headerReloadSave() {
+      this.headerReloading = true;
       this.saveDataLoading = true;
       try {
         this.saveStatus = await api.save.reload();
-        this.svPlayers = null;
-        this.svBuildings = null;
-        this.svResources = null;
-        this.svPower = null;
-        this.svResourceNodes = null;
-        if (this.saveStatus?.loaded) await this.loadSaveActiveSubTab();
-      } catch (e) {
-        this.saveDataError = e.message;
-      } finally {
-        this.saveDataLoading = false;
-      }
-    },
-
-    async headerReloadSave() {
-      this.headerReloading = true;
-      try {
-        this.saveStatus = await api.save.reload();
-        this.svPlayers = null;
-        this.svBuildings = null;
-        this.svResources = null;
-        this.svPower = null;
-        this.svResourceNodes = null;
+        this.newerSaveAvailable = !!this.saveStatus?.newerSaveAvailable;
+        this.newerSaveName = this.saveStatus?.newerSaveName ?? null;
+        this.clearSvCaches();
         // Refresh saves list so it reflects latest autosave
         if (this.sfStatus.connected) {
           const data = await api.saves.list();
@@ -368,27 +406,29 @@ document.addEventListener('alpine:init', () => {
         this.saveDataError = e.message;
       } finally {
         this.headerReloading = false;
+        this.saveDataLoading = false;
       }
     },
 
-    async downloadSave() {
-      if (!this.downloadSaveName.trim()) return;
-      this.downloadLoading = true;
-      this.downloadError = null;
+    // Inspect a specific save in the Save Viewer — the one place this is triggered from is
+    // the Saves tab's "Inspect" button. This only loads the save into Lens for viewing; it
+    // never touches the live server (that's what "Load to Server" is for).
+    async inspectSave(saveName, saveDateTime) {
+      this.actionLoading = true;
+      this.actionResult = null;
       try {
-        this.saveStatus = await api.save.download(this.downloadSaveName.trim());
-        this.showDownloadModal = false;
-        this.downloadSaveName = '';
-        this.svPlayers = null;
-        this.svBuildings = null;
-        this.svResources = null;
-        this.svPower = null;
-        this.svResourceNodes = null;
-        if (this.saveStatus?.loaded) await this.loadSaveActiveSubTab();
+        // Pass along the saveDateTime we already know from the Saves list, so the backend
+        // can keep comparing against it for newer-save polling — otherwise that check has
+        // nothing to compare against until the next full reload.
+        this.saveStatus = await api.save.download(saveName, saveDateTime);
+        this.newerSaveAvailable = !!this.saveStatus?.newerSaveAvailable;
+        this.newerSaveName = this.saveStatus?.newerSaveName ?? null;
+        this.clearSvCaches();
+        await this.switchTab('saveviewer');
       } catch (e) {
-        this.downloadError = e.message;
+        this.actionResult = { ok: false, message: `Failed to load "${saveName}" for inspection: ${e.message}` };
       } finally {
-        this.downloadLoading = false;
+        this.actionLoading = false;
       }
     },
 
@@ -493,15 +533,20 @@ document.addEventListener('alpine:init', () => {
       es.onmessage = async (e) => {
         try {
           const msg = JSON.parse(e.data);
+          if (msg.event === 'connected') {
+            this.newerSaveAvailable = !!msg.newerSaveAvailable;
+            this.newerSaveName = msg.newerSaveName ?? null;
+          }
+          if (msg.event === 'save_available') {
+            // The mounted save dir changed (e.g. a new autosave landed). We never
+            // auto-reload — that could clobber in-progress edits — just flag it so
+            // the user can reload manually when ready.
+            this.newerSaveAvailable = !!msg.newerSaveAvailable;
+            this.newerSaveName = msg.newerSaveName ?? null;
+          }
           if (msg.event === 'save_reloaded') {
             await this.loadSaveStatus();
-            this.svPlayers = null;
-            this.svStorage = null;
-            this.svBuildings = null;
-            this.svResources = null;
-            this.svPower = null;
-            this.svResourceNodes = null;
-            this.svMapPins = null;
+            this.clearSvCaches();
             if (this.activeTab === 'saveviewer') await this.loadSaveActiveSubTab();
             if (this.activeTab === 'map') {
               await Promise.all([this.loadSvPlayers(), this.loadSvResourceNodes(), this.loadSvMapPins()]);

@@ -71,6 +71,17 @@ All settings are environment variables in `docker-compose.yml`:
 | `PASSWORD` | `changeme` | App login password |
 | `SESSION_SECRET` | _(insecure default)_ | Secret for signing session cookies — **change this in production** |
 | `TZ` | `America/New_York` | Timezone for log timestamps |
+| `ENABLE_AUTO_WATCH` | `true` | Flag (never auto-reload) when a newer save appears, in the UI (header reload button). Watches `/app/saves` if mounted, otherwise polls the SF API. Never reloads automatically — you choose when to reload, so it won't clobber in-progress edits. |
+| `SAVE_POLL_INTERVAL_SECONDS` | `30` | How often to poll the SF API for a newer save when no mount is present. Ignored in mount mode (which watches the directory directly). |
+
+The Save Viewer defaults to loading the latest save via the SF API once connected — no volume needed. For local-disk access instead, mount your save folder to `/app/saves` (read-only) in `docker-compose.yml`:
+
+```yaml
+volumes:
+  - /path/to/satisfactory/saves:/app/saves:ro
+```
+
+A mounted save always takes precedence over the API when present. Which specific save to load (an older save, a different session) is a UI choice — see the Saves tab or the Download modal — not a config setting.
 
 ---
 

@@ -1,13 +1,21 @@
 import fs from 'fs';
+import path from 'path';
 import { Response } from 'express';
-import { findMountedSave, loadFromDisk } from './loader';
+import { config } from '../config';
+import { findMountedSaveWithMtime, findLatestApiSave, getSaveSourceMode } from './loader';
+import { getLoadedSourceMtimeMs, getLoadedSourceSaveDateTime } from './saveState';
 
-// SSE clients waiting for save reload events
+// SSE clients waiting for save events
 const sseClients = new Set<Response>();
 
-let watcher: fs.FSWatcher | null = null;
-let watchedPath: string | null = null;
+let fsWatcher: fs.FSWatcher | null = null;
+let pollTimer: NodeJS.Timeout | null = null;
 let debounceTimer: NodeJS.Timeout | null = null;
+let watchedDir: string | null = null;
+
+// Last broadcast newer-save state, so repeated checks (every poll tick, or every fs event
+// while a save sits unloaded) don't re-log/re-broadcast identical info over and over.
+let lastBroadcastInfo: { newerSaveAvailable: boolean; newerSaveName: string | null } | null = null;
 
 export function addSseClient(res: Response): void {
   sseClients.add(res);
@@ -31,41 +39,130 @@ export function broadcastSaveError(message: string): void {
   }
 }
 
-/** Start watching the mounted save file for changes. Re-parses on each write. */
+function broadcastSaveAvailable(info: Awaited<ReturnType<typeof checkForNewerSave>>): void {
+  const payload = JSON.stringify({ event: 'save_available', ...info });
+  for (const client of sseClients) {
+    client.write(`data: ${payload}\n\n`);
+  }
+}
+
+/** Check for a newer save and broadcast/log only if the result actually changed since
+ *  the last check — avoids re-announcing the same "newer save available" on every poll
+ *  tick or fs event while the user just hasn't reloaded yet. */
+async function notifyIfChanged(): Promise<void> {
+  const info = await checkForNewerSave();
+  if (
+    lastBroadcastInfo &&
+    lastBroadcastInfo.newerSaveAvailable === info.newerSaveAvailable &&
+    lastBroadcastInfo.newerSaveName === info.newerSaveName
+  ) {
+    return;
+  }
+  lastBroadcastInfo = info;
+  if (info.newerSaveAvailable) {
+    console.log(`[save-watch] Newer save detected: "${info.newerSaveName}"`);
+  }
+  broadcastSaveAvailable(info);
+}
+
+async function checkDiskForNewerSave(): Promise<{ newerSaveAvailable: boolean; newerSaveName: string | null }> {
+  const found = findMountedSaveWithMtime();
+  if (!found) return { newerSaveAvailable: false, newerSaveName: null };
+
+  // If the loaded save has no on-disk mtime (e.g. downloaded via the SF API rather than
+  // read from the mount), there's nothing comparable to flag as "newer" — skip rather
+  // than false-positive against whatever happens to be sitting in the mount dir.
+  const loadedMtimeMs = getLoadedSourceMtimeMs();
+  const newerSaveAvailable = loadedMtimeMs !== null && found.mtimeMs > loadedMtimeMs;
+  return { newerSaveAvailable, newerSaveName: path.basename(found.file) };
+}
+
+async function checkApiForNewerSave(): Promise<{ newerSaveAvailable: boolean; newerSaveName: string | null }> {
+  const found = await findLatestApiSave();
+  if (!found) return { newerSaveAvailable: false, newerSaveName: null };
+
+  // Same rationale as disk mode: nothing to compare against if the loaded save didn't
+  // come from a previous API-resolved saveDateTime (e.g. loaded via disk, or a manual
+  // by-name download via the modal).
+  const loadedSaveDateTime = getLoadedSourceSaveDateTime();
+  const newerSaveAvailable = loadedSaveDateTime !== null && found.saveDateTime > loadedSaveDateTime;
+  return { newerSaveAvailable, newerSaveName: found.saveName };
+}
+
+/**
+ * Compare the latest known save — on disk or via the API, whichever mode is currently
+ * active — against the currently loaded one. Read-only — never reloads.
+ */
+export async function checkForNewerSave(): Promise<{ newerSaveAvailable: boolean; newerSaveName: string | null }> {
+  const mode = getSaveSourceMode();
+  if (mode === 'mount') return checkDiskForNewerSave();
+  if (mode === 'api') return checkApiForNewerSave();
+  return { newerSaveAvailable: false, newerSaveName: null };
+}
+
+/**
+ * Watch for newer saves becoming available. Mount mode watches the save directory itself
+ * (saves rotate across multiple autosave filenames, so we watch the directory, not a
+ * single file). API mode has no filesystem to watch, so it polls `EnumerateSessions`
+ * instead — that's metadata-only (no save bytes), so polling is cheap. Either way we only
+ * *notify*; we never reload automatically, since that could clobber in-progress edits.
+ */
 export function startWatching(): void {
   stopWatching();
 
-  const filePath = findMountedSave();
-  if (!filePath) {
-    console.log('[save-watch] No save file found to watch.');
+  const mode = getSaveSourceMode();
+
+  if (mode === 'mount') {
+    const dir = config.saveMountPath;
+    if (!fs.existsSync(dir)) {
+      console.log(`[save-watch] Save directory "${dir}" does not exist; not watching.`);
+      return;
+    }
+
+    console.log(`[save-watch] Watching directory "${dir}" for newer saves…`);
+    watchedDir = dir;
+
+    fsWatcher = fs.watch(dir, () => {
+      // Debounce: the game can write/rename several files in quick succession during a save
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(notifyIfChanged, 2000);
+    });
+
+    fsWatcher.on('error', (err) => {
+      console.error('[save-watch] Watcher error:', err.message);
+    });
     return;
   }
 
-  console.log(`[save-watch] Watching "${filePath}"…`);
-  watchedPath = filePath;
+  if (mode === 'api') {
+    const intervalMs = config.savePollIntervalSeconds * 1000;
+    console.log(`[save-watch] Polling the Satisfactory API every ${config.savePollIntervalSeconds}s for newer saves…`);
 
-  watcher = fs.watch(filePath, (event) => {
-    if (event !== 'change') return;
-    // Debounce: game writes the file multiple times during a save
-    if (debounceTimer) clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(async () => {
-      console.log(`[save-watch] Change detected, reloading…`);
-      await loadFromDisk();
-      broadcastSaveReloaded({ sourceName: filePath });
-    }, 2000);
-  });
+    const tick = async () => {
+      try {
+        await notifyIfChanged();
+      } catch (err) {
+        console.error('[save-watch] Poll error:', (err as Error).message);
+      }
+    };
 
-  watcher.on('error', (err) => {
-    console.error('[save-watch] Watcher error:', err.message);
-  });
+    tick(); // check immediately rather than waiting a full interval
+    pollTimer = setInterval(tick, intervalMs);
+    return;
+  }
+
+  console.log('[save-watch] No save source available (no mount, not connected); not watching.');
 }
 
 export function stopWatching(): void {
   if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null; }
-  if (watcher) { watcher.close(); watcher = null; }
-  watchedPath = null;
+  if (fsWatcher) { fsWatcher.close(); fsWatcher = null; }
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  watchedDir = null;
+  lastBroadcastInfo = null;
 }
 
+/** The mount directory being watched, if mount mode is active. Null in API/none mode. */
 export function getWatchedPath(): string | null {
-  return watchedPath;
+  return watchedDir;
 }
