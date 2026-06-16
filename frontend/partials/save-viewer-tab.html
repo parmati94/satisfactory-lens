@@ -208,9 +208,22 @@
                              :class="isPositionEdited(player) ? 'border-orange-500/40' : 'border-gray-700/60'">
                     </label>
                   </template>
+                  <button @click="snapToGround(player)"
+                          title="Set Z to terrain height (+3 m) at this X/Y — avoids teleporting into the ground or midair"
+                          class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md border border-gray-600/60 text-gray-300 hover:text-orange-200 hover:border-orange-500/50 hover:bg-orange-500/10 transition-colors">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v10m0 0l-3.5-3.5M12 14l3.5-3.5M5 20h14"/>
+                    </svg>
+                    Snap to ground
+                  </button>
                   <button x-show="isPositionEdited(player)"
                           @click="setPlayerPositionAxis(player, 'x', player.position.x / 100); setPlayerPositionAxis(player, 'y', player.position.y / 100); setPlayerPositionAxis(player, 'z', player.position.z / 100)"
-                          class="text-[11px] text-gray-500 hover:text-gray-300 transition-colors underline">reset</button>
+                          class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md border border-gray-700/50 text-gray-500 hover:text-gray-300 hover:border-gray-600 transition-colors">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M4 9a9 9 0 11-1 4"/>
+                    </svg>
+                    Reset
+                  </button>
                 </div>
               </div>
 

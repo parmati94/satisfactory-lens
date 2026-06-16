@@ -19,6 +19,7 @@ import { extractMapPins } from '../save/extractors/mapPins';
 import { extractStorage } from '../save/extractors/storage';
 import { extractBuildingFootprints } from '../save/extractors/buildingFootprints';
 import { persistEdits, type SaveEdit } from '../save/editor';
+import { groundZ } from '../save/worldHeight';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -185,6 +186,20 @@ router.get('/api/save/building-footprints', (_req, res) => {
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }
+});
+
+// GET /api/world/ground-height?x=&y= — terrain surface Z (cm) at a world point,
+// for the teleport "snap to ground" helper. Static (not save-dependent).
+router.get('/api/world/ground-height', (req, res) => {
+  const x = Number(req.query.x);
+  const y = Number(req.query.y);
+  if (!Number.isFinite(x) || !Number.isFinite(y)) {
+    res.status(400).json({ error: 'x and y are required' });
+    return;
+  }
+  const z = groundZ(x, y);
+  if (z === null) { res.status(404).json({ error: 'Outside world bounds' }); return; }
+  res.json({ z: Math.round(z) });
 });
 
 // GET /api/items — static item catalog (class → { path, name, stack }) for the

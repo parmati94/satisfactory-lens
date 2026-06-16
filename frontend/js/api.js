@@ -67,4 +67,5 @@ export const api = {
   },
 
   items: () => apiFetch('/api/items'),
+  groundHeight: (x, y) => apiFetch(`/api/world/ground-height?x=${Math.round(x)}&y=${Math.round(y)}`),
 };
