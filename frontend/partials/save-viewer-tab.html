@@ -12,6 +12,11 @@
         <span x-text="saveStatus?.sourceName"></span>
       </span>
       <span
+        x-show="saveStatus?.loaded"
+        class="text-xs text-gray-500"
+        x-text="saveStatus?.mode === 'api' ? 'via API' : 'via disk'"
+      ></span>
+      <span
         x-show="!saveStatus?.loaded && !saveStatus?.loading"
         class="text-xs text-gray-500"
       >No save loaded</span>
@@ -23,14 +28,10 @@
 
     <div class="flex items-center gap-2">
       <button
-        @click="reloadSave()"
-        x-show="saveStatus?.watchedPath || saveStatus?.loaded"
-        class="px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
-      >↻ Reload from disk</button>
-      <button
-        @click="showDownloadModal = true"
+        @click="openDownloadModal()"
+        x-show="sfStatus.connected"
         class="px-3 py-1.5 text-xs bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors"
-      >↓ Download from server</button>
+      >⇄ Load a Different Save</button>
     </div>
   </div>
 
@@ -45,8 +46,9 @@
   <div x-show="!saveStatus?.loaded && !saveStatus?.loading && !saveStatus?.error" class="flex flex-col items-center justify-center py-20 text-center">
     <div class="text-5xl mb-4">💾</div>
     <h3 class="text-lg font-semibold text-gray-300 mb-2">No Save Loaded</h3>
-    <p class="text-gray-500 text-sm mb-2 max-w-sm">Mount your Satisfactory save directory and click <strong class="text-gray-400">Reload from disk</strong>, or download a save directly from your server.</p>
-    <p class="text-xs text-gray-600">Mount path: <span class="font-mono" x-text="saveStatus?.watchedPath ?? '/app/saves'"></span></p>
+    <p class="text-gray-500 text-sm mb-2 max-w-sm" x-show="sfStatus.connected">Click <strong class="text-gray-400">Reload</strong> to load the latest save via the API, or mount your save directory for local disk access instead.</p>
+    <p class="text-gray-500 text-sm mb-2 max-w-sm" x-show="!sfStatus.connected">Use the <strong class="text-gray-400">Connect</strong> button above to load the latest save via the API, or mount your save directory for local disk access instead.</p>
+    <p class="text-xs text-gray-600" x-show="saveStatus?.watchedPath">Mount path: <span class="font-mono" x-text="saveStatus?.watchedPath"></span></p>
   </div>
 
   <!-- Loaded save content -->
@@ -55,8 +57,11 @@
     <!-- Meta row -->
     <div class="text-xs text-gray-500 mb-4">
       Loaded <span class="text-gray-400" x-text="saveStatus?.loadedAt ? new Date(saveStatus.loadedAt).toLocaleString() : '—'"></span>
-      <span x-show="saveStatus?.watchedPath" class="ml-3">
+      <span x-show="saveStatus?.mode === 'mount' && saveStatus?.watchedPath" class="ml-3">
         Watching <span class="font-mono text-gray-400" x-text="saveStatus?.watchedPath"></span>
+      </span>
+      <span x-show="saveStatus?.mode === 'api'" class="ml-3">
+        Polling Satisfactory API every <span class="text-gray-400" x-text="saveStatus?.pollIntervalSeconds"></span>s
       </span>
     </div>
 
@@ -546,7 +551,7 @@
   </div>
 </div>
 
-<!-- Download from server modal -->
+<!-- Load a different save modal -->
 <div
   x-show="showDownloadModal"
   x-transition:enter="transition ease-out duration-150"
@@ -560,18 +565,55 @@
   @keydown.escape.window="showDownloadModal = false"
 >
   <div class="bg-gray-800 rounded-2xl p-6 w-full max-w-md border border-gray-700 shadow-2xl">
-    <h2 class="text-lg font-bold mb-1">Download Save from Server</h2>
-    <p class="text-sm text-gray-400 mb-5">Enter the exact save name as listed in the Saves tab. The save will be downloaded and parsed.</p>
+    <h2 class="text-lg font-bold mb-1">Load a Different Save</h2>
+    <p class="text-sm text-gray-400 mb-5">Loads the selected save into Satisfactory Lens for inspection only — it does <strong class="text-gray-300">not</strong> change what's currently running on your server. To actually switch the live session, use Load on the Saves tab instead.</p>
 
     <div>
-      <label class="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Save Name</label>
-      <input
-        type="text"
-        x-model="downloadSaveName"
-        placeholder="e.g. Paulyamorous_autosave_0"
-        @keydown.enter="downloadSave()"
-        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-orange-400 transition-colors"
-      />
+      <label class="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Save</label>
+      <div x-show="loading" class="text-sm text-gray-500 animate-pulse py-2">Loading save list…</div>
+
+      <div x-show="!loading" class="relative" x-data="{ open: false }">
+        <button
+          type="button"
+          @click="open = !open"
+          class="w-full flex items-center justify-between gap-2 bg-gray-700 border rounded-lg px-3 py-2 text-sm text-left transition-colors hover:border-gray-500"
+          :class="open ? 'border-orange-400' : 'border-gray-600'"
+        >
+          <span class="truncate" :class="downloadSaveName ? 'text-white' : 'text-gray-500'" x-text="downloadSaveName || 'Select a save…'"></span>
+          <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        <div
+          x-show="open"
+          x-transition:enter="transition ease-out duration-100"
+          x-transition:enter-start="opacity-0 scale-95"
+          x-transition:enter-end="opacity-100 scale-100"
+          @click.away="open = false"
+          @keydown.escape.window="open = false"
+          class="absolute z-10 mt-1.5 w-full max-h-64 overflow-y-auto bg-gray-800 border border-gray-600 rounded-lg shadow-xl py-1"
+        >
+          <template x-for="session in saves?.sessions ?? []" :key="session.sessionName">
+            <div>
+              <div class="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-500 truncate" x-text="session.sessionName"></div>
+              <template x-for="save in (session.saveHeaders ?? [])" :key="save.saveName">
+                <button
+                  type="button"
+                  @click="downloadSaveName = save.saveName; downloadSaveDateTime = save.saveDateTime; open = false"
+                  class="w-full flex items-center justify-between gap-3 px-3 py-1.5 text-sm text-left transition-colors hover:bg-gray-700/60"
+                  :class="downloadSaveName === save.saveName ? 'bg-orange-500/10 text-orange-300' : 'text-gray-300'"
+                >
+                  <span class="truncate" x-text="save.saveName"></span>
+                  <span class="text-xs text-gray-500 shrink-0" x-text="formatSaveDate(save.saveDateTime)"></span>
+                </button>
+              </template>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <p x-show="!loading && !(saves?.sessions ?? []).length" class="text-xs text-gray-500 mt-1.5">No saves found on the server.</p>
     </div>
 
     <div
@@ -590,8 +632,8 @@
         :disabled="downloadLoading || !downloadSaveName.trim()"
         class="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
       >
-        <span x-show="!downloadLoading">Download & Parse</span>
-        <span x-show="downloadLoading">Downloading…</span>
+        <span x-show="!downloadLoading">Load Save</span>
+        <span x-show="downloadLoading">Loading…</span>
       </button>
     </div>
   </div>

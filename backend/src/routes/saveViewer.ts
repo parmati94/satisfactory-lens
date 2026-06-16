@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
+import { config } from '../config';
 import { getSave, getSaveStatus } from '../save/saveState';
-import { loadFromDisk, loadFromApi } from '../save/loader';
+import { loadFromApi, loadLatest, getSaveSourceMode } from '../save/loader';
 import {
   addSseClient,
   removeSseClient,
@@ -19,43 +20,45 @@ import { extractStorage } from '../save/extractors/storage';
 
 const router = Router();
 
-/** Full status payload: parser state + watch path + newer-save-available info. */
-function fullStatus() {
+/** Full status payload: parser state + active mode + newer-save-available info. */
+async function fullStatus() {
   return {
     ...getSaveStatus(),
+    mode: getSaveSourceMode(),
     watchedPath: getWatchedPath(),
-    ...checkForNewerSave(),
+    pollIntervalSeconds: config.savePollIntervalSeconds,
+    ...(await checkForNewerSave()),
   };
 }
 
 // GET /api/save/status
-router.get('/api/save/status', (_req, res) => {
-  res.json(fullStatus());
+router.get('/api/save/status', async (_req, res) => {
+  res.json(await fullStatus());
 });
 
-// POST /api/save/reload — reload from disk mount
+// POST /api/save/reload — reload from whichever source is active (mount, else API)
 router.post('/api/save/reload', async (_req, res) => {
-  await loadFromDisk();
+  await loadLatest();
   const status = getSaveStatus();
   if (status.loaded) {
     broadcastSaveReloaded({ sourceName: status.sourceName });
   }
-  res.json(fullStatus());
+  res.json(await fullStatus());
 });
 
-// POST /api/save/download — download from SF API and parse
+// POST /api/save/download — download a specific save by name from the SF API and parse it
 router.post('/api/save/download', async (req, res) => {
-  const { saveName } = req.body as { saveName?: string };
+  const { saveName, saveDateTime } = req.body as { saveName?: string; saveDateTime?: string };
   if (!saveName) {
     res.status(400).json({ error: 'saveName is required' });
     return;
   }
-  await loadFromApi(saveName);
+  await loadFromApi(saveName, saveDateTime ?? null);
   const status = getSaveStatus();
   if (status.loaded) {
     broadcastSaveReloaded({ sourceName: status.sourceName });
   }
-  res.json(fullStatus());
+  res.json(await fullStatus());
 });
 
 // POST /api/save/watch — start/restart file watching
@@ -72,7 +75,9 @@ router.get('/api/save/events', (req: Request, res: Response) => {
   res.flushHeaders();
 
   // Initial status ping
-  res.write(`data: ${JSON.stringify({ event: 'connected', ...fullStatus() })}\n\n`);
+  fullStatus().then((status) => {
+    res.write(`data: ${JSON.stringify({ event: 'connected', ...status })}\n\n`);
+  });
 
   const keepalive = setInterval(() => res.write(':\n\n'), 25000);
 

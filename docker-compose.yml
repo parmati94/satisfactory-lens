@@ -21,10 +21,11 @@ services:
       - SF_PORT=7777
       - SF_PASSWORD=
       - SF_ALLOW_SELF_SIGNED=true
-      # Save viewer — uncomment the volume above and set SAVE_MOUNT_PATH to enable
-      - SAVE_MOUNT_PATH=/app/saves
-      - SAVE_FILE_NAME=        # specific .sav filename; blank = auto-select newest
-      - ENABLE_AUTO_WATCH=true # watch the save dir and flag (not auto-reload) when a newer save appears
+      # Save viewer — defaults to loading the latest save via the SF API once connected
+      # (no volume needed). Uncomment the volume above (host path → /app/saves) to read
+      # from disk instead; a mounted save always takes precedence over the API when present.
+      - ENABLE_AUTO_WATCH=true # flag (never auto-reload) when a newer save appears — watches the mount dir, or polls the API if not mounted
+      - SAVE_POLL_INTERVAL_SECONDS=30 # how often to poll the API for a newer save when not mounted
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
