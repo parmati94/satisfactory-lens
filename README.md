@@ -71,6 +71,9 @@ All settings are environment variables in `docker-compose.yml`:
 | `PASSWORD` | `changeme` | App login password |
 | `SESSION_SECRET` | _(insecure default)_ | Secret for signing session cookies — **change this in production** |
 | `TZ` | `America/New_York` | Timezone for log timestamps |
+| `SAVE_MOUNT_PATH` | `/app/saves` | Directory to mount your save folder into, for the Save Viewer. Requires a matching volume mount. |
+| `SAVE_FILE_NAME` | _(blank)_ | Specific `.sav` filename to load. Leave blank to auto-select the newest file in `SAVE_MOUNT_PATH`. |
+| `ENABLE_AUTO_WATCH` | `true` | Watch `SAVE_MOUNT_PATH` for newer autosaves and flag it in the UI (header reload button). Never reloads automatically — you choose when to reload, so it won't clobber in-progress edits. |
 
 ---
 
