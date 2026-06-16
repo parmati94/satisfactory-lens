@@ -47,8 +47,8 @@
       <button
         x-show="sfStatus.connected && saveStatus?.loaded"
         @click="headerReloadSave()"
-        :disabled="headerReloading"
-        @mouseenter="showTooltip($event, reloadTooltipText(), null, 'bottom')"
+        :disabled="headerReloading || editCount > 0"
+        @mouseenter="showTooltip($event, editCount > 0 ? 'Reload disabled while editing — save or cancel first' : reloadTooltipText(), null, 'bottom')"
         @mouseleave="hideTooltip()"
         class="relative p-1.5 hover:bg-gray-700/60 rounded-lg transition-colors group disabled:opacity-50"
       >

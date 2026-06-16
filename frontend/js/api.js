@@ -62,5 +62,7 @@ export const api = {
     mapPins: () => apiFetch('/api/save/map-pins'),
     storage: () => apiFetch('/api/save/storage'),
     buildingFootprints: () => apiFetch('/api/save/building-footprints'),
+    persistEdits: ({ saveName, mode, edits }) =>
+      apiFetch('/api/save/edit/persist', { method: 'POST', body: { saveName, mode, edits } }),
   },
 };
