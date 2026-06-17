@@ -1,0 +1,902 @@
+{
+"BP_EquipmentDescriptorCandyCane": {
+"name": "Candy Cane Basher",
+"path": "/Game/FactoryGame/Resource/Equipment/StunSpear/BP_EquipmentDescriptorCandyCane.BP_EquipmentDescriptorCandyCane_C",
+"stack": 1
+},
+"BP_EquipmentDescriptorGasmask": {
+"name": "Gas Mask",
+"path": "/Game/FactoryGame/Resource/Equipment/GasMask/BP_EquipmentDescriptorGasmask.BP_EquipmentDescriptorGasmask_C",
+"stack": 1
+},
+"BP_EquipmentDescriptorHazmatSuit": {
+"name": "Hazmat Suit",
+"path": "/Game/FactoryGame/Resource/Equipment/HazmatSuit/BP_EquipmentDescriptorHazmatSuit.BP_EquipmentDescriptorHazmatSuit_C",
+"stack": 1
+},
+"BP_EquipmentDescriptorHoverPack": {
+"name": "Hoverpack",
+"path": "/Game/FactoryGame/Resource/Equipment/HoverPack/BP_EquipmentDescriptorHoverPack.BP_EquipmentDescriptorHoverPack_C",
+"stack": 1
+},
+"BP_EquipmentDescriptorJetPack": {
+"name": "Jetpack",
+"path": "/Game/FactoryGame/Resource/Equipment/JetPack/BP_EquipmentDescriptorJetPack.BP_EquipmentDescriptorJetPack_C",
+"stack": 1
+},
+"BP_EquipmentDescriptorJumpingStilts": {
+"name": "Blade Runners",
+"path": "/Game/FactoryGame/Resource/Equipment/JumpingStilts/BP_EquipmentDescriptorJumpingStilts.BP_EquipmentDescriptorJumpingStilts_C",
+"stack": 1
+},
+"BP_EquipmentDescriptorNobeliskDetonator": {
+"name": "Nobelisk Detonator",
+"path": "/Game/FactoryGame/Resource/Equipment/NobeliskDetonator/BP_EquipmentDescriptorNobeliskDetonator.BP_EquipmentDescriptorNobeliskDetonator_C",
+"stack": 1
+},
+"BP_EquipmentDescriptorObjectScanner": {
+"name": "Object Scanner",
+"path": "/Game/FactoryGame/Resource/Equipment/GemstoneScanner/BP_EquipmentDescriptorObjectScanner.BP_EquipmentDescriptorObjectScanner_C",
+"stack": 1
+},
+"BP_EquipmentDescriptorRifle": {
+"name": "Rifle",
+"path": "/Game/FactoryGame/Resource/Equipment/Rifle/BP_EquipmentDescriptorRifle.BP_EquipmentDescriptorRifle_C",
+"stack": 1
+},
+"BP_EquipmentDescriptorShockShank": {
+"name": "Xeno-Zapper",
+"path": "/Game/FactoryGame/Resource/Equipment/ShockShank/BP_EquipmentDescriptorShockShank.BP_EquipmentDescriptorShockShank_C",
+"stack": 1
+},
+"BP_EquipmentDescriptorStunSpear": {
+"name": "Xeno-Basher",
+"path": "/Game/FactoryGame/Resource/Equipment/StunSpear/BP_EquipmentDescriptorStunSpear.BP_EquipmentDescriptorStunSpear_C",
+"stack": 1
+},
+"BP_ItemDescriptorPortableMiner": {
+"name": "Portable Miner",
+"path": "/Game/FactoryGame/Resource/Equipment/PortableMiner/BP_ItemDescriptorPortableMiner.BP_ItemDescriptorPortableMiner_C",
+"stack": 50
+},
+"Desc_AlienDNACapsule": {
+"name": "Alien DNA Capsule",
+"path": "/Game/FactoryGame/Resource/Parts/AlienDNACapsule/Desc_AlienDNACapsule.Desc_AlienDNACapsule_C",
+"stack": 50
+},
+"Desc_AlienPowerFuel": {
+"name": "Alien Power Matrix",
+"path": "/Game/FactoryGame/Resource/Parts/AlienPowerFuel/Desc_AlienPowerFuel.Desc_AlienPowerFuel_C",
+"stack": 50
+},
+"Desc_AlienProtein": {
+"name": "Alien Protein",
+"path": "/Game/FactoryGame/Resource/Parts/AlienProtein/Desc_AlienProtein.Desc_AlienProtein_C",
+"stack": 100
+},
+"Desc_AluminumCasing": {
+"name": "Aluminum Casing",
+"path": "/Game/FactoryGame/Resource/Parts/AluminumCasing/Desc_AluminumCasing.Desc_AluminumCasing_C",
+"stack": 200
+},
+"Desc_AluminumIngot": {
+"name": "Aluminum Ingot",
+"path": "/Game/FactoryGame/Resource/Parts/AluminumIngot/Desc_AluminumIngot.Desc_AluminumIngot_C",
+"stack": 100
+},
+"Desc_AluminumPlate": {
+"name": "Alclad Aluminum Sheet",
+"path": "/Game/FactoryGame/Resource/Parts/AluminumPlate/Desc_AluminumPlate.Desc_AluminumPlate_C",
+"stack": 200
+},
+"Desc_AluminumPlateReinforced": {
+"name": "Heat Sink",
+"path": "/Game/FactoryGame/Resource/Parts/AluminumPlateReinforced/Desc_AluminumPlateReinforced.Desc_AluminumPlateReinforced_C",
+"stack": 100
+},
+"Desc_AluminumScrap": {
+"name": "Aluminum Scrap",
+"path": "/Game/FactoryGame/Resource/Parts/AluminumScrap/Desc_AluminumScrap.Desc_AluminumScrap_C",
+"stack": 500
+},
+"Desc_Battery": {
+"name": "Battery",
+"path": "/Game/FactoryGame/Resource/Parts/Battery/Desc_Battery.Desc_Battery_C",
+"stack": 200
+},
+"Desc_Berry": {
+"name": "Paleberry",
+"path": "/Game/FactoryGame/Resource/Environment/Berry/Desc_Berry.Desc_Berry_C",
+"stack": 50
+},
+"Desc_Biofuel": {
+"name": "Solid Biofuel",
+"path": "/Game/FactoryGame/Resource/Parts/BioFuel/Desc_Biofuel.Desc_Biofuel_C",
+"stack": 200
+},
+"Desc_Cable": {
+"name": "Cable",
+"path": "/Game/FactoryGame/Resource/Parts/Cable/Desc_Cable.Desc_Cable_C",
+"stack": 200
+},
+"Desc_CandyCane": {
+"name": "Candy Cane",
+"path": "/Game/FactoryGame/Events/Christmas/Parts/Desc_CandyCane.Desc_CandyCane_C",
+"stack": 100
+},
+"Desc_CartridgeChaos": {
+"name": "Turbo Rifle Ammo",
+"path": "/Game/FactoryGame/Equipment/Rifle/Ammo/Desc_CartridgeChaos.Desc_CartridgeChaos_C",
+"stack": 500
+},
+"Desc_CartridgeSmartProjectile": {
+"name": "Homing Rifle Ammo",
+"path": "/Game/FactoryGame/Equipment/Rifle/Ammo/Desc_CartridgeSmartProjectile.Desc_CartridgeSmartProjectile_C",
+"stack": 500
+},
+"Desc_CartridgeStandard": {
+"name": "Rifle Ammo",
+"path": "/Game/FactoryGame/Resource/Parts/CartridgeStandard/Desc_CartridgeStandard.Desc_CartridgeStandard_C",
+"stack": 500
+},
+"Desc_Cement": {
+"name": "Concrete",
+"path": "/Game/FactoryGame/Resource/Parts/Cement/Desc_Cement.Desc_Cement_C",
+"stack": 500
+},
+"Desc_Chainsaw": {
+"name": "Chainsaw",
+"path": "/Game/FactoryGame/Equipment/Chainsaw/Desc_Chainsaw.Desc_Chainsaw_C",
+"stack": 1
+},
+"Desc_CircuitBoard": {
+"name": "Circuit Board",
+"path": "/Game/FactoryGame/Resource/Parts/CircuitBoard/Desc_CircuitBoard.Desc_CircuitBoard_C",
+"stack": 200
+},
+"Desc_CircuitBoardHighSpeed": {
+"name": "AI Limiter",
+"path": "/Game/FactoryGame/Resource/Parts/CircuitBoardHighSpeed/Desc_CircuitBoardHighSpeed.Desc_CircuitBoardHighSpeed_C",
+"stack": 100
+},
+"Desc_Coal": {
+"name": "Coal",
+"path": "/Game/FactoryGame/Resource/RawResources/Coal/Desc_Coal.Desc_Coal_C",
+"stack": 100
+},
+"Desc_CompactedCoal": {
+"name": "Compacted Coal",
+"path": "/Game/FactoryGame/Resource/Parts/CompactedCoal/Desc_CompactedCoal.Desc_CompactedCoal_C",
+"stack": 100
+},
+"Desc_Computer": {
+"name": "Computer",
+"path": "/Game/FactoryGame/Resource/Parts/Computer/Desc_Computer.Desc_Computer_C",
+"stack": 50
+},
+"Desc_ComputerSuper": {
+"name": "Supercomputer",
+"path": "/Game/FactoryGame/Resource/Parts/ComputerSuper/Desc_ComputerSuper.Desc_ComputerSuper_C",
+"stack": 50
+},
+"Desc_CoolingSystem": {
+"name": "Cooling System",
+"path": "/Game/FactoryGame/Resource/Parts/CoolingSystem/Desc_CoolingSystem.Desc_CoolingSystem_C",
+"stack": 100
+},
+"Desc_CopperDust": {
+"name": "Copper Powder",
+"path": "/Game/FactoryGame/Resource/Parts/CopperDust/Desc_CopperDust.Desc_CopperDust_C",
+"stack": 500
+},
+"Desc_CopperIngot": {
+"name": "Copper Ingot",
+"path": "/Game/FactoryGame/Resource/Parts/CopperIngot/Desc_CopperIngot.Desc_CopperIngot_C",
+"stack": 100
+},
+"Desc_CopperSheet": {
+"name": "Copper Sheet",
+"path": "/Game/FactoryGame/Resource/Parts/CopperSheet/Desc_CopperSheet.Desc_CopperSheet_C",
+"stack": 200
+},
+"Desc_Crystal": {
+"name": "Blue Power Slug",
+"path": "/Game/FactoryGame/Resource/Environment/Crystal/Desc_Crystal.Desc_Crystal_C",
+"stack": 50
+},
+"Desc_CrystalOscillator": {
+"name": "Crystal Oscillator",
+"path": "/Game/FactoryGame/Resource/Parts/CrystalOscillator/Desc_CrystalOscillator.Desc_CrystalOscillator_C",
+"stack": 100
+},
+"Desc_CrystalShard": {
+"name": "Power Shard",
+"path": "/Game/FactoryGame/Resource/Environment/Crystal/Desc_CrystalShard.Desc_CrystalShard_C",
+"stack": 100
+},
+"Desc_Crystal_mk2": {
+"name": "Yellow Power Slug",
+"path": "/Game/FactoryGame/Resource/Environment/Crystal/Desc_Crystal_mk2.Desc_Crystal_mk2_C",
+"stack": 50
+},
+"Desc_Crystal_mk3": {
+"name": "Purple Power Slug",
+"path": "/Game/FactoryGame/Resource/Environment/Crystal/Desc_Crystal_mk3.Desc_Crystal_mk3_C",
+"stack": 50
+},
+"Desc_DarkMatter": {
+"name": "Dark Matter Crystal",
+"path": "/Game/FactoryGame/Resource/Parts/DarkMatter/Desc_DarkMatter.Desc_DarkMatter_C",
+"stack": 200
+},
+"Desc_Diamond": {
+"name": "Diamonds",
+"path": "/Game/FactoryGame/Resource/Parts/Diamond/Desc_Diamond.Desc_Diamond_C",
+"stack": 200
+},
+"Desc_ElectromagneticControlRod": {
+"name": "Electromagnetic Control Rod",
+"path": "/Game/FactoryGame/Resource/Parts/ElectromagneticControlRod/Desc_ElectromagneticControlRod.Desc_ElectromagneticControlRod_C",
+"stack": 100
+},
+"Desc_Fabric": {
+"name": "Fabric",
+"path": "/Game/FactoryGame/Resource/Parts/GenericBiomass/Desc_Fabric.Desc_Fabric_C",
+"stack": 100
+},
+"Desc_FicsiteIngot": {
+"name": "Ficsite Ingot",
+"path": "/Game/FactoryGame/Resource/Parts/FicsiteIngot/Desc_FicsiteIngot.Desc_FicsiteIngot_C",
+"stack": 100
+},
+"Desc_FicsiteMesh": {
+"name": "Ficsite Trigon",
+"path": "/Game/FactoryGame/Resource/Parts/FicsiteMesh/Desc_FicsiteMesh.Desc_FicsiteMesh_C",
+"stack": 200
+},
+"Desc_Ficsonium": {
+"name": "Ficsonium",
+"path": "/Game/FactoryGame/Resource/Parts/Ficsonium/Desc_Ficsonium.Desc_Ficsonium_C",
+"stack": 100
+},
+"Desc_FicsoniumFuelRod": {
+"name": "Ficsonium Fuel Rod",
+"path": "/Game/FactoryGame/Resource/Parts/FicsoniumFuelRod/Desc_FicsoniumFuelRod.Desc_FicsoniumFuelRod_C",
+"stack": 50
+},
+"Desc_Filter": {
+"name": "Gas Filter",
+"path": "/Game/FactoryGame/Resource/Parts/Filter/Desc_Filter.Desc_Filter_C",
+"stack": 50
+},
+"Desc_Fireworks_Projectile_01": {
+"name": "Sweet Fireworks",
+"path": "/Game/FactoryGame/Events/Christmas/FireWorks/Desc_Fireworks_Projectile_01.Desc_Fireworks_Projectile_01_C",
+"stack": 100
+},
+"Desc_Fireworks_Projectile_02": {
+"name": "Fancy Fireworks",
+"path": "/Game/FactoryGame/Events/Christmas/FireWorks/Desc_Fireworks_Projectile_02.Desc_Fireworks_Projectile_02_C",
+"stack": 100
+},
+"Desc_Fireworks_Projectile_03": {
+"name": "Sparkly Fireworks",
+"path": "/Game/FactoryGame/Events/Christmas/FireWorks/Desc_Fireworks_Projectile_03.Desc_Fireworks_Projectile_03_C",
+"stack": 100
+},
+"Desc_FluidCanister": {
+"name": "Empty Canister",
+"path": "/Game/FactoryGame/Resource/Parts/FluidCanister/Desc_FluidCanister.Desc_FluidCanister_C",
+"stack": 100
+},
+"Desc_Fuel": {
+"name": "Packaged Fuel",
+"path": "/Game/FactoryGame/Resource/Parts/Fuel/Desc_Fuel.Desc_Fuel_C",
+"stack": 100
+},
+"Desc_GasTank": {
+"name": "Empty Fluid Tank",
+"path": "/Game/FactoryGame/Resource/Parts/GasTank/Desc_GasTank.Desc_GasTank_C",
+"stack": 100
+},
+"Desc_GenericBiomass": {
+"name": "Biomass",
+"path": "/Game/FactoryGame/Resource/Parts/GenericBiomass/Desc_GenericBiomass.Desc_GenericBiomass_C",
+"stack": 200
+},
+"Desc_Gift": {
+"name": "FICSMAS Gift",
+"path": "/Game/FactoryGame/Events/Christmas/Parts/Desc_Gift.Desc_Gift_C",
+"stack": 200
+},
+"Desc_GoldIngot": {
+"name": "Caterium Ingot",
+"path": "/Game/FactoryGame/Resource/Parts/GoldIngot/Desc_GoldIngot.Desc_GoldIngot_C",
+"stack": 100
+},
+"Desc_Gunpowder": {
+"name": "Black Powder",
+"path": "/Game/FactoryGame/Resource/Parts/GunPowder/Desc_Gunpowder.Desc_Gunpowder_C",
+"stack": 200
+},
+"Desc_GunpowderMK2": {
+"name": "Smokeless Powder",
+"path": "/Game/FactoryGame/Resource/Parts/GunPowder/Desc_GunpowderMK2.Desc_GunpowderMK2_C",
+"stack": 100
+},
+"Desc_HardDrive": {
+"name": "Hard Drive",
+"path": "/Game/FactoryGame/Resource/Environment/CrashSites/Desc_HardDrive.Desc_HardDrive_C",
+"stack": 100
+},
+"Desc_HatcherParts": {
+"name": "Hatcher Remains",
+"path": "/Game/FactoryGame/Resource/Parts/AnimalParts/Desc_HatcherParts.Desc_HatcherParts_C",
+"stack": 50
+},
+"Desc_HazmatFilter": {
+"name": "Iodine-Infused Filter",
+"path": "/Game/FactoryGame/Resource/Parts/IodineInfusedFilter/Desc_HazmatFilter.Desc_HazmatFilter_C",
+"stack": 50
+},
+"Desc_HighSpeedConnector": {
+"name": "High-Speed Connector",
+"path": "/Game/FactoryGame/Resource/Parts/HighSpeedConnector/Desc_HighSpeedConnector.Desc_HighSpeedConnector_C",
+"stack": 100
+},
+"Desc_HighSpeedWire": {
+"name": "Quickwire",
+"path": "/Game/FactoryGame/Resource/Parts/HighSpeedWire/Desc_HighSpeedWire.Desc_HighSpeedWire_C",
+"stack": 500
+},
+"Desc_HogParts": {
+"name": "Hog Remains",
+"path": "/Game/FactoryGame/Resource/Parts/AnimalParts/Desc_HogParts.Desc_HogParts_C",
+"stack": 50
+},
+"Desc_IronIngot": {
+"name": "Iron Ingot",
+"path": "/Game/FactoryGame/Resource/Parts/IronIngot/Desc_IronIngot.Desc_IronIngot_C",
+"stack": 100
+},
+"Desc_IronPlate": {
+"name": "Iron Plate",
+"path": "/Game/FactoryGame/Resource/Parts/IronPlate/Desc_IronPlate.Desc_IronPlate_C",
+"stack": 200
+},
+"Desc_IronPlateReinforced": {
+"name": "Reinforced Iron Plate",
+"path": "/Game/FactoryGame/Resource/Parts/IronPlateReinforced/Desc_IronPlateReinforced.Desc_IronPlateReinforced_C",
+"stack": 100
+},
+"Desc_IronRod": {
+"name": "Iron Rod",
+"path": "/Game/FactoryGame/Resource/Parts/IronRod/Desc_IronRod.Desc_IronRod_C",
+"stack": 200
+},
+"Desc_IronScrew": {
+"name": "Screws",
+"path": "/Game/FactoryGame/Resource/Parts/IronScrew/Desc_IronScrew.Desc_IronScrew_C",
+"stack": 500
+},
+"Desc_Leaves": {
+"name": "Leaves",
+"path": "/Game/FactoryGame/Resource/Parts/GenericBiomass/Desc_Leaves.Desc_Leaves_C",
+"stack": 500
+},
+"Desc_Medkit": {
+"name": "Medicinal Inhaler",
+"path": "/Game/FactoryGame/Resource/Equipment/Medkit/Desc_Medkit.Desc_Medkit_C",
+"stack": 50
+},
+"Desc_ModularFrame": {
+"name": "Modular Frame",
+"path": "/Game/FactoryGame/Resource/Parts/ModularFrame/Desc_ModularFrame.Desc_ModularFrame_C",
+"stack": 50
+},
+"Desc_ModularFrameFused": {
+"name": "Fused Modular Frame",
+"path": "/Game/FactoryGame/Resource/Parts/ModularFrameFused/Desc_ModularFrameFused.Desc_ModularFrameFused_C",
+"stack": 50
+},
+"Desc_ModularFrameHeavy": {
+"name": "Heavy Modular Frame",
+"path": "/Game/FactoryGame/Resource/Parts/ModularFrameHeavy/Desc_ModularFrameHeavy.Desc_ModularFrameHeavy_C",
+"stack": 50
+},
+"Desc_ModularFrameLightweight": {
+"name": "Radio Control Unit",
+"path": "/Game/FactoryGame/Resource/Parts/ModularFrameLightweight/Desc_ModularFrameLightweight.Desc_ModularFrameLightweight_C",
+"stack": 50
+},
+"Desc_Motor": {
+"name": "Motor",
+"path": "/Game/FactoryGame/Resource/Parts/Motor/Desc_Motor.Desc_Motor_C",
+"stack": 50
+},
+"Desc_MotorLightweight": {
+"name": "Turbo Motor",
+"path": "/Game/FactoryGame/Resource/Parts/MotorLightweight/Desc_MotorLightweight.Desc_MotorLightweight_C",
+"stack": 50
+},
+"Desc_Mycelia": {
+"name": "Mycelia",
+"path": "/Game/FactoryGame/Resource/Parts/GenericBiomass/Desc_Mycelia.Desc_Mycelia_C",
+"stack": 200
+},
+"Desc_NobeliskCluster": {
+"name": "Cluster Nobelisk",
+"path": "/Game/FactoryGame/Equipment/NobeliskDetonator/Ammo/Desc_NobeliskCluster.Desc_NobeliskCluster_C",
+"stack": 50
+},
+"Desc_NobeliskExplosive": {
+"name": "Nobelisk",
+"path": "/Game/FactoryGame/Resource/Parts/NobeliskExplosive/Desc_NobeliskExplosive.Desc_NobeliskExplosive_C",
+"stack": 50
+},
+"Desc_NobeliskGas": {
+"name": "Gas Nobelisk",
+"path": "/Game/FactoryGame/Equipment/NobeliskDetonator/Ammo/Desc_NobeliskGas.Desc_NobeliskGas_C",
+"stack": 50
+},
+"Desc_NobeliskNuke": {
+"name": "Nuke Nobelisk",
+"path": "/Game/FactoryGame/Equipment/NobeliskDetonator/Ammo/Desc_NobeliskNuke.Desc_NobeliskNuke_C",
+"stack": 50
+},
+"Desc_NobeliskShockwave": {
+"name": "Pulse Nobelisk",
+"path": "/Game/FactoryGame/Equipment/NobeliskDetonator/Ammo/Desc_NobeliskShockwave.Desc_NobeliskShockwave_C",
+"stack": 50
+},
+"Desc_NonFissibleUranium": {
+"name": "Non-Fissile Uranium",
+"path": "/Game/FactoryGame/Resource/Parts/Non-FissibleUranium/Desc_NonFissibleUranium.Desc_NonFissibleUranium_C",
+"stack": 500
+},
+"Desc_NuclearFuelRod": {
+"name": "Uranium Fuel Rod",
+"path": "/Game/FactoryGame/Resource/Parts/NuclearFuelRod/Desc_NuclearFuelRod.Desc_NuclearFuelRod_C",
+"stack": 50
+},
+"Desc_NuclearWaste": {
+"name": "Uranium Waste",
+"path": "/Game/FactoryGame/Resource/Parts/NuclearWaste/Desc_NuclearWaste.Desc_NuclearWaste_C",
+"stack": 500
+},
+"Desc_Nut": {
+"name": "Beryl Nut",
+"path": "/Game/FactoryGame/Resource/Environment/Nut/Desc_Nut.Desc_Nut_C",
+"stack": 100
+},
+"Desc_OreBauxite": {
+"name": "Bauxite",
+"path": "/Game/FactoryGame/Resource/RawResources/OreBauxite/Desc_OreBauxite.Desc_OreBauxite_C",
+"stack": 100
+},
+"Desc_OreCopper": {
+"name": "Copper Ore",
+"path": "/Game/FactoryGame/Resource/RawResources/OreCopper/Desc_OreCopper.Desc_OreCopper_C",
+"stack": 100
+},
+"Desc_OreGold": {
+"name": "Caterium Ore",
+"path": "/Game/FactoryGame/Resource/RawResources/OreGold/Desc_OreGold.Desc_OreGold_C",
+"stack": 100
+},
+"Desc_OreIron": {
+"name": "Iron Ore",
+"path": "/Game/FactoryGame/Resource/RawResources/OreIron/Desc_OreIron.Desc_OreIron_C",
+"stack": 100
+},
+"Desc_OreUranium": {
+"name": "Uranium",
+"path": "/Game/FactoryGame/Resource/RawResources/OreUranium/Desc_OreUranium.Desc_OreUranium_C",
+"stack": 100
+},
+"Desc_PackagedAlumina": {
+"name": "Packaged Alumina Solution",
+"path": "/Game/FactoryGame/Resource/Parts/Alumina/Desc_PackagedAlumina.Desc_PackagedAlumina_C",
+"stack": 100
+},
+"Desc_PackagedBiofuel": {
+"name": "Packaged Liquid Biofuel",
+"path": "/Game/FactoryGame/Resource/Parts/BioFuel/Desc_PackagedBiofuel.Desc_PackagedBiofuel_C",
+"stack": 100
+},
+"Desc_PackagedIonizedFuel": {
+"name": "Packaged Ionized Fuel",
+"path": "/Game/FactoryGame/Resource/Parts/IonizedFuel/Desc_PackagedIonizedFuel.Desc_PackagedIonizedFuel_C",
+"stack": 100
+},
+"Desc_PackagedNitricAcid": {
+"name": "Packaged Nitric Acid",
+"path": "/Game/FactoryGame/Resource/Parts/NitricAcid/Desc_PackagedNitricAcid.Desc_PackagedNitricAcid_C",
+"stack": 100
+},
+"Desc_PackagedNitrogenGas": {
+"name": "Packaged Nitrogen Gas",
+"path": "/Game/FactoryGame/Resource/Parts/PackagedNitrogen/Desc_PackagedNitrogenGas.Desc_PackagedNitrogenGas_C",
+"stack": 100
+},
+"Desc_PackagedOil": {
+"name": "Packaged Oil",
+"path": "/Game/FactoryGame/Resource/RawResources/CrudeOil/Desc_PackagedOil.Desc_PackagedOil_C",
+"stack": 100
+},
+"Desc_PackagedOilResidue": {
+"name": "Packaged Heavy Oil Residue",
+"path": "/Game/FactoryGame/Resource/Parts/HeavyOilResidue/Desc_PackagedOilResidue.Desc_PackagedOilResidue_C",
+"stack": 100
+},
+"Desc_PackagedRocketFuel": {
+"name": "Packaged Rocket Fuel",
+"path": "/Game/FactoryGame/Resource/Parts/RocketFuel/Desc_PackagedRocketFuel.Desc_PackagedRocketFuel_C",
+"stack": 100
+},
+"Desc_PackagedSulfuricAcid": {
+"name": "Packaged Sulfuric Acid",
+"path": "/Game/FactoryGame/Resource/Parts/SulfuricAcid/Desc_PackagedSulfuricAcid.Desc_PackagedSulfuricAcid_C",
+"stack": 100
+},
+"Desc_PackagedWater": {
+"name": "Packaged Water",
+"path": "/Game/FactoryGame/Resource/RawResources/Water/Desc_PackagedWater.Desc_PackagedWater_C",
+"stack": 100
+},
+"Desc_Parachute": {
+"name": "Parachute",
+"path": "/Game/FactoryGame/Resource/Equipment/Beacon/Desc_Parachute.Desc_Parachute_C",
+"stack": 1
+},
+"Desc_PetroleumCoke": {
+"name": "Petroleum Coke",
+"path": "/Game/FactoryGame/Resource/Parts/PetroleumCoke/Desc_PetroleumCoke.Desc_PetroleumCoke_C",
+"stack": 200
+},
+"Desc_Plastic": {
+"name": "Plastic",
+"path": "/Game/FactoryGame/Resource/Parts/Plastic/Desc_Plastic.Desc_Plastic_C",
+"stack": 200
+},
+"Desc_PlutoniumCell": {
+"name": "Encased Plutonium Cell",
+"path": "/Game/FactoryGame/Resource/Parts/PlutoniumCell/Desc_PlutoniumCell.Desc_PlutoniumCell_C",
+"stack": 200
+},
+"Desc_PlutoniumFuelRod": {
+"name": "Plutonium Fuel Rod",
+"path": "/Game/FactoryGame/Resource/Parts/PlutoniumFuelRods/Desc_PlutoniumFuelRod.Desc_PlutoniumFuelRod_C",
+"stack": 50
+},
+"Desc_PlutoniumPellet": {
+"name": "Plutonium Pellet",
+"path": "/Game/FactoryGame/Resource/Parts/PlutoniumPellet/Desc_PlutoniumPellet.Desc_PlutoniumPellet_C",
+"stack": 100
+},
+"Desc_PlutoniumWaste": {
+"name": "Plutonium Waste",
+"path": "/Game/FactoryGame/Resource/Parts/NuclearWaste/Desc_PlutoniumWaste.Desc_PlutoniumWaste_C",
+"stack": 500
+},
+"Desc_PolymerResin": {
+"name": "Polymer Resin",
+"path": "/Game/FactoryGame/Resource/Parts/PolymerResin/Desc_PolymerResin.Desc_PolymerResin_C",
+"stack": 200
+},
+"Desc_PressureConversionCube": {
+"name": "Pressure Conversion Cube",
+"path": "/Game/FactoryGame/Resource/Parts/PressureConversionCube/Desc_PressureConversionCube.Desc_PressureConversionCube_C",
+"stack": 50
+},
+"Desc_QuantumOscillator": {
+"name": "Superposition Oscillator",
+"path": "/Game/FactoryGame/Resource/Parts/QuantumOscillator/Desc_QuantumOscillator.Desc_QuantumOscillator_C",
+"stack": 100
+},
+"Desc_QuartzCrystal": {
+"name": "Quartz Crystal",
+"path": "/Game/FactoryGame/Resource/Parts/QuartzCrystal/Desc_QuartzCrystal.Desc_QuartzCrystal_C",
+"stack": 200
+},
+"Desc_RawQuartz": {
+"name": "Raw Quartz",
+"path": "/Game/FactoryGame/Resource/RawResources/RawQuartz/Desc_RawQuartz.Desc_RawQuartz_C",
+"stack": 100
+},
+"Desc_RebarGunProjectile": {
+"name": "Rebar Gun",
+"path": "/Game/FactoryGame/Resource/Equipment/NailGun/Desc_RebarGunProjectile.Desc_RebarGunProjectile_C",
+"stack": 1
+},
+"Desc_Rebar_Explosive": {
+"name": "Explosive Rebar",
+"path": "/Game/FactoryGame/Equipment/RebarGun/Ammo/Desc_Rebar_Explosive.Desc_Rebar_Explosive_C",
+"stack": 100
+},
+"Desc_Rebar_Spreadshot": {
+"name": "Shatter Rebar",
+"path": "/Game/FactoryGame/Equipment/RebarGun/Ammo/Desc_Rebar_Spreadshot.Desc_Rebar_Spreadshot_C",
+"stack": 100
+},
+"Desc_Rebar_Stunshot": {
+"name": "Stun Rebar",
+"path": "/Game/FactoryGame/Equipment/RebarGun/Ammo/Desc_Rebar_Stunshot.Desc_Rebar_Stunshot_C",
+"stack": 100
+},
+"Desc_ResourceSinkCoupon": {
+"name": "FICSIT Coupon",
+"path": "/Game/FactoryGame/Resource/Parts/ResourceSinkCoupon/Desc_ResourceSinkCoupon.Desc_ResourceSinkCoupon_C",
+"stack": 500
+},
+"Desc_Rotor": {
+"name": "Rotor",
+"path": "/Game/FactoryGame/Resource/Parts/Rotor/Desc_Rotor.Desc_Rotor_C",
+"stack": 100
+},
+"Desc_Rubber": {
+"name": "Rubber",
+"path": "/Game/FactoryGame/Resource/Parts/Rubber/Desc_Rubber.Desc_Rubber_C",
+"stack": 200
+},
+"Desc_SAM": {
+"name": "SAM",
+"path": "/Game/FactoryGame/Resource/RawResources/SAM/Desc_SAM.Desc_SAM_C",
+"stack": 100
+},
+"Desc_SAMFluctuator": {
+"name": "SAM Fluctuator",
+"path": "/Game/FactoryGame/Resource/Parts/SAMFluctuator/Desc_SAMFluctuator.Desc_SAMFluctuator_C",
+"stack": 100
+},
+"Desc_SAMIngot": {
+"name": "Reanimated SAM",
+"path": "/Game/FactoryGame/Resource/Parts/SAMIngot/Desc_SAMIngot.Desc_SAMIngot_C",
+"stack": 100
+},
+"Desc_Shroom": {
+"name": "Bacon Agaric",
+"path": "/Game/FactoryGame/Resource/Environment/DesertShroom/Desc_Shroom.Desc_Shroom_C",
+"stack": 50
+},
+"Desc_Silica": {
+"name": "Silica",
+"path": "/Game/FactoryGame/Resource/Parts/Silica/Desc_Silica.Desc_Silica_C",
+"stack": 200
+},
+"Desc_SingularityCell": {
+"name": "Singularity Cell",
+"path": "/Game/FactoryGame/Resource/Parts/SingularityCell/Desc_SingularityCell.Desc_SingularityCell_C",
+"stack": 50
+},
+"Desc_Snow": {
+"name": "FICSMAS Actual Snow",
+"path": "/Game/FactoryGame/Events/Christmas/Parts/Desc_Snow.Desc_Snow_C",
+"stack": 500
+},
+"Desc_SnowballProjectile": {
+"name": "Snowball",
+"path": "/Game/FactoryGame/Resource/Parts/SnowballProjectile/Desc_SnowballProjectile.Desc_SnowballProjectile_C",
+"stack": 100
+},
+"Desc_SpaceElevatorPart_1": {
+"name": "Smart Plating",
+"path": "/Game/FactoryGame/Resource/Parts/SpaceElevatorParts/Desc_SpaceElevatorPart_1.Desc_SpaceElevatorPart_1_C",
+"stack": 50
+},
+"Desc_SpaceElevatorPart_10": {
+"name": "Biochemical Sculptor",
+"path": "/Game/FactoryGame/Resource/Parts/SpaceElevatorParts/Desc_SpaceElevatorPart_10.Desc_SpaceElevatorPart_10_C",
+"stack": 50
+},
+"Desc_SpaceElevatorPart_11": {
+"name": "Ballistic Warp Drive",
+"path": "/Game/FactoryGame/Resource/Parts/SpaceElevatorParts/Desc_SpaceElevatorPart_11.Desc_SpaceElevatorPart_11_C",
+"stack": 50
+},
+"Desc_SpaceElevatorPart_12": {
+"name": "AI Expansion Server",
+"path": "/Game/FactoryGame/Resource/Parts/SpaceElevatorParts/Desc_SpaceElevatorPart_12.Desc_SpaceElevatorPart_12_C",
+"stack": 50
+},
+"Desc_SpaceElevatorPart_2": {
+"name": "Versatile Framework",
+"path": "/Game/FactoryGame/Resource/Parts/SpaceElevatorParts/Desc_SpaceElevatorPart_2.Desc_SpaceElevatorPart_2_C",
+"stack": 50
+},
+"Desc_SpaceElevatorPart_3": {
+"name": "Automated Wiring",
+"path": "/Game/FactoryGame/Resource/Parts/SpaceElevatorParts/Desc_SpaceElevatorPart_3.Desc_SpaceElevatorPart_3_C",
+"stack": 50
+},
+"Desc_SpaceElevatorPart_4": {
+"name": "Modular Engine",
+"path": "/Game/FactoryGame/Resource/Parts/SpaceElevatorParts/Desc_SpaceElevatorPart_4.Desc_SpaceElevatorPart_4_C",
+"stack": 50
+},
+"Desc_SpaceElevatorPart_5": {
+"name": "Adaptive Control Unit",
+"path": "/Game/FactoryGame/Resource/Parts/SpaceElevatorParts/Desc_SpaceElevatorPart_5.Desc_SpaceElevatorPart_5_C",
+"stack": 50
+},
+"Desc_SpaceElevatorPart_6": {
+"name": "Magnetic Field Generator",
+"path": "/Game/FactoryGame/Resource/Parts/SpaceElevatorParts/Desc_SpaceElevatorPart_6.Desc_SpaceElevatorPart_6_C",
+"stack": 50
+},
+"Desc_SpaceElevatorPart_7": {
+"name": "Assembly Director System",
+"path": "/Game/FactoryGame/Resource/Parts/SpaceElevatorParts/Desc_SpaceElevatorPart_7.Desc_SpaceElevatorPart_7_C",
+"stack": 50
+},
+"Desc_SpaceElevatorPart_8": {
+"name": "Thermal Propulsion Rocket",
+"path": "/Game/FactoryGame/Resource/Parts/SpaceElevatorParts/Desc_SpaceElevatorPart_8.Desc_SpaceElevatorPart_8_C",
+"stack": 50
+},
+"Desc_SpaceElevatorPart_9": {
+"name": "Nuclear Pasta",
+"path": "/Game/FactoryGame/Resource/Parts/SpaceElevatorParts/Desc_SpaceElevatorPart_9.Desc_SpaceElevatorPart_9_C",
+"stack": 50
+},
+"Desc_SpikedRebar": {
+"name": "Iron Rebar",
+"path": "/Game/FactoryGame/Resource/Parts/SpikedRebar/Desc_SpikedRebar.Desc_SpikedRebar_C",
+"stack": 100
+},
+"Desc_SpitterParts": {
+"name": "Spitter Remains",
+"path": "/Game/FactoryGame/Resource/Parts/AnimalParts/Desc_SpitterParts.Desc_SpitterParts_C",
+"stack": 50
+},
+"Desc_Stator": {
+"name": "Stator",
+"path": "/Game/FactoryGame/Resource/Parts/Stator/Desc_Stator.Desc_Stator_C",
+"stack": 100
+},
+"Desc_SteelIngot": {
+"name": "Steel Ingot",
+"path": "/Game/FactoryGame/Resource/Parts/SteelIngot/Desc_SteelIngot.Desc_SteelIngot_C",
+"stack": 100
+},
+"Desc_SteelPipe": {
+"name": "Steel Pipe",
+"path": "/Game/FactoryGame/Resource/Parts/SteelPipe/Desc_SteelPipe.Desc_SteelPipe_C",
+"stack": 200
+},
+"Desc_SteelPlate": {
+"name": "Steel Beam",
+"path": "/Game/FactoryGame/Resource/Parts/SteelPlate/Desc_SteelPlate.Desc_SteelPlate_C",
+"stack": 200
+},
+"Desc_SteelPlateReinforced": {
+"name": "Encased Industrial Beam",
+"path": "/Game/FactoryGame/Resource/Parts/SteelPlateReinforced/Desc_SteelPlateReinforced.Desc_SteelPlateReinforced_C",
+"stack": 100
+},
+"Desc_StingerParts": {
+"name": "Stinger Remains",
+"path": "/Game/FactoryGame/Resource/Parts/AnimalParts/Desc_StingerParts.Desc_StingerParts_C",
+"stack": 50
+},
+"Desc_Stone": {
+"name": "Limestone",
+"path": "/Game/FactoryGame/Resource/RawResources/Stone/Desc_Stone.Desc_Stone_C",
+"stack": 100
+},
+"Desc_Sulfur": {
+"name": "Sulfur",
+"path": "/Game/FactoryGame/Resource/RawResources/Sulfur/Desc_Sulfur.Desc_Sulfur_C",
+"stack": 100
+},
+"Desc_TemporalProcessor": {
+"name": "Neural-Quantum Processor",
+"path": "/Game/FactoryGame/Resource/Parts/TemporalProcessor/Desc_TemporalProcessor.Desc_TemporalProcessor_C",
+"stack": 100
+},
+"Desc_TimeCrystal": {
+"name": "Time Crystal",
+"path": "/Game/FactoryGame/Resource/Parts/TimeCrystal/Desc_TimeCrystal.Desc_TimeCrystal_C",
+"stack": 200
+},
+"Desc_TurboFuel": {
+"name": "Packaged Turbofuel",
+"path": "/Game/FactoryGame/Resource/Parts/Turbofuel/Desc_TurboFuel.Desc_TurboFuel_C",
+"stack": 100
+},
+"Desc_UraniumCell": {
+"name": "Encased Uranium Cell",
+"path": "/Game/FactoryGame/Resource/Parts/UraniumCell/Desc_UraniumCell.Desc_UraniumCell_C",
+"stack": 200
+},
+"Desc_Vines": {
+"name": "Vines",
+"path": "/Game/FactoryGame/Resource/Parts/GenericBiomass/Desc_Vines.Desc_Vines_C",
+"stack": 200
+},
+"Desc_WAT1": {
+"name": "Somersloop",
+"path": "/Game/FactoryGame/Prototype/WAT/Desc_WAT1.Desc_WAT1_C",
+"stack": 50
+},
+"Desc_WAT2": {
+"name": "Mercer Sphere",
+"path": "/Game/FactoryGame/Prototype/WAT/Desc_WAT2.Desc_WAT2_C",
+"stack": 50
+},
+"Desc_Wire": {
+"name": "Wire",
+"path": "/Game/FactoryGame/Resource/Parts/Wire/Desc_Wire.Desc_Wire_C",
+"stack": 500
+},
+"Desc_Wood": {
+"name": "Wood",
+"path": "/Game/FactoryGame/Resource/Parts/GenericBiomass/Desc_Wood.Desc_Wood_C",
+"stack": 200
+},
+"Desc_XmasBall1": {
+"name": "Red FICSMAS Ornament",
+"path": "/Game/FactoryGame/Events/Christmas/Parts/Desc_XmasBall1.Desc_XmasBall1_C",
+"stack": 200
+},
+"Desc_XmasBall2": {
+"name": "Blue FICSMAS Ornament",
+"path": "/Game/FactoryGame/Events/Christmas/Parts/Desc_XmasBall2.Desc_XmasBall2_C",
+"stack": 200
+},
+"Desc_XmasBall3": {
+"name": "Copper FICSMAS Ornament",
+"path": "/Game/FactoryGame/Events/Christmas/Parts/Desc_XmasBall3.Desc_XmasBall3_C",
+"stack": 100
+},
+"Desc_XmasBall4": {
+"name": "Iron FICSMAS Ornament",
+"path": "/Game/FactoryGame/Events/Christmas/Parts/Desc_XmasBall4.Desc_XmasBall4_C",
+"stack": 100
+},
+"Desc_XmasBallCluster": {
+"name": "FICSMAS Ornament Bundle",
+"path": "/Game/FactoryGame/Events/Christmas/Parts/Desc_XmasBallCluster.Desc_XmasBallCluster_C",
+"stack": 100
+},
+"Desc_XmasBow": {
+"name": "FICSMAS Bow",
+"path": "/Game/FactoryGame/Events/Christmas/Parts/Desc_XmasBow.Desc_XmasBow_C",
+"stack": 100
+},
+"Desc_XmasBranch": {
+"name": "FICSMAS Tree Branch",
+"path": "/Game/FactoryGame/Events/Christmas/Parts/Desc_XmasBranch.Desc_XmasBranch_C",
+"stack": 500
+},
+"Desc_XmasDataCartridge1": {
+"name": "FICSMAS Data Cartridge Day 1",
+"path": "/Game/FactoryGame/Events/Christmas/Parts/Desc_XmasDataCartridge1.Desc_XmasDataCartridge1_C",
+"stack": 1
+},
+"Desc_XmasDataCartridge2": {
+"name": "FICSMAS Data Cartridge Day 4",
+"path": "/Game/FactoryGame/Events/Christmas/Parts/Desc_XmasDataCartridge2.Desc_XmasDataCartridge2_C",
+"stack": 1
+},
+"Desc_XmasDataCartridge3": {
+"name": "FICSMAS Data Cartridge Day 8",
+"path": "/Game/FactoryGame/Events/Christmas/Parts/Desc_XmasDataCartridge3.Desc_XmasDataCartridge3_C",
+"stack": 1
+},
+"Desc_XmasDataCartridge4": {
+"name": "FICSMAS Data Cartridge Day 14",
+"path": "/Game/FactoryGame/Events/Christmas/Parts/Desc_XmasDataCartridge4.Desc_XmasDataCartridge4_C",
+"stack": 1
+},
+"Desc_XmasStar": {
+"name": "FICSMAS Wonder Star",
+"path": "/Game/FactoryGame/Events/Christmas/Parts/Desc_XmasStar.Desc_XmasStar_C",
+"stack": 50
+},
+"Desc_XmasWreath": {
+"name": "FICSMAS Wreath",
+"path": "/Game/FactoryGame/Events/Christmas/Parts/Desc_XmasWreath.Desc_XmasWreath_C",
+"stack": 50
+}
+}

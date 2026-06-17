@@ -1,4 +1,4 @@
-import { Agent, fetch as undiciFetch } from 'undici';
+import { Agent, fetch as undiciFetch, FormData } from 'undici';
 import { config } from '../config';
 
 // Runtime connection state (overrides env vars when set via the connect UI)
@@ -163,4 +163,43 @@ export async function downloadSavegame(saveName: string): Promise<Buffer> {
   }
 
   return Buffer.from(await res.arrayBuffer());
+}
+
+/**
+ * Upload a (possibly edited) save to the server via `UploadSavegame`. This is a
+ * multipart request: a `data` part carries the JSON envelope, a `saveGameFile`
+ * part carries the .sav binary. `loadAfter` makes the server load it immediately
+ * (disconnects players, reloads the world); false just stores it in the save list.
+ */
+export async function uploadSavegame(saveName: string, buffer: Buffer, loadAfter = false): Promise<void> {
+  const host = effectiveHost();
+  if (!host) throw new Error('Satisfactory server host not configured.');
+
+  const form = new FormData();
+  // The "data" part must carry Content-Type: application/json — a plain string
+  // part is sent as text/plain and the SF API rejects it ("bad_multipart").
+  // Wrapping the JSON in a typed Blob sets the part's content type correctly.
+  const dataJson = JSON.stringify({
+    function: 'UploadSavegame',
+    data: { saveName, loadSaveGame: loadAfter, enableAdvancedGameSettings: false },
+  });
+  // Global Blob (Node 18+) — cast to satisfy undici's FormData.append signature.
+  form.append('data', new Blob([dataJson], { type: 'application/json' }) as any);
+  form.append('saveGameFile', new Blob([buffer], { type: 'application/octet-stream' }) as any, `${saveName}.sav`);
+
+  const headers: Record<string, string> = {};
+  if (bearerToken) headers['Authorization'] = `Bearer ${bearerToken}`;
+
+  const res = await undiciFetch(baseUrl(), {
+    method: 'POST',
+    headers, // no Content-Type — fetch sets the multipart boundary
+    body: form,
+    // @ts-ignore undici-specific dispatcher not in fetch types
+    dispatcher: getAgent(),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`SF API [UploadSavegame] ${res.status}: ${text}`);
+  }
 }

@@ -11,6 +11,7 @@ export interface InventoryItem {
 
 export interface StorageContainer {
   instanceName: string;
+  inventoryName: string; // the inventory component entity — the edit target for slots
   label: string;
   buildClass: string;  // e.g. "Build_StorageContainerMk1" — used for icon lookup
   position: { x: number; y: number; z: number } | null;
@@ -133,6 +134,7 @@ export function extractStorage(save: SatisfactorySave): StorageContainer[] {
 
       containers.push({
         instanceName: obj.instanceName,
+        inventoryName: invRef,
         label:        typeLabel(tp),
         buildClass,
         position,
