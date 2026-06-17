@@ -173,6 +173,9 @@ document.addEventListener('alpine:init', () => {
     svStorage: null,
     expandedPlayer: null,    // instanceName of expanded player row
     expandedStorage: null,   // instanceName of expanded storage row
+    expandedBuildingType: null,   // typePath of expanded building-type row (per-instance list)
+    highlightedInstanceName: null,// transient highlight target after a map → instance jump
+    buildingInstanceCap: {},      // per-typePath count of how many instance rows to render
     showSettings: false,
     headerReloading: false,
     confirmDialog: { show: false, title: '', message: '', confirmLabel: 'Confirm', danger: true, resolve: null },
@@ -459,6 +462,46 @@ document.addEventListener('alpine:init', () => {
         .filter(cat => cat.types.length > 0);
     },
 
+    // Categories worth drilling into per-instance on the Buildings tab: machines with
+    // meaningful per-instance state (recipe/clock) the user might want to locate or
+    // edit. Storage is deliberately excluded — the dedicated Storage tab already lists
+    // every container with its inventory + edit controls, so a per-instance list here
+    // would be redundant; map clicks on a container route straight to the Storage tab.
+    // Everything else (foundations, walls, belts…) stays a compact type-count card.
+    _instanceableCategories: new Set(['Production', 'Power', 'Miners & Extractors']),
+    isInstanceableCategory(category) {
+      return this._instanceableCategories.has(category);
+    },
+
+    // How many instance rows to render for a type (capped so a 500-constructor type
+    // doesn't lag Alpine). "Show more" bumps the cap in INSTANCE_PAGE steps.
+    INSTANCE_PAGE: 100,
+    visibleInstances(type) {
+      const cap = this.buildingInstanceCap[type.typePath] ?? this.INSTANCE_PAGE;
+      return type.instances.slice(0, cap);
+    },
+    moreInstances(type) {
+      this.buildingInstanceCap[type.typePath] =
+        (this.buildingInstanceCap[type.typePath] ?? this.INSTANCE_PAGE) + this.INSTANCE_PAGE;
+    },
+    toggleBuildingType(type) {
+      this.expandedBuildingType = this.expandedBuildingType === type.typePath ? null : type.typePath;
+    },
+
+    // Group the flat storage list by container type (buildClass) for the Storage
+    // tab's collapsible type sections — mirrors the Buildings tab grouping. Sorted
+    // by container count (desc), then label.
+    storageGroups() {
+      const groups = new Map();
+      for (const c of this.svStorage ?? []) {
+        let g = groups.get(c.buildClass);
+        if (!g) { g = { buildClass: c.buildClass, label: c.label, containers: [] }; groups.set(c.buildClass, g); }
+        g.containers.push(c);
+      }
+      return Array.from(groups.values())
+        .sort((a, b) => b.containers.length - a.containers.length || a.label.localeCompare(b.label));
+    },
+
     reloadTooltipText() {
       if (this.newerSaveAvailable && this.newerSaveName) return `Newer save available: ${this.newerSaveName}`;
       if (this.saveStatus?.sourceName) return `Reload ${this.saveStatus.sourceName}`;
@@ -486,6 +529,9 @@ document.addEventListener('alpine:init', () => {
       this.svMapPins = null;
       this.svBuildingFootprints = null;
       this.svSchematics = null;
+      this.expandedBuildingType = null;
+      this.highlightedInstanceName = null;
+      this.buildingInstanceCap = {};
     },
 
     // Single reload action (header button) — reloads whatever the active save source
@@ -1442,6 +1488,9 @@ document.addEventListener('alpine:init', () => {
           const hh = fp.depth / 2;
           _buildingHitList.push({
             cx: worldX, cy: worldY, hw, hh, cos, sin,
+            // Raw (un-offset) instance position — the key for matching this map
+            // instance to its row in the Save Tools Buildings tab (and back).
+            gx: data.x[i], gy: data.y[i],
             // Layer-point centre + yaw for drawing the outline in the overlay's
             // (rebuild-zoom) coordinate space, matching how the sprite is placed.
             lpx: point.x, lpy: point.y, yaw,
@@ -1615,20 +1664,121 @@ document.addEventListener('alpine:init', () => {
         <div class="sf-card-body">
           <div class="sf-card-row"><span class="sf-card-k">${factLabel}</span><span class="sf-card-v">${factValue}</span></div>
         </div>
-        <button class="sf-card-action" type="button">Open in Save Viewer
+        <button class="sf-card-action" type="button">Open in Save Tools
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
         </button>
       </div>`;
     },
 
-    // Jump to the Save Viewer with the Buildings tab filtered to this type. This
-    // is the first-step linkage; locating the exact instance comes later (needs
-    // per-instance rows in the Save Viewer).
+    // Jump to the Save Tools Buildings tab and locate the *exact* clicked instance:
+    // filter to its type, expand the type's per-instance list, then scroll to and
+    // highlight the instance whose position matches the one clicked on the map.
+    // Matching is by position (buildClass + nearest x/y) so the lean map footprints
+    // payload stays free of instanceNames.
     async openInSaveViewer(entry) {
       _leafletMap?.closePopup(_detailPopup);
+
+      // Storage containers → the dedicated Storage tab (inventory + edit), which is
+      // strictly more useful than a bare per-instance row. Falls through to the
+      // Buildings tab only if the container isn't one the Storage tab tracks
+      // (e.g. Dimensional Depot / lockers).
+      if (entry.category === 'Storage') {
+        this.saveTab = 'storage';
+        await this.switchTab('saveviewer');
+        if (!this.svStorage) await this.loadSvStorage();
+        if (this._focusStorageInstance(entry.buildClass, entry.gx, entry.gy)) return;
+      }
+
       this.saveTab = 'buildings';
       this.buildingsSearch = entry.label;
       await this.switchTab('saveviewer');
+      if (!this.svBuildings) await this.loadSvBuildings();
+      this._focusBuildingInstance(entry.buildClass, entry.gx, entry.gy);
+    },
+
+    // Locate a storage container in the Storage tab by buildClass + nearest position
+    // (the tab stores positions in metres; map x/y are game-cm). Expands + scrolls to
+    // + highlights it. Returns true if matched, false to let the caller fall back.
+    _focusStorageInstance(buildClass, x, y) {
+      const mx = Math.round(x / 100), my = Math.round(y / 100);
+      let best = null, bestD = Infinity;
+      for (const c of this.svStorage ?? []) {
+        if (c.buildClass !== buildClass || !c.position) continue;
+        const d = Math.hypot(c.position.x - mx, c.position.y - my);
+        if (d < bestD) { bestD = d; best = c; }
+      }
+      if (!best) return false;
+
+      this.expandedStorage = best.instanceName;
+      this.highlightedInstanceName = best.instanceName;
+      this.$nextTick(() => {
+        document.getElementById(`storagerow-${best.instanceName}`)
+          ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      });
+      clearTimeout(this._instHighlightTimer);
+      this._instHighlightTimer = setTimeout(() => { this.highlightedInstanceName = null; }, 4000);
+      return true;
+    },
+
+    // Find the type (by buildClass) + the instance nearest (x, y), expand it, and
+    // scroll/highlight its row. Shared by the map → instance jump.
+    _focusBuildingInstance(buildClass, x, y) {
+      let target = null;
+      for (const cat of this.svBuildings?.categories ?? []) {
+        const type = cat.types.find(t => t.buildClass === buildClass);
+        if (type) { target = type; break; }
+      }
+      if (!target?.instances?.length) return;
+
+      let bestIdx = 0, bestD = Infinity;
+      for (let i = 0; i < target.instances.length; i++) {
+        const p = target.instances[i].pos;
+        const d = Math.hypot(Math.round(p.x) - x, Math.round(p.y) - y);
+        if (d < bestD) { bestD = d; bestIdx = i; }
+      }
+
+      this.expandedBuildingType = target.typePath;
+      // Ensure the matched row is within the rendered (capped) window.
+      if (bestIdx >= (this.buildingInstanceCap[target.typePath] ?? this.INSTANCE_PAGE)) {
+        this.buildingInstanceCap[target.typePath] = bestIdx + 1;
+      }
+      this.highlightedInstanceName = `${buildClass}#${bestIdx}`;
+
+      this.$nextTick(() => {
+        const el = document.getElementById(`binst-${buildClass}-${bestIdx}`);
+        el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      });
+      // Clear the highlight after it has had a moment to register.
+      clearTimeout(this._instHighlightTimer);
+      this._instHighlightTimer = setTimeout(() => { this.highlightedInstanceName = null; }, 4000);
+    },
+
+    // Reciprocal of openInSaveViewer: from a Buildings-tab instance row, switch to
+    // the Map and pan to + highlight that machine, reusing the map's own hit-test
+    // entry (matched by nearest position) so the highlight + detail card match a
+    // real click. Best-effort: if the Pixi overlay/hit list isn't built yet, retry
+    // once it is.
+    async showBuildingOnMap(buildClass, x, y) {
+      await this.switchTab('map');
+      const tryFocus = (attempt = 0) => {
+        let best = null, bestD = Infinity;
+        for (const b of _buildingHitList) {
+          if (b.buildClass !== buildClass) continue;
+          const d = Math.hypot(b.gx - x, b.gy - y);
+          if (d < bestD) { bestD = d; best = b; }
+        }
+        if (!best) {
+          if (attempt < 10) setTimeout(() => tryFocus(attempt + 1), 200);
+          return;
+        }
+        const latlng = gameToLatLng(best.cx, best.cy);
+        _leafletMap.setView(latlng, Math.max(_leafletMap.getZoom(), _leafletMap.getMaxZoom() - 1), { animate: true });
+        this._drawBuildingHighlight(best);
+        _detailPopup.setLatLng(latlng).setContent(this._buildingCardHtml(best, false));
+        _leafletMap.openPopup(_detailPopup);
+        _cardEntry = best;
+      };
+      tryFocus();
     },
 
     // Draws the orange outline as a rotated rect in the overlay's coordinate

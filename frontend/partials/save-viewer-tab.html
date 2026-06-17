@@ -326,28 +326,48 @@
         <span class="text-white font-semibold" x-text="svStorage?.length"></span> storage containers
       </div>
       <div x-show="svStorage && svStorage.length === 0" class="text-center py-10 text-gray-500 text-sm">No storage containers found.</div>
-      <div class="flex flex-col gap-2">
-        <template x-for="c in svStorage ?? []" :key="c.instanceName">
+      <div class="flex flex-col gap-3" x-data="{ collapsed: {} }">
+        <template x-for="group in storageGroups()" :key="group.buildClass">
           <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
 
-            <!-- Container header -->
-            <button class="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-700/40 transition-colors text-left"
-                    @click="expandedStorage = expandedStorage === c.instanceName ? null : c.instanceName">
-              <div x-data="{ iconErr: false }" class="w-8 h-8 rounded-md bg-gray-700/60 border border-gray-600/60 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                <img x-show="!iconErr"
-                     :src="'/assets/buildings/' + c.buildClass + '.png'"
-                     :alt="c.label"
-                     class="w-full h-full object-contain p-0.5"
-                     @error="iconErr = true">
-                <svg x-show="iconErr" class="text-gray-500" fill="currentColor" viewBox="0 0 20 20" style="width:12px;height:12px">
-                  <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"/><path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd"/>
+            <!-- Type group header -->
+            <button
+              @click="collapsed[group.buildClass] = !collapsed[group.buildClass]"
+              class="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-700/40 transition-colors"
+            >
+              <div class="flex items-center gap-2.5 min-w-0">
+                <svg class="w-4 h-4 text-gray-500 transition-transform flex-shrink-0"
+                     :class="collapsed[group.buildClass] ? '-rotate-90' : ''"
+                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
+                <div x-data="{ iconErr: false }" class="w-7 h-7 rounded-md bg-gray-700/60 border border-gray-600/60 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  <img x-show="!iconErr" :src="'/assets/buildings/' + group.buildClass + '.png'" :alt="group.label" class="w-full h-full object-contain p-0.5" @error="iconErr = true">
+                  <svg x-show="iconErr" class="text-gray-500" fill="currentColor" viewBox="0 0 20 20" style="width:11px;height:11px">
+                    <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"/><path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                  </svg>
+                </div>
+                <span class="text-sm font-semibold text-gray-200 truncate" x-text="group.label"></span>
               </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-white" x-text="c.label"></p>
-                <p x-show="c.position" class="text-xs font-mono text-gray-500 mt-0.5"
-                   x-text="c.position ? 'X ' + c.position.x + '  Y ' + c.position.y + '  Z ' + c.position.z : ''"></p>
-              </div>
+              <span class="text-xs text-gray-400 flex-shrink-0">
+                <span x-text="group.containers.length"></span> container<span x-show="group.containers.length !== 1">s</span>
+              </span>
+            </button>
+
+            <!-- Containers in this type group -->
+            <div x-show="!collapsed[group.buildClass]" class="border-t border-gray-700/60 p-2 space-y-1.5">
+              <template x-for="c in group.containers" :key="c.instanceName">
+                <div
+                  :id="'storagerow-' + c.instanceName"
+                  class="bg-gray-700/30 rounded-lg border overflow-hidden transition-colors"
+                  :class="highlightedInstanceName === c.instanceName ? 'border-orange-400 ring-1 ring-orange-400' : 'border-gray-700/50'"
+                >
+
+            <!-- Container header (type is in the group header; lead with position) -->
+            <button class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-700/40 transition-colors text-left"
+                    @click="expandedStorage = expandedStorage === c.instanceName ? null : c.instanceName">
+              <p class="text-xs font-mono text-gray-400 flex-1 min-w-0 truncate"
+                 x-text="c.position ? 'X ' + c.position.x + '  Y ' + c.position.y + '  Z ' + c.position.z : 'Position unknown'"></p>
               <!-- Top items preview (up to 4 unique types by count + overflow badge, sm+ only) -->
               <div x-show="c.contents.length > 0"
                    x-data="{ get preview() { return storagePreview(c.contents); } }"
@@ -419,6 +439,10 @@
                   </button>
                 </template>
               </div>
+            </div>
+
+                </div>
+              </template>
             </div>
 
           </div>
@@ -503,36 +527,110 @@
               </div>
             </button>
 
-            <!-- Building cards grid -->
+            <!-- Type listing -->
             <div x-show="!collapsed[cat.key]" class="border-t border-gray-700/60 p-3">
-              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-                <template x-for="b in cat.types" :key="b.typePath">
-                  <div class="flex items-center gap-2.5 bg-gray-700/40 hover:bg-gray-700/70 rounded-lg px-3 py-2.5 transition-colors min-w-0">
-                    <!-- Building icon -->
-                    <div class="w-9 h-9 flex-shrink-0" x-data="{ imgErr: false }">
-                      <img
-                        x-show="!imgErr"
-                        :src="'/assets/buildings/' + b.buildClass + '.png'"
-                        class="w-full h-full object-contain"
-                        @error="imgErr = true"
-                      />
-                      <div
-                        x-show="imgErr"
-                        class="w-full h-full rounded bg-gray-600/50 flex items-center justify-center"
+
+              <!-- Meaningful categories → full-width expandable rows with a per-instance list -->
+              <template x-if="isInstanceableCategory(cat.category)">
+                <div class="space-y-2">
+                  <template x-for="b in cat.types" :key="b.typePath">
+                    <div class="bg-gray-700/40 rounded-lg overflow-hidden">
+
+                      <!-- Type header row (click to expand instances) -->
+                      <button
+                        @click="toggleBuildingType(b)"
+                        class="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-gray-700/70 transition-colors min-w-0 text-left"
                       >
-                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        <div class="w-9 h-9 flex-shrink-0" x-data="{ imgErr: false }">
+                          <img x-show="!imgErr" :src="'/assets/buildings/' + b.buildClass + '.png'" class="w-full h-full object-contain" @error="imgErr = true" />
+                          <div x-show="imgErr" class="w-full h-full rounded bg-gray-600/50 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                          </div>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                          <div class="text-xs text-gray-300 truncate leading-tight" x-text="b.label"></div>
+                          <div class="text-sm font-bold text-orange-400 leading-tight" x-text="b.count.toLocaleString()"></div>
+                        </div>
+                        <svg class="w-4 h-4 text-gray-500 transition-transform flex-shrink-0" :class="expandedBuildingType === b.typePath ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
+                      </button>
+
+                      <!-- Per-instance list -->
+                      <div x-show="expandedBuildingType === b.typePath" class="border-t border-gray-700/60">
+                        <div class="px-3 py-1.5 text-[11px] text-gray-500 bg-gray-800/40">
+                          <span x-text="b.count.toLocaleString()"></span> instance<span x-show="b.count !== 1">s</span>
+                        </div>
+                        <div class="max-h-72 overflow-y-auto divide-y divide-gray-700/40">
+                          <template x-for="(inst, i) in visibleInstances(b)" :key="i">
+                            <div
+                              :id="'binst-' + b.buildClass + '-' + i"
+                              class="flex items-center gap-3 px-3 py-2 transition-colors"
+                              :class="highlightedInstanceName === (b.buildClass + '#' + i) ? 'ring-1 ring-orange-400 bg-orange-400/10' : 'hover:bg-gray-700/40'"
+                            >
+                              <span class="text-[11px] font-mono text-gray-500 w-8 flex-shrink-0">#<span x-text="i + 1"></span></span>
+                              <span class="text-xs font-mono text-gray-400 flex-1 min-w-0 truncate">
+                                <span x-text="(inst.pos.x / 100).toFixed(0)"></span> m,
+                                <span x-text="(inst.pos.y / 100).toFixed(0)"></span> m,
+                                <span x-text="(inst.pos.z / 100).toFixed(0)"></span> m alt
+                              </span>
+                              <button
+                                @click="showBuildingOnMap(b.buildClass, inst.pos.x, inst.pos.y)"
+                                title="Show on map"
+                                class="flex items-center gap-1 px-2 py-1 text-[11px] text-sky-300 bg-sky-500/10 hover:bg-sky-500/20 rounded transition-colors flex-shrink-0"
+                              >
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                                Map
+                              </button>
+                            </div>
+                          </template>
+                        </div>
+                        <button
+                          x-show="b.instances.length > visibleInstances(b).length"
+                          @click="moreInstances(b)"
+                          class="w-full px-3 py-2 text-[11px] text-gray-400 hover:text-gray-200 hover:bg-gray-700/40 transition-colors border-t border-gray-700/40"
+                        >
+                          Show more (<span x-text="(b.instances.length - visibleInstances(b).length).toLocaleString()"></span> remaining)
+                        </button>
+                      </div>
+
+                    </div>
+                  </template>
+                </div>
+              </template>
+
+              <!-- Other categories → compact type-count grid (no per-instance drill-in) -->
+              <template x-if="!isInstanceableCategory(cat.category)">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                  <template x-for="b in cat.types" :key="b.typePath">
+                    <div class="flex items-center gap-2.5 bg-gray-700/40 hover:bg-gray-700/70 rounded-lg px-3 py-2.5 transition-colors min-w-0">
+                      <!-- Building icon -->
+                      <div class="w-9 h-9 flex-shrink-0" x-data="{ imgErr: false }">
+                        <img
+                          x-show="!imgErr"
+                          :src="'/assets/buildings/' + b.buildClass + '.png'"
+                          class="w-full h-full object-contain"
+                          @error="imgErr = true"
+                        />
+                        <div
+                          x-show="imgErr"
+                          class="w-full h-full rounded bg-gray-600/50 flex items-center justify-center"
+                        >
+                          <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                          </svg>
+                        </div>
+                      </div>
+                      <!-- Label + count -->
+                      <div class="min-w-0 flex-1">
+                        <div class="text-xs text-gray-300 truncate leading-tight" x-text="b.label"></div>
+                        <div class="text-sm font-bold text-orange-400 leading-tight" x-text="b.count.toLocaleString()"></div>
                       </div>
                     </div>
-                    <!-- Label + count -->
-                    <div class="min-w-0 flex-1">
-                      <div class="text-xs text-gray-300 truncate leading-tight" x-text="b.label"></div>
-                      <div class="text-sm font-bold text-orange-400 leading-tight" x-text="b.count.toLocaleString()"></div>
-                    </div>
-                  </div>
-                </template>
-              </div>
+                  </template>
+                </div>
+              </template>
+
             </div>
 
           </div>
