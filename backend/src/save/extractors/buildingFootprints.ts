@@ -17,6 +17,17 @@ interface Footprint {
   height: number;
   offsetX: number;
   offsetY: number;
+  // Optional top-down silhouette polygon (building-local game-cm, [[x,y],...])
+  // derived from the mesh collision hull — see generate_building_footprints.py.
+  // Present only for buildings with a non-rectangular shape; the frontend draws
+  // it instead of the box, falling back to the box when absent. When `relief` is
+  // present this is the relief image's outer contour (used for hover/hit-test).
+  outline?: number[][];
+  // Optional top-down height-relief image (frontend/public/assets/building-relief
+  // /<buildClass>.png). When present, the map draws that PNG tinted by category
+  // colour instead of a flat fill. w/d = footprint bbox size (cm); cx/cy = bbox
+  // centre offset in building-local cm; pw/ph = PNG pixel dimensions.
+  relief?: { w: number; d: number; cx: number; cy: number; pw: number; ph: number };
 }
 
 const DEFAULT_FOOTPRINT: Footprint = { width: 100, depth: 100, height: 100, offsetX: 0, offsetY: 0 };

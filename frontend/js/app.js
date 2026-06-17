@@ -33,6 +33,10 @@ let _categoryDisplayObjects = new Map();
 // non-foundation building sprite. Same draw cost/batching as PIXI.Texture.WHITE —
 // the corner radius simply scales with each footprint when the texture stretches.
 let _roundedTex = null;
+// Per-build-class silhouette textures, baked once from each class's outline
+// polygon (see getOutlineTexture). Keyed by buildClass; persists across sprite
+// rebuilds like _roundedTex. Each value is { texture, w, h, cx, cy } in game-cm.
+let _outlineTexCache = new Map();
 // Reads the current accent's `--accent-500` (an "R G B" triplet) and packs it
 // into a 0xRRGGBB int for PIXI tinting, so the building highlight follows the
 // active theme. Falls back to orange-500 if the var isn't resolvable.
@@ -59,6 +63,62 @@ function getRoundedTexture(PIXI, renderer) {
   });
   g.destroy(true);
   return _roundedTex;
+}
+
+// Bake a building's top-down silhouette polygon (building-local game-cm) into a
+// white texture, once per build class. Drawn white so the per-category tint
+// (sprite.tint) colours it exactly like the rounded-rect sprites — so silhouette
+// buildings keep batching, tinting and live recolour for free. Returns the
+// texture plus the polygon's bbox size (w,h) and centre offset (cx,cy) in
+// game-cm, which the caller uses to size and place the sprite.
+function getOutlineTexture(PIXI, renderer, buildClass, outline) {
+  const cached = _outlineTexCache.get(buildClass);
+  if (cached) return cached;
+
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const [x, y] of outline) {
+    if (x < minX) minX = x; if (x > maxX) maxX = x;
+    if (y < minY) minY = y; if (y > maxY) maxY = y;
+  }
+  const w = Math.max(maxX - minX, 1);
+  const h = Math.max(maxY - minY, 1);
+
+  // Draw at a fixed pixel budget on the longer side; resolution>1 supersamples
+  // so edges stay smooth when the sprite is scaled to its real footprint.
+  const TARGET = 128;
+  const s = TARGET / Math.max(w, h);
+  const g = new PIXI.Graphics();
+  g.beginFill(0xffffff);
+  g.moveTo((outline[0][0] - minX) * s, (outline[0][1] - minY) * s);
+  for (let i = 1; i < outline.length; i++) {
+    g.lineTo((outline[i][0] - minX) * s, (outline[i][1] - minY) * s);
+  }
+  g.closePath();
+  g.endFill();
+  const texture = renderer.generateTexture(g, {
+    resolution: 3,
+    scaleMode: PIXI.SCALE_MODES.LINEAR,
+  });
+  g.destroy(true);
+
+  const meta = { texture, w, h, cx: (minX + maxX) / 2, cy: (minY + maxY) / 2 };
+  _outlineTexCache.set(buildClass, meta);
+  return meta;
+}
+
+// Per-build-class top-down height-relief textures, loaded from the static PNGs
+// baked offline (generate_building_footprints.py). Grayscale relief in RGB +
+// alpha mask, so the per-category sprite tint colours it like the other sprites
+// (recolour/visibility stay free). Loads async; the sprite is scaled by the
+// manifest's native pixel size so it's correct the instant the image arrives.
+let _reliefTexCache = new Map();
+function getReliefTexture(PIXI, buildClass) {
+  let t = _reliefTexCache.get(buildClass);
+  if (!t) {
+    t = PIXI.Texture.from(`/assets/building-relief/${buildClass}.png`);
+    _reliefTexCache.set(buildClass, t);
+  }
+  return t;
 }
 
 // Building hover tooltip — a Leaflet tooltip rather than our own DOM/Alpine
@@ -1945,24 +2005,57 @@ document.addEventListener('alpine:init', () => {
         const type = data.types[data.typeIndex[i]];
         const yaw = data.yaw[i];
         const fp = type.footprint;
-
-        // Rotate the footprint's local-space offset by yaw before adding to world pos.
         const cos = Math.cos(yaw), sin = Math.sin(yaw);
-        const worldX = data.x[i] + fp.offsetX * cos - fp.offsetY * sin;
-        const worldY = data.y[i] + fp.offsetX * sin + fp.offsetY * cos;
+
+        // Resolve the drawn shape, best first: a top-down height-relief image
+        // (true 3-D detail) → a baked silhouette polygon → the box. All end up as
+        // tinted sprites so batching, the category tint and live recolour are
+        // identical; the relief is just a richer texture. drawnW/H + drawnCx/Cy
+        // describe the drawn footprint (cm); relief carries native pixel dims too.
+        let tex, drawnW, drawnH, drawnCx, drawnCy, reliefPx = null;
+        if (fp.relief) {
+          tex = getReliefTexture(PIXI, type.buildClass);
+          reliefPx = fp.relief;
+          drawnW = fp.relief.w; drawnH = fp.relief.d;
+          drawnCx = fp.relief.cx; drawnCy = fp.relief.cy;
+        } else if (fp.outline) {
+          const m = getOutlineTexture(PIXI, utils.getRenderer(), type.buildClass, fp.outline);
+          tex = m.texture;
+          drawnW = m.w; drawnH = m.h;
+          drawnCx = m.cx; drawnCy = m.cy;
+        } else {
+          tex = SHARP_CATEGORIES.has(type.category) ? PIXI.Texture.WHITE : roundedTex;
+          drawnW = fp.width; drawnH = fp.depth;
+          drawnCx = fp.offsetX; drawnCy = fp.offsetY;
+        }
+
+        // Shrink slightly so the dark map bleeds through between adjacent buildings.
+        const shrink = Math.max(1 - (GAP_CM * 2) / Math.min(drawnW, drawnH), MIN_RATIO);
+        const fillW = drawnW * shrink, fillH = drawnH * shrink;
+
+        // Rotate the shape's local-space centre offset by yaw before adding to world pos.
+        const worldX = data.x[i] + drawnCx * cos - drawnCy * sin;
+        const worldY = data.y[i] + drawnCx * sin + drawnCy * cos;
         const point = utils.latLngToLayerPoint(gameToLatLng(worldX, worldY));
 
-        const fillW = Math.max(fp.width - GAP_CM * 2, fp.width * MIN_RATIO);
-        const fillH = Math.max(fp.depth - GAP_CM * 2, fp.depth * MIN_RATIO);
-
-        const sprite = new PIXI.Sprite(SHARP_CATEGORIES.has(type.category) ? PIXI.Texture.WHITE : roundedTex);
+        const sprite = new PIXI.Sprite(tex);
         sprite.anchor.set(0.5);
         sprite.tint = tintForCategory(type.category, type.color);
         sprite.alpha = 0.88;
         sprite.x = point.x;
         sprite.y = point.y;
-        sprite.width = Math.max(fillW * unitsPerCm, 1);
-        sprite.height = Math.max(fillH * unitsPerCm, 1);
+        if (reliefPx) {
+          // Relief PNGs load async — scale by the manifest's native pixel size so
+          // the sprite is correct the moment the image arrives (sprite.width would
+          // bake in the 1×1 placeholder size and render wrong on load).
+          sprite.scale.set(
+            Math.max(fillW * unitsPerCm, 1) / reliefPx.pw,
+            Math.max(fillH * unitsPerCm, 1) / reliefPx.ph,
+          );
+        } else {
+          sprite.width = Math.max(fillW * unitsPerCm, 1);
+          sprite.height = Math.max(fillH * unitsPerCm, 1);
+        }
         sprite.rotation = yaw;
 
         categoryContainer(type.category).addChild(sprite);
@@ -1971,8 +2064,8 @@ document.addEventListener('alpine:init', () => {
         // Skip structural categories: they're numerous, uninteresting, and their
         // large 2-D footprints would block hover access to machines sitting on top.
         if (!SKIP_HIT_CATEGORIES.has(type.category)) {
-          const hw = fp.width / 2;
-          const hh = fp.depth / 2;
+          // Hit-test against the drawn footprint bbox (its centre is worldX/worldY).
+          const hw = drawnW / 2, hh = drawnH / 2;
           _buildingHitList.push({
             cx: worldX, cy: worldY, hw, hh, cos, sin,
             // Raw (un-offset) instance position — the key for matching this map
@@ -1986,6 +2079,10 @@ document.addEventListener('alpine:init', () => {
             label: type.label,
             buildClass: type.buildClass,
             category: type.category,
+            // Real silhouette polygon + its bbox centre, so the hover highlight
+            // traces the true shape. relief and outline buildings both carry it.
+            outline: fp.outline || null,
+            ocx: drawnCx, ocy: drawnCy,
           });
         }
       }
@@ -2334,16 +2431,36 @@ document.addEventListener('alpine:init', () => {
       const g = _highlightGfx;
       if (!g || !_buildingOverlayContainer) return;
       const scale = _buildingOverlayContainer.scale.x || 1;
+      g.clear();
+      g.position.set(b.lpx, b.lpy);
+      g.rotation = b.yaw;
+      const accent = accentHexInt();
+
+      // Silhouette buildings: trace the actual polygon (local cm relative to its
+      // bbox centre, scaled to layer space) so the highlight hugs the real shape.
+      if (b.outline) {
+        const upc = _unitsPerCm;
+        const drawPoly = () => {
+          g.moveTo((b.outline[0][0] - b.ocx) * upc, (b.outline[0][1] - b.ocy) * upc);
+          for (let i = 1; i < b.outline.length; i++) {
+            g.lineTo((b.outline[i][0] - b.ocx) * upc, (b.outline[i][1] - b.ocy) * upc);
+          }
+          g.closePath();
+        };
+        g.lineStyle((6 / scale), accent, 0.25);
+        drawPoly();
+        g.lineStyle((2 / scale), accent, 1);
+        drawPoly();
+        _buildingOverlay?.redraw();
+        return;
+      }
+
       const w = b.hw * 2 * _unitsPerCm;
       const h = b.hh * 2 * _unitsPerCm;
       // Match the sprite's rounded corners (~20% of the shorter side) so the
       // outline doesn't look squared-off against the rounded fill.
       const r = 0.2 * Math.min(w, h);
-      g.clear();
-      g.position.set(b.lpx, b.lpy);
-      g.rotation = b.yaw;
       // Soft outer glow, then the crisp 2px line. Colour follows the theme.
-      const accent = accentHexInt();
       g.lineStyle((6 / scale), accent, 0.25);
       g.drawRoundedRect(-w / 2, -h / 2, w, h, r);
       g.lineStyle((2 / scale), accent, 1);
