@@ -46,6 +46,8 @@ export const api = {
   settings: {
     server: () => apiFetch('/api/settings/server'),
     advanced: () => apiFetch('/api/settings/advanced'),
+    setServer: (options) => apiFetch('/api/settings/server', { method: 'PATCH', body: options }),
+    setAdvanced: (settings) => apiFetch('/api/settings/advanced', { method: 'PATCH', body: settings }),
   },
 
   save: {

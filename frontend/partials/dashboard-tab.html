@@ -41,73 +41,134 @@
 
     <!-- Data -->
     <div x-show="serverState && !loading">
-      <div class="flex items-center justify-between mb-5">
-        <h2 class="text-base font-semibold text-gray-200">Server Dashboard</h2>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-semibold text-gray-200">Dashboard</h2>
         <button @click="loadDashboard()" class="text-xs text-gray-500 hover:text-gray-300 transition-colors">↻ Refresh</button>
       </div>
 
-      <!-- Stat cards -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-        <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
-          <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Players</div>
-          <div class="text-2xl font-bold text-orange-400">
-            <span x-text="serverState?.serverGameState?.numConnectedPlayers ?? '—'"></span>
-            <span class="text-sm text-gray-500"> / </span>
-            <span class="text-sm text-gray-400" x-text="serverState?.serverGameState?.playerLimit ?? '—'"></span>
+      <!-- Status strip -->
+      <div class="bg-gray-800 rounded-xl border border-gray-700 p-5 mb-4">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <svg class="w-4 h-4 text-orange-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+            </svg>
+            <h3 class="text-sm font-semibold text-white truncate" x-text="serverState?.serverGameState?.activeSessionName || 'Active session'"></h3>
           </div>
-        </div>
-        <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
-          <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Tech Tier</div>
-          <div class="text-2xl font-bold text-orange-400" x-text="serverState?.serverGameState?.techTier ?? '—'"></div>
-        </div>
-        <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
-          <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Tick Rate</div>
-          <div class="text-2xl font-bold text-orange-400">
-            <span x-text="serverState?.serverGameState?.averageTickRate?.toFixed(1) ?? '—'"></span>
-            <span class="text-sm text-gray-500">/s</span>
-          </div>
-        </div>
-        <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
-          <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Status</div>
-          <div class="mt-1 text-sm font-semibold">
+          <div class="text-sm font-semibold shrink-0">
             <span x-show="serverState?.serverGameState?.isGameRunning && !serverState?.serverGameState?.isGamePaused" class="text-green-400">● Running</span>
             <span x-show="serverState?.serverGameState?.isGamePaused" class="text-yellow-400">⏸ Paused</span>
             <span x-show="!serverState?.serverGameState?.isGameRunning" class="text-gray-500">○ Idle</span>
           </div>
         </div>
-      </div>
-
-      <!-- Session details -->
-      <div class="bg-gray-800 rounded-xl p-5 border border-gray-700">
-        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">Session</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-8 text-sm">
-          <div class="flex justify-between border-b border-gray-700/50 pb-2">
-            <span class="text-gray-400">Active Session</span>
-            <span class="text-white font-medium" x-text="serverState?.serverGameState?.activeSessionName || '—'"></span>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <div class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-0.5">Players</div>
+            <div class="text-lg font-bold text-orange-400 tabular-nums">
+              <span x-text="serverState?.serverGameState?.numConnectedPlayers ?? '—'"></span>
+              <span class="text-xs text-gray-500"> / </span>
+              <span class="text-sm text-gray-400" x-text="serverState?.serverGameState?.playerLimit ?? '—'"></span>
+            </div>
           </div>
-          <div class="flex justify-between border-b border-gray-700/50 pb-2">
-            <span class="text-gray-400">Auto-Load</span>
-            <span class="text-white" x-text="serverState?.serverGameState?.autoLoadSessionName || '—'"></span>
+          <div>
+            <div class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-0.5">Tech Tier</div>
+            <div class="text-lg font-bold text-orange-400 tabular-nums" x-text="serverState?.serverGameState?.techTier ?? '—'"></div>
           </div>
-          <div class="flex justify-between items-start gap-4 border-b border-gray-700/50 pb-2">
-            <span class="text-gray-400 shrink-0">Game Phase</span>
-            <span class="text-white text-right" x-text="formatUEPath(serverState?.serverGameState?.gamePhase)"></span>
+          <div>
+            <div class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-0.5">Game Phase</div>
+            <div class="text-sm font-medium text-gray-200 truncate" x-text="formatUEPath(serverState?.serverGameState?.gamePhase) || '—'"></div>
           </div>
-          <div class="flex justify-between items-start gap-4 border-b border-gray-700/50 pb-2">
-            <span class="text-gray-400 shrink-0">Active Schematic</span>
-            <span class="text-white text-right" x-text="formatUEPath(serverState?.serverGameState?.activeSchematic)"></span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-400">Total Playtime</span>
-            <span class="text-white" x-text="formatDuration(serverState?.serverGameState?.totalGameDuration)"></span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-400">Game Paused</span>
-            <span :class="serverState?.serverGameState?.isGamePaused ? 'text-yellow-400' : 'text-gray-400'">
-              <span x-text="serverState?.serverGameState?.isGamePaused ? 'Yes' : 'No'"></span>
-            </span>
+          <div>
+            <div class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-0.5">Playtime</div>
+            <div class="text-sm font-medium text-gray-200" x-text="formatDuration(serverState?.serverGameState?.totalGameDuration)"></div>
           </div>
         </div>
+      </div>
+
+      <!-- Factory snapshot (from the loaded save) -->
+      <div x-show="saveStatus?.loaded">
+        <div class="flex items-center justify-between mb-2.5">
+          <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-widest">Factory Snapshot</h3>
+          <span x-show="factorySnapshotLoading" class="text-[11px] text-gray-500 animate-pulse">Loading…</span>
+        </div>
+
+        <div x-show="factorySnapshotReady()" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          <!-- Power -->
+          <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-semibold uppercase tracking-widest text-gray-500">Power</span>
+              <span x-show="svPower?.fuseCount > 0" class="text-[10px] font-semibold text-red-400"
+                    x-text="svPower.fuseCount + ' fuse' + (svPower.fuseCount !== 1 ? 's' : '')"></span>
+            </div>
+            <div class="text-xl font-bold text-orange-400 tabular-nums">
+              <span x-text="Math.round(svPower?.totalProducedMW ?? 0)"></span><span class="text-sm text-gray-500"> MW</span>
+            </div>
+            <div class="mt-2 h-1.5 rounded-full bg-gray-900/70 overflow-hidden">
+              <div class="h-full rounded-full transition-all" :class="powerLoadTone()" :style="`width:${Math.min(100, powerLoadPct())}%`"></div>
+            </div>
+            <div class="text-[11px] text-gray-500 mt-1">
+              <span x-text="Math.round(svPower?.totalMaxDrawMW ?? 0)"></span> MW load · <span x-text="powerLoadPct()"></span>%
+            </div>
+          </div>
+
+          <!-- Machines -->
+          <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+            <span class="text-[10px] font-semibold uppercase tracking-widest text-gray-500">Machines</span>
+            <div class="text-xl font-bold text-orange-400 tabular-nums" x-text="svBuildings?.productionCount ?? 0"></div>
+            <div class="text-[11px] text-gray-500 mt-1 leading-relaxed">
+              <span x-text="svBuildings?.powerCount ?? 0"></span> generators<br>
+              <span x-text="minersExtractorsCount()"></span> miners &amp; extractors
+            </div>
+          </div>
+
+          <!-- Storage -->
+          <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+            <span class="text-[10px] font-semibold uppercase tracking-widest text-gray-500">Storage</span>
+            <div class="text-xl font-bold text-orange-400 tabular-nums" x-text="svStorage?.length ?? '—'"></div>
+            <div class="text-[11px] text-gray-500 mt-1">containers</div>
+          </div>
+
+          <!-- Progression -->
+          <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+            <span class="text-[10px] font-semibold uppercase tracking-widest text-gray-500">Progression</span>
+            <div class="text-xl font-bold text-orange-400 tabular-nums"><span x-text="progressionPct()"></span><span class="text-sm text-gray-500">%</span></div>
+            <div class="mt-2 h-1.5 rounded-full bg-gray-900/70 overflow-hidden">
+              <div class="h-full rounded-full bg-orange-500 transition-all" :style="`width:${progressionPct()}%`"></div>
+            </div>
+            <div class="text-[11px] text-gray-500 mt-1"><span x-text="progressionCount()"></span> unlocks</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- No save loaded → hint -->
+      <div x-show="!saveStatus?.loaded" class="bg-gray-800 rounded-xl border border-gray-700 border-dashed p-5 mb-4 text-center">
+        <p class="text-sm text-gray-400">Load a save to see your factory at a glance — power, machines, storage and progression.</p>
+        <button @click="switchTab('saves')" class="mt-3 px-4 py-1.5 text-xs font-medium bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors">Browse saves</button>
+      </div>
+
+      <!-- Quick links -->
+      <div class="grid grid-cols-2 gap-3">
+        <button @click="switchTab('map')"
+                class="flex items-center gap-3 bg-gray-800 hover:bg-gray-700/60 rounded-xl p-4 border border-gray-700 transition-colors text-left">
+          <svg class="w-5 h-5 text-orange-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+          </svg>
+          <div class="min-w-0">
+            <div class="text-sm font-semibold text-gray-200">Map</div>
+            <div class="text-[11px] text-gray-500">Explore the factory overlay</div>
+          </div>
+        </button>
+        <button @click="switchTab('saveviewer')"
+                class="flex items-center gap-3 bg-gray-800 hover:bg-gray-700/60 rounded-xl p-4 border border-gray-700 transition-colors text-left">
+          <svg class="w-5 h-5 text-orange-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <div class="min-w-0">
+            <div class="text-sm font-semibold text-gray-200">Save Tools</div>
+            <div class="text-[11px] text-gray-500">Players, production, storage &amp; more</div>
+          </div>
+        </button>
       </div>
     </div>
   </div>

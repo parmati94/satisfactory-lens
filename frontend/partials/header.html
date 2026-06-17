@@ -65,8 +65,8 @@
         ></span>
       </button>
       <button
-        @click="showSettings = true; if (sfStatus.connected && !serverOptions) loadSettings()"
-        title="Server Settings"
+        @click="openServerPanel()"
+        title="Server"
         class="p-1.5 hover:bg-gray-700/60 rounded-lg transition-colors group"
       >
         <svg class="w-5 h-5 text-gray-400 group-hover:text-gray-200 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">

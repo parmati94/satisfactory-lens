@@ -126,9 +126,17 @@ document.addEventListener('alpine:init', () => {
 
     // Phase 1 tab data
     serverState: null,
+    factorySnapshotLoading: false,
     saves: null,
     serverOptions: null,
     advancedSettings: null,
+    // Server panel (gear button) — tabbed: 'overview' (live health) | 'config' (editable settings)
+    settingsTab: 'overview',
+    settingsEditMode: false,   // Configuration tab: false = read-only view, true = editable
+    serverHealth: null,        // { latencyMs, ... } from GET /api/server/health
+    healthLoading: false,
+    settingEdits: {},          // override dict keyed 'server:<key>' / 'advanced:<key>' → new value
+    settingsSaving: false,
     newSaveName: '',
     actionLoading: false,
     actionResult: null,
@@ -210,14 +218,16 @@ document.addEventListener('alpine:init', () => {
       } catch { /* login may be disabled */ }
 
       await this.checkSfStatus();
+
+      // Load save status first so the dashboard's factory snapshot knows whether a
+      // save is loaded. Works with a mounted save with no SF connection at all, or
+      // via the API once connected (status reflects whichever applies).
+      await this.loadSaveStatus();
+      this.connectSaveSSE();
+
       if (this.sfStatus.connected) {
         await this.loadDashboard();
       }
-
-      // Always load save status and connect SSE — works with a mounted save with no SF
-      // connection at all, or via the API once connected (status reflects whichever applies)
-      await this.loadSaveStatus();
-      this.connectSaveSSE();
     },
 
     async checkSfStatus() {
@@ -293,7 +303,57 @@ document.addEventListener('alpine:init', () => {
       } finally {
         this.loading = false;
       }
+      // Best-effort factory snapshot from the loaded save (non-blocking, no spinner).
+      this.loadFactorySnapshot();
     },
+
+    // Pull the lightweight save-derived stats the dashboard's factory snapshot
+    // needs, reusing the Save Tools loaders + their cached state (power/buildings/
+    // storage/schematics). Skipped entirely when no save is loaded. None of these
+    // do per-instance machine fetches, so it stays cheap.
+    async loadFactorySnapshot() {
+      if (!this.saveStatus?.loaded) return;
+      this.factorySnapshotLoading = true;
+      try {
+        await Promise.all([
+          this.svPower      ? null : this.loadSvPower(),
+          this.svBuildings  ? null : this.loadSvBuildings(),
+          this.svStorage    ? null : this.loadSvStorage(),
+          this.svSchematics ? null : this.loadSvSchematics(),
+        ]);
+      } catch { /* snapshot is best-effort; tabs surface their own errors */ }
+      finally { this.factorySnapshotLoading = false; }
+    },
+
+    // True once the core snapshot inputs are present.
+    factorySnapshotReady() { return !!(this.svPower && this.svBuildings); },
+
+    // Power load as a % of actual production (0 production → 0). >100 means demand
+    // exceeds generation (shown red).
+    powerLoadPct() {
+      const p = this.svPower?.totalProducedMW ?? 0;
+      const d = this.svPower?.totalMaxDrawMW ?? 0;
+      return p > 0 ? Math.round((d / p) * 100) : 0;
+    },
+    powerLoadTone() {
+      const pct = this.powerLoadPct();
+      return pct > 100 ? 'bg-red-500' : pct > 85 ? 'bg-yellow-500' : 'bg-green-500';
+    },
+
+    // Crafting machines / generators / miners+extractors from the buildings census.
+    minersExtractorsCount() {
+      const cat = this.svBuildings?.categories?.find(c => c.category === 'Miners & Extractors');
+      return cat?.total ?? 0;
+    },
+
+    // Progression as % of the catalog's one-time unlocks that are purchased.
+    progressionPct() {
+      const total = this.schematicCatalog?.length ?? 0;
+      if (!total) return 0;
+      const have = Object.keys(this.svSchematics ?? {}).length;
+      return Math.min(100, Math.round((have / total) * 100));
+    },
+    progressionCount() { return Object.keys(this.svSchematics ?? {}).length; },
 
     // The single most recent save across the whole server (by saveDateTime), regardless
     // of which session it's in — distinct from "Loaded" (whatever's in Lens right now).
@@ -334,10 +394,135 @@ document.addEventListener('alpine:init', () => {
         ]);
         this.serverOptions = server;
         this.advancedSettings = advanced;
+        this.settingEdits = {}; // fresh baseline → drop any stale drafts
       } catch (e) {
         this.error = e.message;
       } finally {
         this.loading = false;
+      }
+    },
+
+    // ── Server panel (gear button) ────────────────────────────────────────
+    // Opens the tabbed panel and kicks off both the live health ping and the
+    // settings load (only when connected).
+    openServerPanel() {
+      this.showSettings = true;
+      this.settingsTab = 'overview';
+      this.settingsEditMode = false; // always open read-only
+
+      if (!this.sfStatus.connected) return;
+      this.loadServerHealth();
+      if (!this.serverOptions) this.loadSettings();
+    },
+
+    // Measured Lens→SF round-trip latency (+ liveness) for the Overview tab.
+    async loadServerHealth() {
+      this.healthLoading = true;
+      try {
+        this.serverHealth = await api.server.health();
+      } catch {
+        this.serverHealth = null; // unreachable → shown as offline in the UI
+      } finally {
+        this.healthLoading = false;
+      }
+    },
+
+    // Color tone for the latency readout (green < 80ms, yellow < 200ms, else red).
+    latencyTone(ms) {
+      if (ms == null) return 'text-gray-500';
+      return ms < 80 ? 'text-green-400' : ms < 200 ? 'text-yellow-400' : 'text-red-400';
+    },
+    // Color tone for tick rate against the 30/s target.
+    tickRateTone(r) {
+      if (r == null) return 'text-gray-500';
+      return r >= 28 ? 'text-green-400' : r >= 20 ? 'text-yellow-400' : 'text-red-400';
+    },
+
+    // ── Editable settings (Configuration tab) ─────────────────────────────
+    // The two SF settings maps are flat string→string. We render each entry as a
+    // typed widget inferred from its value (bool/number/text) and humanize the
+    // key, rather than hardcoding a key list that drifts across game versions.
+    _settingBaseMap(scope) {
+      return (scope === 'advanced'
+        ? this.advancedSettings?.advancedGameSettings
+        : this.serverOptions?.serverOptions) ?? {};
+    },
+    _settingKey(scope, key) { return `${scope}:${key}`; },
+
+    // True/False (string or bool) → boolean; pure-numeric string → number; else text.
+    settingWidgetType(value) {
+      const s = String(value).trim().toLowerCase();
+      if (s === 'true' || s === 'false') return 'bool';
+      if (s !== '' && !isNaN(Number(s))) return 'number';
+      return 'text';
+    },
+    settingIsBool(value) { return String(value).trim().toLowerCase() === 'true'; },
+
+    // "FG.DSS.AutoPause" → "Auto Pause"; "mPlayerLimit" → "Player Limit".
+    humanizeSettingKey(key) {
+      const tail = String(key).split('.').pop().replace(/^m(?=[A-Z])/, '');
+      return tail
+        .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+        .replace(/[_-]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    },
+
+    effectiveSetting(scope, key) {
+      const k = this._settingKey(scope, key);
+      return k in this.settingEdits ? this.settingEdits[k] : this._settingBaseMap(scope)[key];
+    },
+    isSettingEdited(scope, key) { return this._settingKey(scope, key) in this.settingEdits; },
+
+    // Set-semantics override; net-zero vs baseline drops the override.
+    setSetting(scope, key, value) {
+      const k = this._settingKey(scope, key);
+      const base = String(this._settingBaseMap(scope)[key]);
+      const next = String(value);
+      if (next === base) {
+        const { [k]: _, ...rest } = this.settingEdits;
+        this.settingEdits = rest;
+      } else {
+        this.settingEdits = { ...this.settingEdits, [k]: next };
+      }
+    },
+    toggleSetting(scope, key) {
+      this.setSetting(scope, key, this.settingIsBool(this.effectiveSetting(scope, key)) ? 'False' : 'True');
+    },
+
+    // Rows for a scope, sorted by humanized label, carrying widget metadata.
+    settingEntries(scope) {
+      return Object.keys(this._settingBaseMap(scope))
+        .map((key) => {
+          const value = this.effectiveSetting(scope, key);
+          return { key, scope, value, type: this.settingWidgetType(value),
+                   label: this.humanizeSettingKey(key), edited: this.isSettingEdited(scope, key) };
+        })
+        .sort((a, b) => a.label.localeCompare(b.label));
+    },
+
+    settingsDirtyCount() { return Object.keys(this.settingEdits).length; },
+    resetSettingDraft() { this.settingEdits = {}; },
+
+    // Apply changed keys, grouped by scope, via the existing PATCH routes.
+    async applySettings() {
+      const serverPayload = {}, advancedPayload = {};
+      for (const [k, v] of Object.entries(this.settingEdits)) {
+        const [scope, ...rest] = k.split(':');
+        const key = rest.join(':');
+        (scope === 'advanced' ? advancedPayload : serverPayload)[key] = v;
+      }
+      this.settingsSaving = true;
+      try {
+        if (Object.keys(serverPayload).length) await api.settings.setServer(serverPayload);
+        if (Object.keys(advancedPayload).length) await api.settings.setAdvanced(advancedPayload);
+        this.actionResult = { ok: true, message: 'Server settings applied.' };
+        this.settingsEditMode = false; // back to read-only after a successful apply
+        await this.loadSettings(); // re-baseline from the server (clears edits)
+      } catch (e) {
+        this.actionResult = { ok: false, message: e.message };
+      } finally {
+        this.settingsSaving = false;
       }
     },
 
