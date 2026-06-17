@@ -103,7 +103,7 @@
             <div class="flex items-center justify-between mb-1">
               <span class="text-[10px] font-semibold uppercase tracking-widest text-gray-500">Power</span>
               <span x-show="svPower?.fuseCount > 0" class="text-[10px] font-semibold text-red-400"
-                    x-text="svPower.fuseCount + ' fuse' + (svPower.fuseCount !== 1 ? 's' : '')"></span>
+                    x-text="(svPower?.fuseCount ?? 0) + ' fuse' + ((svPower?.fuseCount ?? 0) !== 1 ? 's' : '')"></span>
             </div>
             <div class="text-xl font-bold text-accent-400 tabular-nums">
               <span x-text="Math.round(svPower?.totalProducedMW ?? 0)"></span><span class="text-sm text-gray-500"> MW</span>
