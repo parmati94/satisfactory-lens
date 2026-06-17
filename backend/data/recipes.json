@@ -1,0 +1,8717 @@
+{
+"Recipe_AILimiter": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_CopperSheet",
+"name": "Copper Sheet"
+},
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_HighSpeedWire",
+"name": "Quickwire"
+}
+],
+"name": "AI Limiter",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CircuitBoardHighSpeed",
+"name": "AI Limiter"
+}
+]
+},
+"Recipe_AlienDNACapsule": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_AlienProtein",
+"name": "Alien Protein"
+}
+],
+"name": "Alien DNA Capsule",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_AlienDNACapsule",
+"name": "Alien DNA Capsule"
+}
+]
+},
+"Recipe_AlienPowerFuel": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_SAMFluctuator",
+"name": "SAM Fluctuator"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_CrystalShard",
+"name": "Power Shard"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_QuantumOscillator",
+"name": "Superposition Oscillator"
+},
+{
+"amount": 24.0,
+"fluid": true,
+"item": "Desc_QuantumEnergy",
+"name": "Excited Photonic Matter"
+}
+],
+"name": "Alien Power Matrix",
+"producedIn": [
+"Build_QuantumEncoder"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_AlienPowerFuel",
+"name": "Alien Power Matrix"
+},
+{
+"amount": 24.0,
+"fluid": true,
+"item": "Desc_DarkEnergy",
+"name": "Dark Matter Residue"
+}
+]
+},
+"Recipe_Alternate_AILimiter_Plastic": {
+"durationSec": 15.0,
+"ingredients": [
+{
+"amount": 30,
+"fluid": false,
+"item": "Desc_HighSpeedWire",
+"name": "Quickwire"
+},
+{
+"amount": 7,
+"fluid": false,
+"item": "Desc_Plastic",
+"name": "Plastic"
+}
+],
+"name": "Alternate: Plastic AI Limiter",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_CircuitBoardHighSpeed",
+"name": "AI Limiter"
+}
+]
+},
+"Recipe_Alternate_AdheredIronPlate": {
+"durationSec": 16.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_IronPlate",
+"name": "Iron Plate"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Rubber",
+"name": "Rubber"
+}
+],
+"name": "Alternate: Adhered Iron Plate",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_IronPlateReinforced",
+"name": "Reinforced Iron Plate"
+}
+]
+},
+"Recipe_Alternate_AlcladCasing": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_AluminumIngot",
+"name": "Aluminum Ingot"
+},
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_CopperIngot",
+"name": "Copper Ingot"
+}
+],
+"name": "Alternate: Alclad Casing",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 15,
+"fluid": false,
+"item": "Desc_AluminumCasing",
+"name": "Aluminum Casing"
+}
+]
+},
+"Recipe_Alternate_AluminumRod": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_AluminumIngot",
+"name": "Aluminum Ingot"
+}
+],
+"name": "Alternate: Aluminum Rod",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 7,
+"fluid": false,
+"item": "Desc_IronRod",
+"name": "Iron Rod"
+}
+]
+},
+"Recipe_Alternate_AutomatedMiner": {
+"durationSec": 60.0,
+"ingredients": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_SteelPipe",
+"name": "Steel Pipe"
+},
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_IronPlate",
+"name": "Iron Plate"
+}
+],
+"name": "Alternate: Automated Miner",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "BP_ItemDescriptorPortableMiner",
+"name": "Portable Miner"
+}
+]
+},
+"Recipe_Alternate_BoltedFrame": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_IronPlateReinforced",
+"name": "Reinforced Iron Plate"
+},
+{
+"amount": 56,
+"fluid": false,
+"item": "Desc_IronScrew",
+"name": "Screws"
+}
+],
+"name": "Alternate: Bolted Frame",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_ModularFrame",
+"name": "Modular Frame"
+}
+]
+},
+"Recipe_Alternate_Cable_1": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 9,
+"fluid": false,
+"item": "Desc_Wire",
+"name": "Wire"
+},
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_Rubber",
+"name": "Rubber"
+}
+],
+"name": "Alternate: Insulated Cable",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_Cable",
+"name": "Cable"
+}
+]
+},
+"Recipe_Alternate_Cable_2": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_HighSpeedWire",
+"name": "Quickwire"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Rubber",
+"name": "Rubber"
+}
+],
+"name": "Alternate: Quickwire Cable",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 11,
+"fluid": false,
+"item": "Desc_Cable",
+"name": "Cable"
+}
+]
+},
+"Recipe_Alternate_CateriumIngot_Leached": {
+"durationSec": 10.0,
+"ingredients": [
+{
+"amount": 9,
+"fluid": false,
+"item": "Desc_OreGold",
+"name": "Caterium Ore"
+},
+{
+"amount": 5.0,
+"fluid": true,
+"item": "Desc_SulfuricAcid",
+"name": "Sulfuric Acid"
+}
+],
+"name": "Alternate: Leached Caterium Ingot",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_GoldIngot",
+"name": "Caterium Ingot"
+}
+]
+},
+"Recipe_Alternate_CateriumIngot_Tempered": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_OreGold",
+"name": "Caterium Ore"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_PetroleumCoke",
+"name": "Petroleum Coke"
+}
+],
+"name": "Alternate: Tempered Caterium Ingot",
+"producedIn": [
+"Build_FoundryMk1"
+],
+"products": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_GoldIngot",
+"name": "Caterium Ingot"
+}
+]
+},
+"Recipe_Alternate_CircuitBoard_1": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 11,
+"fluid": false,
+"item": "Desc_CopperSheet",
+"name": "Copper Sheet"
+},
+{
+"amount": 11,
+"fluid": false,
+"item": "Desc_Silica",
+"name": "Silica"
+}
+],
+"name": "Alternate: Silicon Circuit Board",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_CircuitBoard",
+"name": "Circuit Board"
+}
+]
+},
+"Recipe_Alternate_CircuitBoard_2": {
+"durationSec": 48.0,
+"ingredients": [
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_Plastic",
+"name": "Plastic"
+},
+{
+"amount": 30,
+"fluid": false,
+"item": "Desc_HighSpeedWire",
+"name": "Quickwire"
+}
+],
+"name": "Alternate: Caterium Circuit Board",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 7,
+"fluid": false,
+"item": "Desc_CircuitBoard",
+"name": "Circuit Board"
+}
+]
+},
+"Recipe_Alternate_ClassicBattery": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_Sulfur",
+"name": "Sulfur"
+},
+{
+"amount": 7,
+"fluid": false,
+"item": "Desc_AluminumPlate",
+"name": "Alclad Aluminum Sheet"
+},
+{
+"amount": 8,
+"fluid": false,
+"item": "Desc_Plastic",
+"name": "Plastic"
+},
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_Wire",
+"name": "Wire"
+}
+],
+"name": "Alternate: Classic Battery",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_Battery",
+"name": "Battery"
+}
+]
+},
+"Recipe_Alternate_Coal_1": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Wood",
+"name": "Wood"
+}
+],
+"name": "Alternate: Charcoal",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_Coal",
+"name": "Coal"
+}
+]
+},
+"Recipe_Alternate_Coal_2": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_GenericBiomass",
+"name": "Biomass"
+}
+],
+"name": "Alternate: Biocoal",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_Coal",
+"name": "Coal"
+}
+]
+},
+"Recipe_Alternate_CoatedCable": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_Wire",
+"name": "Wire"
+},
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_HeavyOilResidue",
+"name": "Heavy Oil Residue"
+}
+],
+"name": "Alternate: Coated Cable",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 9,
+"fluid": false,
+"item": "Desc_Cable",
+"name": "Cable"
+}
+]
+},
+"Recipe_Alternate_CoatedIronCanister": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_IronPlate",
+"name": "Iron Plate"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CopperSheet",
+"name": "Copper Sheet"
+}
+],
+"name": "Alternate: Coated Iron Canister",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_FluidCanister",
+"name": "Empty Canister"
+}
+]
+},
+"Recipe_Alternate_CoatedIronPlate": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_IronIngot",
+"name": "Iron Ingot"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Plastic",
+"name": "Plastic"
+}
+],
+"name": "Alternate: Coated Iron Plate",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_IronPlate",
+"name": "Iron Plate"
+}
+]
+},
+"Recipe_Alternate_CokeSteelIngot": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 15,
+"fluid": false,
+"item": "Desc_OreIron",
+"name": "Iron Ore"
+},
+{
+"amount": 15,
+"fluid": false,
+"item": "Desc_PetroleumCoke",
+"name": "Petroleum Coke"
+}
+],
+"name": "Alternate: Coke Steel Ingot",
+"producedIn": [
+"Build_FoundryMk1"
+],
+"products": [
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_SteelIngot",
+"name": "Steel Ingot"
+}
+]
+},
+"Recipe_Alternate_Computer_1": {
+"durationSec": 16.0,
+"ingredients": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_CircuitBoard",
+"name": "Circuit Board"
+},
+{
+"amount": 14,
+"fluid": false,
+"item": "Desc_HighSpeedWire",
+"name": "Quickwire"
+},
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_Rubber",
+"name": "Rubber"
+}
+],
+"name": "Alternate: Caterium Computer",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Computer",
+"name": "Computer"
+}
+]
+},
+"Recipe_Alternate_Computer_2": {
+"durationSec": 36.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_CircuitBoard",
+"name": "Circuit Board"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CrystalOscillator",
+"name": "Crystal Oscillator"
+}
+],
+"name": "Alternate: Crystal Computer",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Computer",
+"name": "Computer"
+}
+]
+},
+"Recipe_Alternate_Concrete": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_Silica",
+"name": "Silica"
+},
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_Stone",
+"name": "Limestone"
+}
+],
+"name": "Alternate: Fine Concrete",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_Cement",
+"name": "Concrete"
+}
+]
+},
+"Recipe_Alternate_CoolingDevice": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_AluminumPlateReinforced",
+"name": "Heat Sink"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Motor",
+"name": "Motor"
+},
+{
+"amount": 24.0,
+"fluid": true,
+"item": "Desc_NitrogenGas",
+"name": "Nitrogen Gas"
+}
+],
+"name": "Alternate: Cooling Device",
+"producedIn": [
+"Build_Blender"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_CoolingSystem",
+"name": "Cooling System"
+}
+]
+},
+"Recipe_Alternate_CopperAlloyIngot": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_OreCopper",
+"name": "Copper Ore"
+},
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_OreIron",
+"name": "Iron Ore"
+}
+],
+"name": "Alternate: Copper Alloy Ingot",
+"producedIn": [
+"Build_FoundryMk1"
+],
+"products": [
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_CopperIngot",
+"name": "Copper Ingot"
+}
+]
+},
+"Recipe_Alternate_CopperIngot_Leached": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 9,
+"fluid": false,
+"item": "Desc_OreCopper",
+"name": "Copper Ore"
+},
+{
+"amount": 5.0,
+"fluid": true,
+"item": "Desc_SulfuricAcid",
+"name": "Sulfuric Acid"
+}
+],
+"name": "Alternate: Leached Copper Ingot",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 22,
+"fluid": false,
+"item": "Desc_CopperIngot",
+"name": "Copper Ingot"
+}
+]
+},
+"Recipe_Alternate_CopperIngot_Tempered": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_OreCopper",
+"name": "Copper Ore"
+},
+{
+"amount": 8,
+"fluid": false,
+"item": "Desc_PetroleumCoke",
+"name": "Petroleum Coke"
+}
+],
+"name": "Alternate: Tempered Copper Ingot",
+"producedIn": [
+"Build_FoundryMk1"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_CopperIngot",
+"name": "Copper Ingot"
+}
+]
+},
+"Recipe_Alternate_CopperRotor": {
+"durationSec": 16.0,
+"ingredients": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_CopperSheet",
+"name": "Copper Sheet"
+},
+{
+"amount": 52,
+"fluid": false,
+"item": "Desc_IronScrew",
+"name": "Screws"
+}
+],
+"name": "Alternate: Copper Rotor",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_Rotor",
+"name": "Rotor"
+}
+]
+},
+"Recipe_Alternate_CrystalOscillator": {
+"durationSec": 32.0,
+"ingredients": [
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_QuartzCrystal",
+"name": "Quartz Crystal"
+},
+{
+"amount": 7,
+"fluid": false,
+"item": "Desc_Rubber",
+"name": "Rubber"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CircuitBoardHighSpeed",
+"name": "AI Limiter"
+}
+],
+"name": "Alternate: Insulated Crystal Oscillator",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CrystalOscillator",
+"name": "Crystal Oscillator"
+}
+]
+},
+"Recipe_Alternate_DarkMatter_Crystallization": {
+"durationSec": 3.0,
+"ingredients": [
+{
+"amount": 10.0,
+"fluid": true,
+"item": "Desc_DarkEnergy",
+"name": "Dark Matter Residue"
+}
+],
+"name": "Alternate: Dark Matter Crystallization",
+"producedIn": [
+"Build_HadronCollider"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_DarkMatter",
+"name": "Dark Matter Crystal"
+}
+]
+},
+"Recipe_Alternate_DarkMatter_Trap": {
+"durationSec": 2.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_TimeCrystal",
+"name": "Time Crystal"
+},
+{
+"amount": 5.0,
+"fluid": true,
+"item": "Desc_DarkEnergy",
+"name": "Dark Matter Residue"
+}
+],
+"name": "Alternate: Dark Matter Trap",
+"producedIn": [
+"Build_HadronCollider"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_DarkMatter",
+"name": "Dark Matter Crystal"
+}
+]
+},
+"Recipe_Alternate_Diamond_Cloudy": {
+"durationSec": 3.0,
+"ingredients": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_Coal",
+"name": "Coal"
+},
+{
+"amount": 24,
+"fluid": false,
+"item": "Desc_Stone",
+"name": "Limestone"
+}
+],
+"name": "Alternate: Cloudy Diamonds",
+"producedIn": [
+"Build_HadronCollider"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Diamond",
+"name": "Diamonds"
+}
+]
+},
+"Recipe_Alternate_Diamond_OilBased": {
+"durationSec": 3.0,
+"ingredients": [
+{
+"amount": 10.0,
+"fluid": true,
+"item": "Desc_LiquidOil",
+"name": "Crude Oil"
+}
+],
+"name": "Alternate: Oil-Based Diamonds",
+"producedIn": [
+"Build_HadronCollider"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Diamond",
+"name": "Diamonds"
+}
+]
+},
+"Recipe_Alternate_Diamond_Petroleum": {
+"durationSec": 2.0,
+"ingredients": [
+{
+"amount": 24,
+"fluid": false,
+"item": "Desc_PetroleumCoke",
+"name": "Petroleum Coke"
+}
+],
+"name": "Alternate: Petroleum Diamonds",
+"producedIn": [
+"Build_HadronCollider"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Diamond",
+"name": "Diamonds"
+}
+]
+},
+"Recipe_Alternate_Diamond_Pink": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 8,
+"fluid": false,
+"item": "Desc_Coal",
+"name": "Coal"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_QuartzCrystal",
+"name": "Quartz Crystal"
+}
+],
+"name": "Alternate: Pink Diamonds",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Diamond",
+"name": "Diamonds"
+}
+]
+},
+"Recipe_Alternate_Diamond_Turbo": {
+"durationSec": 3.0,
+"ingredients": [
+{
+"amount": 30,
+"fluid": false,
+"item": "Desc_Coal",
+"name": "Coal"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_TurboFuel",
+"name": "Packaged Turbofuel"
+}
+],
+"name": "Alternate: Turbo Diamonds",
+"producedIn": [
+"Build_HadronCollider"
+],
+"products": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_Diamond",
+"name": "Diamonds"
+}
+]
+},
+"Recipe_Alternate_DilutedFuel": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 5.0,
+"fluid": true,
+"item": "Desc_HeavyOilResidue",
+"name": "Heavy Oil Residue"
+},
+{
+"amount": 10.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+],
+"name": "Alternate: Diluted Fuel",
+"producedIn": [
+"Build_Blender"
+],
+"products": [
+{
+"amount": 10.0,
+"fluid": true,
+"item": "Desc_LiquidFuel",
+"name": "Fuel"
+}
+]
+},
+"Recipe_Alternate_DilutedPackagedFuel": {
+"durationSec": 2.0,
+"ingredients": [
+{
+"amount": 1.0,
+"fluid": true,
+"item": "Desc_HeavyOilResidue",
+"name": "Heavy Oil Residue"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_PackagedWater",
+"name": "Packaged Water"
+}
+],
+"name": "Alternate: Diluted Packaged Fuel",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Fuel",
+"name": "Packaged Fuel"
+}
+]
+},
+"Recipe_Alternate_ElectricMotor": {
+"durationSec": 16.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_ElectromagneticControlRod",
+"name": "Electromagnetic Control Rod"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Rotor",
+"name": "Rotor"
+}
+],
+"name": "Alternate: Electric Motor",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Motor",
+"name": "Motor"
+}
+]
+},
+"Recipe_Alternate_ElectroAluminumScrap": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 12.0,
+"fluid": true,
+"item": "Desc_AluminaSolution",
+"name": "Alumina Solution"
+},
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_PetroleumCoke",
+"name": "Petroleum Coke"
+}
+],
+"name": "Alternate: Electrode Aluminum Scrap",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_AluminumScrap",
+"name": "Aluminum Scrap"
+},
+{
+"amount": 7.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+]
+},
+"Recipe_Alternate_ElectrodeCircuitBoard": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_Rubber",
+"name": "Rubber"
+},
+{
+"amount": 8,
+"fluid": false,
+"item": "Desc_PetroleumCoke",
+"name": "Petroleum Coke"
+}
+],
+"name": "Alternate: Electrode Circuit Board",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CircuitBoard",
+"name": "Circuit Board"
+}
+]
+},
+"Recipe_Alternate_ElectromagneticControlRod_1": {
+"durationSec": 15.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Stator",
+"name": "Stator"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_HighSpeedConnector",
+"name": "High-Speed Connector"
+}
+],
+"name": "Alternate: Electromagnetic Connection Rod",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_ElectromagneticControlRod",
+"name": "Electromagnetic Control Rod"
+}
+]
+},
+"Recipe_Alternate_EncasedIndustrialBeam": {
+"durationSec": 15.0,
+"ingredients": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_SteelPipe",
+"name": "Steel Pipe"
+},
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_Cement",
+"name": "Concrete"
+}
+],
+"name": "Alternate: Encased Industrial Pipe",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SteelPlateReinforced",
+"name": "Encased Industrial Beam"
+}
+]
+},
+"Recipe_Alternate_EnrichedCoal": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_Coal",
+"name": "Coal"
+},
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_Sulfur",
+"name": "Sulfur"
+}
+],
+"name": "Alternate: Compacted Coal",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_CompactedCoal",
+"name": "Compacted Coal"
+}
+]
+},
+"Recipe_Alternate_FertileUranium": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_OreUranium",
+"name": "Uranium"
+},
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_NuclearWaste",
+"name": "Uranium Waste"
+},
+{
+"amount": 3.0,
+"fluid": true,
+"item": "Desc_NitricAcid",
+"name": "Nitric Acid"
+},
+{
+"amount": 5.0,
+"fluid": true,
+"item": "Desc_SulfuricAcid",
+"name": "Sulfuric Acid"
+}
+],
+"name": "Alternate: Fertile Uranium",
+"producedIn": [
+"Build_Blender"
+],
+"products": [
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_NonFissibleUranium",
+"name": "Non-Fissile Uranium"
+},
+{
+"amount": 8.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+]
+},
+"Recipe_Alternate_FlexibleFramework": {
+"durationSec": 16.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_ModularFrame",
+"name": "Modular Frame"
+},
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_SteelPlate",
+"name": "Steel Beam"
+},
+{
+"amount": 8,
+"fluid": false,
+"item": "Desc_Rubber",
+"name": "Rubber"
+}
+],
+"name": "Alternate: Flexible Framework",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_2",
+"name": "Versatile Framework"
+}
+]
+},
+"Recipe_Alternate_FusedWire": {
+"durationSec": 20.0,
+"ingredients": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_CopperIngot",
+"name": "Copper Ingot"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_GoldIngot",
+"name": "Caterium Ingot"
+}
+],
+"name": "Alternate: Fused Wire",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 30,
+"fluid": false,
+"item": "Desc_Wire",
+"name": "Wire"
+}
+]
+},
+"Recipe_Alternate_Gunpowder_1": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Sulfur",
+"name": "Sulfur"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_CompactedCoal",
+"name": "Compacted Coal"
+}
+],
+"name": "Alternate: Fine Black Powder",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_Gunpowder",
+"name": "Black Powder"
+}
+]
+},
+"Recipe_Alternate_HeatFusedFrame": {
+"durationSec": 20.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_ModularFrameHeavy",
+"name": "Heavy Modular Frame"
+},
+{
+"amount": 50,
+"fluid": false,
+"item": "Desc_AluminumIngot",
+"name": "Aluminum Ingot"
+},
+{
+"amount": 8.0,
+"fluid": true,
+"item": "Desc_NitricAcid",
+"name": "Nitric Acid"
+},
+{
+"amount": 10.0,
+"fluid": true,
+"item": "Desc_LiquidFuel",
+"name": "Fuel"
+}
+],
+"name": "Alternate: Heat-Fused Frame",
+"producedIn": [
+"Build_Blender"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_ModularFrameFused",
+"name": "Fused Modular Frame"
+}
+]
+},
+"Recipe_Alternate_HeatSink_1": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_AluminumCasing",
+"name": "Aluminum Casing"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_Rubber",
+"name": "Rubber"
+}
+],
+"name": "Alternate: Heat Exchanger",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_AluminumPlateReinforced",
+"name": "Heat Sink"
+}
+]
+},
+"Recipe_Alternate_HeavyFlexibleFrame": {
+"durationSec": 16.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_ModularFrame",
+"name": "Modular Frame"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_SteelPlateReinforced",
+"name": "Encased Industrial Beam"
+},
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_Rubber",
+"name": "Rubber"
+},
+{
+"amount": 104,
+"fluid": false,
+"item": "Desc_IronScrew",
+"name": "Screws"
+}
+],
+"name": "Alternate: Heavy Flexible Frame",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_ModularFrameHeavy",
+"name": "Heavy Modular Frame"
+}
+]
+},
+"Recipe_Alternate_HeavyOilResidue": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 3.0,
+"fluid": true,
+"item": "Desc_LiquidOil",
+"name": "Crude Oil"
+}
+],
+"name": "Alternate: Heavy Oil Residue",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 4.0,
+"fluid": true,
+"item": "Desc_HeavyOilResidue",
+"name": "Heavy Oil Residue"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_PolymerResin",
+"name": "Polymer Resin"
+}
+]
+},
+"Recipe_Alternate_HighSpeedConnector": {
+"durationSec": 40.0,
+"ingredients": [
+{
+"amount": 60,
+"fluid": false,
+"item": "Desc_HighSpeedWire",
+"name": "Quickwire"
+},
+{
+"amount": 25,
+"fluid": false,
+"item": "Desc_Silica",
+"name": "Silica"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_CircuitBoard",
+"name": "Circuit Board"
+}
+],
+"name": "Alternate: Silicon High-Speed Connector",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_HighSpeedConnector",
+"name": "High-Speed Connector"
+}
+]
+},
+"Recipe_Alternate_HighSpeedWiring": {
+"durationSec": 32.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Stator",
+"name": "Stator"
+},
+{
+"amount": 40,
+"fluid": false,
+"item": "Desc_Wire",
+"name": "Wire"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_HighSpeedConnector",
+"name": "High-Speed Connector"
+}
+],
+"name": "Alternate: Automated Speed Wiring",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_3",
+"name": "Automated Wiring"
+}
+]
+},
+"Recipe_Alternate_IngotIron": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 8,
+"fluid": false,
+"item": "Desc_OreIron",
+"name": "Iron Ore"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_OreCopper",
+"name": "Copper Ore"
+}
+],
+"name": "Alternate: Iron Alloy Ingot",
+"producedIn": [
+"Build_FoundryMk1"
+],
+"products": [
+{
+"amount": 15,
+"fluid": false,
+"item": "Desc_IronIngot",
+"name": "Iron Ingot"
+}
+]
+},
+"Recipe_Alternate_IngotSteel_1": {
+"durationSec": 3.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_IronIngot",
+"name": "Iron Ingot"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Coal",
+"name": "Coal"
+}
+],
+"name": "Alternate: Solid Steel Ingot",
+"producedIn": [
+"Build_FoundryMk1"
+],
+"products": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_SteelIngot",
+"name": "Steel Ingot"
+}
+]
+},
+"Recipe_Alternate_IngotSteel_2": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_OreIron",
+"name": "Iron Ore"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CompactedCoal",
+"name": "Compacted Coal"
+}
+],
+"name": "Alternate: Compacted Steel Ingot",
+"producedIn": [
+"Build_FoundryMk1"
+],
+"products": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_SteelIngot",
+"name": "Steel Ingot"
+}
+]
+},
+"Recipe_Alternate_InstantPlutoniumCell": {
+"durationSec": 120.0,
+"ingredients": [
+{
+"amount": 150,
+"fluid": false,
+"item": "Desc_NonFissibleUranium",
+"name": "Non-Fissile Uranium"
+},
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_AluminumCasing",
+"name": "Aluminum Casing"
+}
+],
+"name": "Alternate: Instant Plutonium Cell",
+"producedIn": [
+"Build_HadronCollider"
+],
+"products": [
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_PlutoniumCell",
+"name": "Encased Plutonium Cell"
+}
+]
+},
+"Recipe_Alternate_InstantScrap": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 15,
+"fluid": false,
+"item": "Desc_OreBauxite",
+"name": "Bauxite"
+},
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_Coal",
+"name": "Coal"
+},
+{
+"amount": 5.0,
+"fluid": true,
+"item": "Desc_SulfuricAcid",
+"name": "Sulfuric Acid"
+},
+{
+"amount": 6.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+],
+"name": "Alternate: Instant Scrap",
+"producedIn": [
+"Build_Blender"
+],
+"products": [
+{
+"amount": 30,
+"fluid": false,
+"item": "Desc_AluminumScrap",
+"name": "Aluminum Scrap"
+},
+{
+"amount": 5.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+]
+},
+"Recipe_Alternate_IonizedFuel_Dark": {
+"durationSec": 3.0,
+"ingredients": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_PackagedRocketFuel",
+"name": "Packaged Rocket Fuel"
+},
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_DarkMatter",
+"name": "Dark Matter Crystal"
+}
+],
+"name": "Alternate: Dark-Ion Fuel",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 10.0,
+"fluid": true,
+"item": "Desc_IonizedFuel",
+"name": "Ionized Fuel"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_CompactedCoal",
+"name": "Compacted Coal"
+}
+]
+},
+"Recipe_Alternate_IronIngot_Basic": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_OreIron",
+"name": "Iron Ore"
+},
+{
+"amount": 8,
+"fluid": false,
+"item": "Desc_Stone",
+"name": "Limestone"
+}
+],
+"name": "Alternate: Basic Iron Ingot",
+"producedIn": [
+"Build_FoundryMk1"
+],
+"products": [
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_IronIngot",
+"name": "Iron Ingot"
+}
+]
+},
+"Recipe_Alternate_IronIngot_Leached": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_OreIron",
+"name": "Iron Ore"
+},
+{
+"amount": 1.0,
+"fluid": true,
+"item": "Desc_SulfuricAcid",
+"name": "Sulfuric Acid"
+}
+],
+"name": "Alternate: Leached Iron Ingot",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_IronIngot",
+"name": "Iron Ingot"
+}
+]
+},
+"Recipe_Alternate_ModularFrame": {
+"durationSec": 60.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_IronPlateReinforced",
+"name": "Reinforced Iron Plate"
+},
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_SteelPipe",
+"name": "Steel Pipe"
+}
+],
+"name": "Alternate: Steeled Frame",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_ModularFrame",
+"name": "Modular Frame"
+}
+]
+},
+"Recipe_Alternate_ModularFrameHeavy": {
+"durationSec": 64.0,
+"ingredients": [
+{
+"amount": 8,
+"fluid": false,
+"item": "Desc_ModularFrame",
+"name": "Modular Frame"
+},
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_SteelPlateReinforced",
+"name": "Encased Industrial Beam"
+},
+{
+"amount": 36,
+"fluid": false,
+"item": "Desc_SteelPipe",
+"name": "Steel Pipe"
+},
+{
+"amount": 22,
+"fluid": false,
+"item": "Desc_Cement",
+"name": "Concrete"
+}
+],
+"name": "Alternate: Heavy Encased Frame",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_ModularFrameHeavy",
+"name": "Heavy Modular Frame"
+}
+]
+},
+"Recipe_Alternate_Motor_1": {
+"durationSec": 48.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_Rotor",
+"name": "Rotor"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_Stator",
+"name": "Stator"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CrystalOscillator",
+"name": "Crystal Oscillator"
+}
+],
+"name": "Alternate: Rigor Motor",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_Motor",
+"name": "Motor"
+}
+]
+},
+"Recipe_Alternate_NuclearFuelRod_1": {
+"durationSec": 300.0,
+"ingredients": [
+{
+"amount": 100,
+"fluid": false,
+"item": "Desc_UraniumCell",
+"name": "Encased Uranium Cell"
+},
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_ElectromagneticControlRod",
+"name": "Electromagnetic Control Rod"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_CrystalOscillator",
+"name": "Crystal Oscillator"
+},
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_Rotor",
+"name": "Rotor"
+}
+],
+"name": "Alternate: Uranium Fuel Unit",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_NuclearFuelRod",
+"name": "Uranium Fuel Rod"
+}
+]
+},
+"Recipe_Alternate_OCSupercomputer": {
+"durationSec": 20.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_ModularFrameLightweight",
+"name": "Radio Control Unit"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_CoolingSystem",
+"name": "Cooling System"
+}
+],
+"name": "Alternate: OC Supercomputer",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_ComputerSuper",
+"name": "Supercomputer"
+}
+]
+},
+"Recipe_Alternate_PlasticSmartPlating": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_IronPlateReinforced",
+"name": "Reinforced Iron Plate"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Rotor",
+"name": "Rotor"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_Plastic",
+"name": "Plastic"
+}
+],
+"name": "Alternate: Plastic Smart Plating",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_1",
+"name": "Smart Plating"
+}
+]
+},
+"Recipe_Alternate_Plastic_1": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_Rubber",
+"name": "Rubber"
+},
+{
+"amount": 6.0,
+"fluid": true,
+"item": "Desc_LiquidFuel",
+"name": "Fuel"
+}
+],
+"name": "Alternate: Recycled Plastic",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_Plastic",
+"name": "Plastic"
+}
+]
+},
+"Recipe_Alternate_PlutoniumFuelUnit": {
+"durationSec": 120.0,
+"ingredients": [
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_PlutoniumCell",
+"name": "Encased Plutonium Cell"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_PressureConversionCube",
+"name": "Pressure Conversion Cube"
+}
+],
+"name": "Alternate: Plutonium Fuel Unit",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_PlutoniumFuelRod",
+"name": "Plutonium Fuel Rod"
+}
+]
+},
+"Recipe_Alternate_PolyesterFabric": {
+"durationSec": 2.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_PolymerResin",
+"name": "Polymer Resin"
+},
+{
+"amount": 1.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+],
+"name": "Alternate: Polyester Fabric",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Fabric",
+"name": "Fabric"
+}
+]
+},
+"Recipe_Alternate_PolymerResin": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 6.0,
+"fluid": true,
+"item": "Desc_LiquidOil",
+"name": "Crude Oil"
+}
+],
+"name": "Alternate: Polymer Resin",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 13,
+"fluid": false,
+"item": "Desc_PolymerResin",
+"name": "Polymer Resin"
+},
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_HeavyOilResidue",
+"name": "Heavy Oil Residue"
+}
+]
+},
+"Recipe_Alternate_PureCateriumIngot": {
+"durationSec": 5.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_OreGold",
+"name": "Caterium Ore"
+},
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+],
+"name": "Alternate: Pure Caterium Ingot",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_GoldIngot",
+"name": "Caterium Ingot"
+}
+]
+},
+"Recipe_Alternate_PureCopperIngot": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_OreCopper",
+"name": "Copper Ore"
+},
+{
+"amount": 4.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+],
+"name": "Alternate: Pure Copper Ingot",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 15,
+"fluid": false,
+"item": "Desc_CopperIngot",
+"name": "Copper Ingot"
+}
+]
+},
+"Recipe_Alternate_PureIronIngot": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 7,
+"fluid": false,
+"item": "Desc_OreIron",
+"name": "Iron Ore"
+},
+{
+"amount": 4.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+],
+"name": "Alternate: Pure Iron Ingot",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 13,
+"fluid": false,
+"item": "Desc_IronIngot",
+"name": "Iron Ingot"
+}
+]
+},
+"Recipe_Alternate_PureQuartzCrystal": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 9,
+"fluid": false,
+"item": "Desc_RawQuartz",
+"name": "Raw Quartz"
+},
+{
+"amount": 5.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+],
+"name": "Alternate: Pure Quartz Crystal",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 7,
+"fluid": false,
+"item": "Desc_QuartzCrystal",
+"name": "Quartz Crystal"
+}
+]
+},
+"Recipe_Alternate_Quartz_Fused": {
+"durationSec": 20.0,
+"ingredients": [
+{
+"amount": 25,
+"fluid": false,
+"item": "Desc_RawQuartz",
+"name": "Raw Quartz"
+},
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_Coal",
+"name": "Coal"
+}
+],
+"name": "Alternate: Fused Quartz Crystal",
+"producedIn": [
+"Build_FoundryMk1"
+],
+"products": [
+{
+"amount": 18,
+"fluid": false,
+"item": "Desc_QuartzCrystal",
+"name": "Quartz Crystal"
+}
+]
+},
+"Recipe_Alternate_Quartz_Purified": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 24,
+"fluid": false,
+"item": "Desc_RawQuartz",
+"name": "Raw Quartz"
+},
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_NitricAcid",
+"name": "Nitric Acid"
+}
+],
+"name": "Alternate: Quartz Purification",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 15,
+"fluid": false,
+"item": "Desc_QuartzCrystal",
+"name": "Quartz Crystal"
+},
+{
+"amount": 12.0,
+"fluid": true,
+"item": "Desc_DissolvedSilica",
+"name": "Dissolved Silica"
+}
+]
+},
+"Recipe_Alternate_Quickwire": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_GoldIngot",
+"name": "Caterium Ingot"
+},
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_CopperIngot",
+"name": "Copper Ingot"
+}
+],
+"name": "Alternate: Fused Quickwire",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_HighSpeedWire",
+"name": "Quickwire"
+}
+]
+},
+"Recipe_Alternate_RadioControlSystem": {
+"durationSec": 40.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CrystalOscillator",
+"name": "Crystal Oscillator"
+},
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_CircuitBoard",
+"name": "Circuit Board"
+},
+{
+"amount": 60,
+"fluid": false,
+"item": "Desc_AluminumCasing",
+"name": "Aluminum Casing"
+},
+{
+"amount": 30,
+"fluid": false,
+"item": "Desc_Rubber",
+"name": "Rubber"
+}
+],
+"name": "Alternate: Radio Control System",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_ModularFrameLightweight",
+"name": "Radio Control Unit"
+}
+]
+},
+"Recipe_Alternate_RadioControlUnit_1": {
+"durationSec": 16.0,
+"ingredients": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_AluminumPlateReinforced",
+"name": "Heat Sink"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_HighSpeedConnector",
+"name": "High-Speed Connector"
+},
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_QuartzCrystal",
+"name": "Quartz Crystal"
+}
+],
+"name": "Alternate: Radio Connection Unit",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_ModularFrameLightweight",
+"name": "Radio Control Unit"
+}
+]
+},
+"Recipe_Alternate_RecycledRubber": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_Plastic",
+"name": "Plastic"
+},
+{
+"amount": 6.0,
+"fluid": true,
+"item": "Desc_LiquidFuel",
+"name": "Fuel"
+}
+],
+"name": "Alternate: Recycled Rubber",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_Rubber",
+"name": "Rubber"
+}
+]
+},
+"Recipe_Alternate_ReinforcedIronPlate_1": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 18,
+"fluid": false,
+"item": "Desc_IronPlate",
+"name": "Iron Plate"
+},
+{
+"amount": 50,
+"fluid": false,
+"item": "Desc_IronScrew",
+"name": "Screws"
+}
+],
+"name": "Alternate: Bolted Iron Plate",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_IronPlateReinforced",
+"name": "Reinforced Iron Plate"
+}
+]
+},
+"Recipe_Alternate_ReinforcedIronPlate_2": {
+"durationSec": 32.0,
+"ingredients": [
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_IronPlate",
+"name": "Iron Plate"
+},
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_Wire",
+"name": "Wire"
+}
+],
+"name": "Alternate: Stitched Iron Plate",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_IronPlateReinforced",
+"name": "Reinforced Iron Plate"
+}
+]
+},
+"Recipe_Alternate_RocketFuel_Nitro": {
+"durationSec": 2.4,
+"ingredients": [
+{
+"amount": 4.0,
+"fluid": true,
+"item": "Desc_LiquidFuel",
+"name": "Fuel"
+},
+{
+"amount": 3.0,
+"fluid": true,
+"item": "Desc_NitrogenGas",
+"name": "Nitrogen Gas"
+},
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_Sulfur",
+"name": "Sulfur"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Coal",
+"name": "Coal"
+}
+],
+"name": "Alternate: Nitro Rocket Fuel",
+"producedIn": [
+"Build_Blender"
+],
+"products": [
+{
+"amount": 6.0,
+"fluid": true,
+"item": "Desc_RocketFuel",
+"name": "Rocket Fuel"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CompactedCoal",
+"name": "Compacted Coal"
+}
+]
+},
+"Recipe_Alternate_Rotor": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_SteelPipe",
+"name": "Steel Pipe"
+},
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_Wire",
+"name": "Wire"
+}
+],
+"name": "Alternate: Steel Rotor",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Rotor",
+"name": "Rotor"
+}
+]
+},
+"Recipe_Alternate_RubberConcrete": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_Stone",
+"name": "Limestone"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Rubber",
+"name": "Rubber"
+}
+],
+"name": "Alternate: Rubber Concrete",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 9,
+"fluid": false,
+"item": "Desc_Cement",
+"name": "Concrete"
+}
+]
+},
+"Recipe_Alternate_Screw": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_IronIngot",
+"name": "Iron Ingot"
+}
+],
+"name": "Alternate: Cast Screws",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_IronScrew",
+"name": "Screws"
+}
+]
+},
+"Recipe_Alternate_Screw_2": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SteelPlate",
+"name": "Steel Beam"
+}
+],
+"name": "Alternate: Steel Screws",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 52,
+"fluid": false,
+"item": "Desc_IronScrew",
+"name": "Screws"
+}
+]
+},
+"Recipe_Alternate_Silica": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_RawQuartz",
+"name": "Raw Quartz"
+},
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_Stone",
+"name": "Limestone"
+}
+],
+"name": "Alternate: Cheap Silica",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 7,
+"fluid": false,
+"item": "Desc_Silica",
+"name": "Silica"
+}
+]
+},
+"Recipe_Alternate_Silica_Distilled": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 12.0,
+"fluid": true,
+"item": "Desc_DissolvedSilica",
+"name": "Dissolved Silica"
+},
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_Stone",
+"name": "Limestone"
+},
+{
+"amount": 10.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+],
+"name": "Alternate: Distilled Silica",
+"producedIn": [
+"Build_Blender"
+],
+"products": [
+{
+"amount": 27,
+"fluid": false,
+"item": "Desc_Silica",
+"name": "Silica"
+},
+{
+"amount": 8.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+]
+},
+"Recipe_Alternate_SloppyAlumina": {
+"durationSec": 3.0,
+"ingredients": [
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_OreBauxite",
+"name": "Bauxite"
+},
+{
+"amount": 10.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+],
+"name": "Alternate: Sloppy Alumina",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 12.0,
+"fluid": true,
+"item": "Desc_AluminaSolution",
+"name": "Alumina Solution"
+}
+]
+},
+"Recipe_Alternate_Stator": {
+"durationSec": 15.0,
+"ingredients": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_SteelPipe",
+"name": "Steel Pipe"
+},
+{
+"amount": 15,
+"fluid": false,
+"item": "Desc_HighSpeedWire",
+"name": "Quickwire"
+}
+],
+"name": "Alternate: Quickwire Stator",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Stator",
+"name": "Stator"
+}
+]
+},
+"Recipe_Alternate_SteamedCopperSheet": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_CopperIngot",
+"name": "Copper Ingot"
+},
+{
+"amount": 3.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+],
+"name": "Alternate: Steamed Copper Sheet",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_CopperSheet",
+"name": "Copper Sheet"
+}
+]
+},
+"Recipe_Alternate_SteelBeam_Aluminum": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_AluminumIngot",
+"name": "Aluminum Ingot"
+}
+],
+"name": "Alternate: Aluminum Beam",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_SteelPlate",
+"name": "Steel Beam"
+}
+]
+},
+"Recipe_Alternate_SteelBeam_Molded": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 24,
+"fluid": false,
+"item": "Desc_SteelIngot",
+"name": "Steel Ingot"
+},
+{
+"amount": 16,
+"fluid": false,
+"item": "Desc_Cement",
+"name": "Concrete"
+}
+],
+"name": "Alternate: Molded Beam",
+"producedIn": [
+"Build_FoundryMk1"
+],
+"products": [
+{
+"amount": 9,
+"fluid": false,
+"item": "Desc_SteelPlate",
+"name": "Steel Beam"
+}
+]
+},
+"Recipe_Alternate_SteelCanister": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_SteelIngot",
+"name": "Steel Ingot"
+}
+],
+"name": "Alternate: Steel Canister",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_FluidCanister",
+"name": "Empty Canister"
+}
+]
+},
+"Recipe_Alternate_SteelCastedPlate": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_IronIngot",
+"name": "Iron Ingot"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SteelIngot",
+"name": "Steel Ingot"
+}
+],
+"name": "Alternate: Steel Cast Plate",
+"producedIn": [
+"Build_FoundryMk1"
+],
+"products": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_IronPlate",
+"name": "Iron Plate"
+}
+]
+},
+"Recipe_Alternate_SteelPipe_Iron": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_IronIngot",
+"name": "Iron Ingot"
+}
+],
+"name": "Alternate: Iron Pipe",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_SteelPipe",
+"name": "Steel Pipe"
+}
+]
+},
+"Recipe_Alternate_SteelPipe_Molded": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_SteelIngot",
+"name": "Steel Ingot"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_Cement",
+"name": "Concrete"
+}
+],
+"name": "Alternate: Molded Steel Pipe",
+"producedIn": [
+"Build_FoundryMk1"
+],
+"products": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_SteelPipe",
+"name": "Steel Pipe"
+}
+]
+},
+"Recipe_Alternate_SteelRod": {
+"durationSec": 5.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SteelIngot",
+"name": "Steel Ingot"
+}
+],
+"name": "Alternate: Steel Rod",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_IronRod",
+"name": "Iron Rod"
+}
+]
+},
+"Recipe_Alternate_SuperStateComputer": {
+"durationSec": 25.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_Computer",
+"name": "Computer"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_ElectromagneticControlRod",
+"name": "Electromagnetic Control Rod"
+},
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_Battery",
+"name": "Battery"
+},
+{
+"amount": 25,
+"fluid": false,
+"item": "Desc_Wire",
+"name": "Wire"
+}
+],
+"name": "Alternate: Super-State Computer",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_ComputerSuper",
+"name": "Supercomputer"
+}
+]
+},
+"Recipe_Alternate_TurboBlendFuel": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_LiquidFuel",
+"name": "Fuel"
+},
+{
+"amount": 4.0,
+"fluid": true,
+"item": "Desc_HeavyOilResidue",
+"name": "Heavy Oil Residue"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_Sulfur",
+"name": "Sulfur"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_PetroleumCoke",
+"name": "Petroleum Coke"
+}
+],
+"name": "Alternate: Turbo Blend Fuel",
+"producedIn": [
+"Build_Blender"
+],
+"products": [
+{
+"amount": 6.0,
+"fluid": true,
+"item": "Desc_LiquidTurboFuel",
+"name": "Turbofuel"
+}
+]
+},
+"Recipe_Alternate_TurboHeavyFuel": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 5.0,
+"fluid": true,
+"item": "Desc_HeavyOilResidue",
+"name": "Heavy Oil Residue"
+},
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_CompactedCoal",
+"name": "Compacted Coal"
+}
+],
+"name": "Alternate: Turbo Heavy Fuel",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 4.0,
+"fluid": true,
+"item": "Desc_LiquidTurboFuel",
+"name": "Turbofuel"
+}
+]
+},
+"Recipe_Alternate_TurboMotor_1": {
+"durationSec": 64.0,
+"ingredients": [
+{
+"amount": 7,
+"fluid": false,
+"item": "Desc_Motor",
+"name": "Motor"
+},
+{
+"amount": 9,
+"fluid": false,
+"item": "Desc_ModularFrameLightweight",
+"name": "Radio Control Unit"
+},
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_ElectromagneticControlRod",
+"name": "Electromagnetic Control Rod"
+},
+{
+"amount": 7,
+"fluid": false,
+"item": "Desc_Rotor",
+"name": "Rotor"
+}
+],
+"name": "Alternate: Turbo Electric Motor",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_MotorLightweight",
+"name": "Turbo Motor"
+}
+]
+},
+"Recipe_Alternate_TurboPressureMotor": {
+"durationSec": 32.0,
+"ingredients": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_Motor",
+"name": "Motor"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_PressureConversionCube",
+"name": "Pressure Conversion Cube"
+},
+{
+"amount": 24,
+"fluid": false,
+"item": "Desc_PackagedNitrogenGas",
+"name": "Packaged Nitrogen Gas"
+},
+{
+"amount": 8,
+"fluid": false,
+"item": "Desc_Stator",
+"name": "Stator"
+}
+],
+"name": "Alternate: Turbo Pressure Motor",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_MotorLightweight",
+"name": "Turbo Motor"
+}
+]
+},
+"Recipe_Alternate_Turbofuel": {
+"durationSec": 16.0,
+"ingredients": [
+{
+"amount": 6.0,
+"fluid": true,
+"item": "Desc_LiquidFuel",
+"name": "Fuel"
+},
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_CompactedCoal",
+"name": "Compacted Coal"
+}
+],
+"name": "Turbofuel",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 5.0,
+"fluid": true,
+"item": "Desc_LiquidTurboFuel",
+"name": "Turbofuel"
+}
+]
+},
+"Recipe_Alternate_UraniumCell_1": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_OreUranium",
+"name": "Uranium"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_Silica",
+"name": "Silica"
+},
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_Sulfur",
+"name": "Sulfur"
+},
+{
+"amount": 15,
+"fluid": false,
+"item": "Desc_HighSpeedWire",
+"name": "Quickwire"
+}
+],
+"name": "Alternate: Infused Uranium Cell",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_UraniumCell",
+"name": "Encased Uranium Cell"
+}
+]
+},
+"Recipe_Alternate_WetConcrete": {
+"durationSec": 3.0,
+"ingredients": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_Stone",
+"name": "Limestone"
+},
+{
+"amount": 5.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+],
+"name": "Alternate: Wet Concrete",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_Cement",
+"name": "Concrete"
+}
+]
+},
+"Recipe_Alternate_Wire_1": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_IronIngot",
+"name": "Iron Ingot"
+}
+],
+"name": "Alternate: Iron Wire",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 9,
+"fluid": false,
+"item": "Desc_Wire",
+"name": "Wire"
+}
+]
+},
+"Recipe_Alternate_Wire_2": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_GoldIngot",
+"name": "Caterium Ingot"
+}
+],
+"name": "Alternate: Caterium Wire",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 8,
+"fluid": false,
+"item": "Desc_Wire",
+"name": "Wire"
+}
+]
+},
+"Recipe_AluminaSolution": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_OreBauxite",
+"name": "Bauxite"
+},
+{
+"amount": 18.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+],
+"name": "Alumina Solution",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 12.0,
+"fluid": true,
+"item": "Desc_AluminaSolution",
+"name": "Alumina Solution"
+},
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_Silica",
+"name": "Silica"
+}
+]
+},
+"Recipe_AluminumCasing": {
+"durationSec": 2.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_AluminumIngot",
+"name": "Aluminum Ingot"
+}
+],
+"name": "Aluminum Casing",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_AluminumCasing",
+"name": "Aluminum Casing"
+}
+]
+},
+"Recipe_AluminumScrap": {
+"durationSec": 1.0,
+"ingredients": [
+{
+"amount": 4.0,
+"fluid": true,
+"item": "Desc_AluminaSolution",
+"name": "Alumina Solution"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Coal",
+"name": "Coal"
+}
+],
+"name": "Aluminum Scrap",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_AluminumScrap",
+"name": "Aluminum Scrap"
+},
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+]
+},
+"Recipe_AluminumSheet": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_AluminumIngot",
+"name": "Aluminum Ingot"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CopperIngot",
+"name": "Copper Ingot"
+}
+],
+"name": "Alclad Aluminum Sheet",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_AluminumPlate",
+"name": "Alclad Aluminum Sheet"
+}
+]
+},
+"Recipe_Battery": {
+"durationSec": 3.0,
+"ingredients": [
+{
+"amount": 2.5,
+"fluid": true,
+"item": "Desc_SulfuricAcid",
+"name": "Sulfuric Acid"
+},
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_AluminaSolution",
+"name": "Alumina Solution"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_AluminumCasing",
+"name": "Aluminum Casing"
+}
+],
+"name": "Battery",
+"producedIn": [
+"Build_Blender"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Battery",
+"name": "Battery"
+},
+{
+"amount": 1.5,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+]
+},
+"Recipe_Bauxite_Caterium": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 15,
+"fluid": false,
+"item": "Desc_OreGold",
+"name": "Caterium Ore"
+}
+],
+"name": "Bauxite (Caterium)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_OreBauxite",
+"name": "Bauxite"
+}
+]
+},
+"Recipe_Bauxite_Copper": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 18,
+"fluid": false,
+"item": "Desc_OreCopper",
+"name": "Copper Ore"
+}
+],
+"name": "Bauxite (Copper)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_OreBauxite",
+"name": "Bauxite"
+}
+]
+},
+"Recipe_Biofuel": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 8,
+"fluid": false,
+"item": "Desc_GenericBiomass",
+"name": "Biomass"
+}
+],
+"name": "Solid Biofuel",
+"producedIn": [
+"Build_AutomatedWorkBench",
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_Biofuel",
+"name": "Solid Biofuel"
+}
+]
+},
+"Recipe_Biomass_AlienProtein": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_AlienProtein",
+"name": "Alien Protein"
+}
+],
+"name": "Biomass (Alien Protein)",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 100,
+"fluid": false,
+"item": "Desc_GenericBiomass",
+"name": "Biomass"
+}
+]
+},
+"Recipe_Biomass_Leaves": {
+"durationSec": 5.0,
+"ingredients": [
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_Leaves",
+"name": "Leaves"
+}
+],
+"name": "Biomass (Leaves)",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_GenericBiomass",
+"name": "Biomass"
+}
+]
+},
+"Recipe_Biomass_Mycelia": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Mycelia",
+"name": "Mycelia"
+}
+],
+"name": "Biomass (Mycelia)",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_GenericBiomass",
+"name": "Biomass"
+}
+]
+},
+"Recipe_Biomass_Wood": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_Wood",
+"name": "Wood"
+}
+],
+"name": "Biomass (Wood)",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_GenericBiomass",
+"name": "Biomass"
+}
+]
+},
+"Recipe_Cable": {
+"durationSec": 2.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Wire",
+"name": "Wire"
+}
+],
+"name": "Cable",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Cable",
+"name": "Cable"
+}
+]
+},
+"Recipe_CandyCane": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_Gift",
+"name": "FICSMAS Gift"
+}
+],
+"name": "Candy Cane",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CandyCane",
+"name": "Candy Cane"
+}
+]
+},
+"Recipe_Cartridge": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_CopperSheet",
+"name": "Copper Sheet"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_GunpowderMK2",
+"name": "Smokeless Powder"
+}
+],
+"name": "Rifle Ammo",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 15,
+"fluid": false,
+"item": "Desc_CartridgeStandard",
+"name": "Rifle Ammo"
+}
+]
+},
+"Recipe_CartridgeChaos": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 25,
+"fluid": false,
+"item": "Desc_CartridgeStandard",
+"name": "Rifle Ammo"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_AluminumCasing",
+"name": "Aluminum Casing"
+},
+{
+"amount": 3.0,
+"fluid": true,
+"item": "Desc_LiquidTurboFuel",
+"name": "Turbofuel"
+}
+],
+"name": "Turbo Rifle Ammo",
+"producedIn": [
+"Build_Blender"
+],
+"products": [
+{
+"amount": 50,
+"fluid": false,
+"item": "Desc_CartridgeChaos",
+"name": "Turbo Rifle Ammo"
+}
+]
+},
+"Recipe_CartridgeChaos_Packaged": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 25,
+"fluid": false,
+"item": "Desc_CartridgeStandard",
+"name": "Rifle Ammo"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_AluminumCasing",
+"name": "Aluminum Casing"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_TurboFuel",
+"name": "Packaged Turbofuel"
+}
+],
+"name": "Turbo Rifle Ammo",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 50,
+"fluid": false,
+"item": "Desc_CartridgeChaos",
+"name": "Turbo Rifle Ammo"
+}
+]
+},
+"Recipe_CartridgeSmart": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_CartridgeStandard",
+"name": "Rifle Ammo"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_HighSpeedConnector",
+"name": "High-Speed Connector"
+}
+],
+"name": "Homing Rifle Ammo",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_CartridgeSmartProjectile",
+"name": "Homing Rifle Ammo"
+}
+]
+},
+"Recipe_Caterium_Copper": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 15,
+"fluid": false,
+"item": "Desc_OreCopper",
+"name": "Copper Ore"
+}
+],
+"name": "Caterium Ore (Copper)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_OreGold",
+"name": "Caterium Ore"
+}
+]
+},
+"Recipe_Caterium_Quartz": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_RawQuartz",
+"name": "Raw Quartz"
+}
+],
+"name": "Caterium Ore (Quartz)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_OreGold",
+"name": "Caterium Ore"
+}
+]
+},
+"Recipe_CircuitBoard": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_CopperSheet",
+"name": "Copper Sheet"
+},
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_Plastic",
+"name": "Plastic"
+}
+],
+"name": "Circuit Board",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CircuitBoard",
+"name": "Circuit Board"
+}
+]
+},
+"Recipe_Coal_Iron": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 18,
+"fluid": false,
+"item": "Desc_OreIron",
+"name": "Iron Ore"
+}
+],
+"name": "Coal (Iron)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_Coal",
+"name": "Coal"
+}
+]
+},
+"Recipe_Coal_Limestone": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 36,
+"fluid": false,
+"item": "Desc_Stone",
+"name": "Limestone"
+}
+],
+"name": "Coal (Limestone)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_Coal",
+"name": "Coal"
+}
+]
+},
+"Recipe_Computer": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_CircuitBoard",
+"name": "Circuit Board"
+},
+{
+"amount": 8,
+"fluid": false,
+"item": "Desc_Cable",
+"name": "Cable"
+},
+{
+"amount": 16,
+"fluid": false,
+"item": "Desc_Plastic",
+"name": "Plastic"
+}
+],
+"name": "Computer",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Computer",
+"name": "Computer"
+}
+]
+},
+"Recipe_ComputerSuper": {
+"durationSec": 32.0,
+"ingredients": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_Computer",
+"name": "Computer"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_CircuitBoardHighSpeed",
+"name": "AI Limiter"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_HighSpeedConnector",
+"name": "High-Speed Connector"
+},
+{
+"amount": 28,
+"fluid": false,
+"item": "Desc_Plastic",
+"name": "Plastic"
+}
+],
+"name": "Supercomputer",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_ComputerSuper",
+"name": "Supercomputer"
+}
+]
+},
+"Recipe_Concrete": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_Stone",
+"name": "Limestone"
+}
+],
+"name": "Concrete",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Cement",
+"name": "Concrete"
+}
+]
+},
+"Recipe_CoolingSystem": {
+"durationSec": 10.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_AluminumPlateReinforced",
+"name": "Heat Sink"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Rubber",
+"name": "Rubber"
+},
+{
+"amount": 5.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+},
+{
+"amount": 25.0,
+"fluid": true,
+"item": "Desc_NitrogenGas",
+"name": "Nitrogen Gas"
+}
+],
+"name": "Cooling System",
+"producedIn": [
+"Build_Blender"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CoolingSystem",
+"name": "Cooling System"
+}
+]
+},
+"Recipe_CopperDust": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 30,
+"fluid": false,
+"item": "Desc_CopperIngot",
+"name": "Copper Ingot"
+}
+],
+"name": "Copper Powder",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_CopperDust",
+"name": "Copper Powder"
+}
+]
+},
+"Recipe_CopperSheet": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_CopperIngot",
+"name": "Copper Ingot"
+}
+],
+"name": "Copper Sheet",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CopperSheet",
+"name": "Copper Sheet"
+}
+]
+},
+"Recipe_Copper_Quartz": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_RawQuartz",
+"name": "Raw Quartz"
+}
+],
+"name": "Copper Ore (Quartz)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_OreCopper",
+"name": "Copper Ore"
+}
+]
+},
+"Recipe_Copper_Sulfur": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_Sulfur",
+"name": "Sulfur"
+}
+],
+"name": "Copper Ore (Sulfur)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_OreCopper",
+"name": "Copper Ore"
+}
+]
+},
+"Recipe_CrystalOscillator": {
+"durationSec": 120.0,
+"ingredients": [
+{
+"amount": 36,
+"fluid": false,
+"item": "Desc_QuartzCrystal",
+"name": "Quartz Crystal"
+},
+{
+"amount": 28,
+"fluid": false,
+"item": "Desc_Cable",
+"name": "Cable"
+},
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_IronPlateReinforced",
+"name": "Reinforced Iron Plate"
+}
+],
+"name": "Crystal Oscillator",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_CrystalOscillator",
+"name": "Crystal Oscillator"
+}
+]
+},
+"Recipe_DarkEnergy": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+}
+],
+"name": "Dark Matter Residue",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 10.0,
+"fluid": true,
+"item": "Desc_DarkEnergy",
+"name": "Dark Matter Residue"
+}
+]
+},
+"Recipe_DarkMatter": {
+"durationSec": 2.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Diamond",
+"name": "Diamonds"
+},
+{
+"amount": 5.0,
+"fluid": true,
+"item": "Desc_DarkEnergy",
+"name": "Dark Matter Residue"
+}
+],
+"name": "Dark Matter Crystal",
+"producedIn": [
+"Build_HadronCollider"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_DarkMatter",
+"name": "Dark Matter Crystal"
+}
+]
+},
+"Recipe_Diamond": {
+"durationSec": 2.0,
+"ingredients": [
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_Coal",
+"name": "Coal"
+}
+],
+"name": "Diamonds",
+"producedIn": [
+"Build_HadronCollider"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Diamond",
+"name": "Diamonds"
+}
+]
+},
+"Recipe_ElectromagneticControlRod": {
+"durationSec": 30.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_Stator",
+"name": "Stator"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_CircuitBoardHighSpeed",
+"name": "AI Limiter"
+}
+],
+"name": "Electromagnetic Control Rod",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_ElectromagneticControlRod",
+"name": "Electromagnetic Control Rod"
+}
+]
+},
+"Recipe_EncasedIndustrialBeam": {
+"durationSec": 10.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_SteelPlate",
+"name": "Steel Beam"
+},
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_Cement",
+"name": "Concrete"
+}
+],
+"name": "Encased Industrial Beam",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SteelPlateReinforced",
+"name": "Encased Industrial Beam"
+}
+]
+},
+"Recipe_Fabric": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Mycelia",
+"name": "Mycelia"
+},
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_GenericBiomass",
+"name": "Biomass"
+}
+],
+"name": "Fabric",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Fabric",
+"name": "Fabric"
+}
+]
+},
+"Recipe_FicsiteIngot_AL": {
+"durationSec": 2.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_AluminumIngot",
+"name": "Aluminum Ingot"
+}
+],
+"name": "Ficsite Ingot (Aluminum)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_FicsiteIngot",
+"name": "Ficsite Ingot"
+}
+]
+},
+"Recipe_FicsiteIngot_CAT": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_GoldIngot",
+"name": "Caterium Ingot"
+}
+],
+"name": "Ficsite Ingot (Caterium)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_FicsiteIngot",
+"name": "Ficsite Ingot"
+}
+]
+},
+"Recipe_FicsiteIngot_Iron": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 24,
+"fluid": false,
+"item": "Desc_IronIngot",
+"name": "Iron Ingot"
+}
+],
+"name": "Ficsite Ingot (Iron)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_FicsiteIngot",
+"name": "Ficsite Ingot"
+}
+]
+},
+"Recipe_FicsiteMesh": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_FicsiteIngot",
+"name": "Ficsite Ingot"
+}
+],
+"name": "Ficsite Trigon",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_FicsiteMesh",
+"name": "Ficsite Trigon"
+}
+]
+},
+"Recipe_Ficsonium": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_PlutoniumWaste",
+"name": "Plutonium Waste"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SingularityCell",
+"name": "Singularity Cell"
+},
+{
+"amount": 20.0,
+"fluid": true,
+"item": "Desc_DarkEnergy",
+"name": "Dark Matter Residue"
+}
+],
+"name": "Ficsonium",
+"producedIn": [
+"Build_HadronCollider"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Ficsonium",
+"name": "Ficsonium"
+}
+]
+},
+"Recipe_FicsoniumFuelRod": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Ficsonium",
+"name": "Ficsonium"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_ElectromagneticControlRod",
+"name": "Electromagnetic Control Rod"
+},
+{
+"amount": 40,
+"fluid": false,
+"item": "Desc_FicsiteMesh",
+"name": "Ficsite Trigon"
+},
+{
+"amount": 20.0,
+"fluid": true,
+"item": "Desc_QuantumEnergy",
+"name": "Excited Photonic Matter"
+}
+],
+"name": "Ficsonium Fuel Rod",
+"producedIn": [
+"Build_QuantumEncoder"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_FicsoniumFuelRod",
+"name": "Ficsonium Fuel Rod"
+},
+{
+"amount": 20.0,
+"fluid": true,
+"item": "Desc_DarkEnergy",
+"name": "Dark Matter Residue"
+}
+]
+},
+"Recipe_FilterGasMask": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Fabric",
+"name": "Fabric"
+},
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_Coal",
+"name": "Coal"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_IronPlate",
+"name": "Iron Plate"
+}
+],
+"name": "Gas Filter",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Filter",
+"name": "Gas Filter"
+}
+]
+},
+"Recipe_FilterHazmat": {
+"durationSec": 16.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Filter",
+"name": "Gas Filter"
+},
+{
+"amount": 8,
+"fluid": false,
+"item": "Desc_HighSpeedWire",
+"name": "Quickwire"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_AluminumCasing",
+"name": "Aluminum Casing"
+}
+],
+"name": "Iodine-Infused Filter",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_HazmatFilter",
+"name": "Iodine-Infused Filter"
+}
+]
+},
+"Recipe_Fireworks_01": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_XmasBranch",
+"name": "FICSMAS Tree Branch"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_CandyCane",
+"name": "Candy Cane"
+}
+],
+"name": "Sweet Fireworks",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Fireworks_Projectile_01",
+"name": "Sweet Fireworks"
+}
+]
+},
+"Recipe_Fireworks_02": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_XmasBranch",
+"name": "FICSMAS Tree Branch"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_XmasBow",
+"name": "FICSMAS Bow"
+}
+],
+"name": "Fancy Fireworks",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Fireworks_Projectile_02",
+"name": "Fancy Fireworks"
+}
+]
+},
+"Recipe_Fireworks_03": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_XmasBranch",
+"name": "FICSMAS Tree Branch"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Snow",
+"name": "FICSMAS Actual Snow"
+}
+],
+"name": "Sparkly Fireworks",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Fireworks_Projectile_03",
+"name": "Sparkly Fireworks"
+}
+]
+},
+"Recipe_FluidCanister": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Plastic",
+"name": "Plastic"
+}
+],
+"name": "Empty Canister",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_FluidCanister",
+"name": "Empty Canister"
+}
+]
+},
+"Recipe_Fuel": {
+"durationSec": 3.0,
+"ingredients": [
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_LiquidFuel",
+"name": "Fuel"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_FluidCanister",
+"name": "Empty Canister"
+}
+],
+"name": "Packaged Fuel",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Fuel",
+"name": "Packaged Fuel"
+}
+]
+},
+"Recipe_FusedModularFrame": {
+"durationSec": 40.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_ModularFrameHeavy",
+"name": "Heavy Modular Frame"
+},
+{
+"amount": 50,
+"fluid": false,
+"item": "Desc_AluminumCasing",
+"name": "Aluminum Casing"
+},
+{
+"amount": 25.0,
+"fluid": true,
+"item": "Desc_NitrogenGas",
+"name": "Nitrogen Gas"
+}
+],
+"name": "Fused Modular Frame",
+"producedIn": [
+"Build_Blender"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_ModularFrameFused",
+"name": "Fused Modular Frame"
+}
+]
+},
+"Recipe_GasTank": {
+"durationSec": 1.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_AluminumIngot",
+"name": "Aluminum Ingot"
+}
+],
+"name": "Empty Fluid Tank",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_GasTank",
+"name": "Empty Fluid Tank"
+}
+]
+},
+"Recipe_Gunpowder": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Coal",
+"name": "Coal"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Sulfur",
+"name": "Sulfur"
+}
+],
+"name": "Black Powder",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Gunpowder",
+"name": "Black Powder"
+}
+]
+},
+"Recipe_GunpowderMK2": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Gunpowder",
+"name": "Black Powder"
+},
+{
+"amount": 1.0,
+"fluid": true,
+"item": "Desc_HeavyOilResidue",
+"name": "Heavy Oil Residue"
+}
+],
+"name": "Smokeless Powder",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_GunpowderMK2",
+"name": "Smokeless Powder"
+}
+]
+},
+"Recipe_HeatSink": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_AluminumPlate",
+"name": "Alclad Aluminum Sheet"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_CopperSheet",
+"name": "Copper Sheet"
+}
+],
+"name": "Heat Sink",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_AluminumPlateReinforced",
+"name": "Heat Sink"
+}
+]
+},
+"Recipe_HighSpeedConnector": {
+"durationSec": 16.0,
+"ingredients": [
+{
+"amount": 56,
+"fluid": false,
+"item": "Desc_HighSpeedWire",
+"name": "Quickwire"
+},
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_Cable",
+"name": "Cable"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CircuitBoard",
+"name": "Circuit Board"
+}
+],
+"name": "High-Speed Connector",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_HighSpeedConnector",
+"name": "High-Speed Connector"
+}
+]
+},
+"Recipe_IngotAluminum": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_AluminumScrap",
+"name": "Aluminum Scrap"
+},
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_Silica",
+"name": "Silica"
+}
+],
+"name": "Aluminum Ingot",
+"producedIn": [
+"Build_FoundryMk1"
+],
+"products": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_AluminumIngot",
+"name": "Aluminum Ingot"
+}
+]
+},
+"Recipe_IngotCaterium": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_OreGold",
+"name": "Caterium Ore"
+}
+],
+"name": "Caterium Ingot",
+"producedIn": [
+"Build_SmelterMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_GoldIngot",
+"name": "Caterium Ingot"
+}
+]
+},
+"Recipe_IngotCopper": {
+"durationSec": 2.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_OreCopper",
+"name": "Copper Ore"
+}
+],
+"name": "Copper Ingot",
+"producedIn": [
+"Build_SmelterMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CopperIngot",
+"name": "Copper Ingot"
+}
+]
+},
+"Recipe_IngotIron": {
+"durationSec": 2.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_OreIron",
+"name": "Iron Ore"
+}
+],
+"name": "Iron Ingot",
+"producedIn": [
+"Build_SmelterMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_IronIngot",
+"name": "Iron Ingot"
+}
+]
+},
+"Recipe_IngotSAM": {
+"durationSec": 2.0,
+"ingredients": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_SAM",
+"name": "SAM"
+}
+],
+"name": "Reanimated SAM",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+}
+]
+},
+"Recipe_IngotSteel": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_OreIron",
+"name": "Iron Ore"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_Coal",
+"name": "Coal"
+}
+],
+"name": "Steel Ingot",
+"producedIn": [
+"Build_FoundryMk1"
+],
+"products": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_SteelIngot",
+"name": "Steel Ingot"
+}
+]
+},
+"Recipe_IonizedFuel": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 16.0,
+"fluid": true,
+"item": "Desc_RocketFuel",
+"name": "Rocket Fuel"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CrystalShard",
+"name": "Power Shard"
+}
+],
+"name": "Ionized Fuel",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 16.0,
+"fluid": true,
+"item": "Desc_IonizedFuel",
+"name": "Ionized Fuel"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_CompactedCoal",
+"name": "Compacted Coal"
+}
+]
+},
+"Recipe_IronPlate": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_IronIngot",
+"name": "Iron Ingot"
+}
+],
+"name": "Iron Plate",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_IronPlate",
+"name": "Iron Plate"
+}
+]
+},
+"Recipe_IronPlateReinforced": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_IronPlate",
+"name": "Iron Plate"
+},
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_IronScrew",
+"name": "Screws"
+}
+],
+"name": "Reinforced Iron Plate",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_IronPlateReinforced",
+"name": "Reinforced Iron Plate"
+}
+]
+},
+"Recipe_IronRod": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_IronIngot",
+"name": "Iron Ingot"
+}
+],
+"name": "Iron Rod",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_IronRod",
+"name": "Iron Rod"
+}
+]
+},
+"Recipe_Iron_Limestone": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 24,
+"fluid": false,
+"item": "Desc_Stone",
+"name": "Limestone"
+}
+],
+"name": "Iron Ore (Limestone)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_OreIron",
+"name": "Iron Ore"
+}
+]
+},
+"Recipe_Limestone_Sulfur": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Sulfur",
+"name": "Sulfur"
+}
+],
+"name": "Limestone (Sulfur)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_Stone",
+"name": "Limestone"
+}
+]
+},
+"Recipe_LiquidBiofuel": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_Biofuel",
+"name": "Solid Biofuel"
+},
+{
+"amount": 3.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+],
+"name": "Liquid Biofuel",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 4.0,
+"fluid": true,
+"item": "Desc_LiquidBiofuel",
+"name": "Liquid Biofuel"
+}
+]
+},
+"Recipe_LiquidFuel": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 6.0,
+"fluid": true,
+"item": "Desc_LiquidOil",
+"name": "Crude Oil"
+}
+],
+"name": "Fuel",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 4.0,
+"fluid": true,
+"item": "Desc_LiquidFuel",
+"name": "Fuel"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_PolymerResin",
+"name": "Polymer Resin"
+}
+]
+},
+"Recipe_ModularFrame": {
+"durationSec": 60.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_IronPlateReinforced",
+"name": "Reinforced Iron Plate"
+},
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_IronRod",
+"name": "Iron Rod"
+}
+],
+"name": "Modular Frame",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_ModularFrame",
+"name": "Modular Frame"
+}
+]
+},
+"Recipe_ModularFrameHeavy": {
+"durationSec": 30.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_ModularFrame",
+"name": "Modular Frame"
+},
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_SteelPipe",
+"name": "Steel Pipe"
+},
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_SteelPlateReinforced",
+"name": "Encased Industrial Beam"
+},
+{
+"amount": 120,
+"fluid": false,
+"item": "Desc_IronScrew",
+"name": "Screws"
+}
+],
+"name": "Heavy Modular Frame",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_ModularFrameHeavy",
+"name": "Heavy Modular Frame"
+}
+]
+},
+"Recipe_Motor": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Rotor",
+"name": "Rotor"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Stator",
+"name": "Stator"
+}
+],
+"name": "Motor",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Motor",
+"name": "Motor"
+}
+]
+},
+"Recipe_MotorTurbo": {
+"durationSec": 32.0,
+"ingredients": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_CoolingSystem",
+"name": "Cooling System"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_ModularFrameLightweight",
+"name": "Radio Control Unit"
+},
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_Motor",
+"name": "Motor"
+},
+{
+"amount": 24,
+"fluid": false,
+"item": "Desc_Rubber",
+"name": "Rubber"
+}
+],
+"name": "Turbo Motor",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_MotorLightweight",
+"name": "Turbo Motor"
+}
+]
+},
+"Recipe_NitricAcid": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 12.0,
+"fluid": true,
+"item": "Desc_NitrogenGas",
+"name": "Nitrogen Gas"
+},
+{
+"amount": 3.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_IronPlate",
+"name": "Iron Plate"
+}
+],
+"name": "Nitric Acid",
+"producedIn": [
+"Build_Blender"
+],
+"products": [
+{
+"amount": 3.0,
+"fluid": true,
+"item": "Desc_NitricAcid",
+"name": "Nitric Acid"
+}
+]
+},
+"Recipe_Nitrogen_Bauxite": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_OreBauxite",
+"name": "Bauxite"
+}
+],
+"name": "Nitrogen Gas (Bauxite)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 12.0,
+"fluid": true,
+"item": "Desc_NitrogenGas",
+"name": "Nitrogen Gas"
+}
+]
+},
+"Recipe_Nitrogen_Caterium": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_OreGold",
+"name": "Caterium Ore"
+}
+],
+"name": "Nitrogen Gas (Caterium)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 12.0,
+"fluid": true,
+"item": "Desc_NitrogenGas",
+"name": "Nitrogen Gas"
+}
+]
+},
+"Recipe_Nobelisk": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Gunpowder",
+"name": "Black Powder"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_SteelPipe",
+"name": "Steel Pipe"
+}
+],
+"name": "Nobelisk",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_NobeliskExplosive",
+"name": "Nobelisk"
+}
+]
+},
+"Recipe_NobeliskCluster": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_NobeliskExplosive",
+"name": "Nobelisk"
+},
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_GunpowderMK2",
+"name": "Smokeless Powder"
+}
+],
+"name": "Cluster Nobelisk",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_NobeliskCluster",
+"name": "Cluster Nobelisk"
+}
+]
+},
+"Recipe_NobeliskGas": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_NobeliskExplosive",
+"name": "Nobelisk"
+},
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_GenericBiomass",
+"name": "Biomass"
+}
+],
+"name": "Gas Nobelisk",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_NobeliskGas",
+"name": "Gas Nobelisk"
+}
+]
+},
+"Recipe_NobeliskNuke": {
+"durationSec": 120.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_NobeliskExplosive",
+"name": "Nobelisk"
+},
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_UraniumCell",
+"name": "Encased Uranium Cell"
+},
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_GunpowderMK2",
+"name": "Smokeless Powder"
+},
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_CircuitBoardHighSpeed",
+"name": "AI Limiter"
+}
+],
+"name": "Nuke Nobelisk",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_NobeliskNuke",
+"name": "Nuke Nobelisk"
+}
+]
+},
+"Recipe_NobeliskShockwave": {
+"durationSec": 60.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_NobeliskExplosive",
+"name": "Nobelisk"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CrystalOscillator",
+"name": "Crystal Oscillator"
+}
+],
+"name": "Pulse Nobelisk",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_NobeliskShockwave",
+"name": "Pulse Nobelisk"
+}
+]
+},
+"Recipe_NonFissileUranium": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 15,
+"fluid": false,
+"item": "Desc_NuclearWaste",
+"name": "Uranium Waste"
+},
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_Silica",
+"name": "Silica"
+},
+{
+"amount": 6.0,
+"fluid": true,
+"item": "Desc_NitricAcid",
+"name": "Nitric Acid"
+},
+{
+"amount": 6.0,
+"fluid": true,
+"item": "Desc_SulfuricAcid",
+"name": "Sulfuric Acid"
+}
+],
+"name": "Non-Fissile Uranium",
+"producedIn": [
+"Build_Blender"
+],
+"products": [
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_NonFissibleUranium",
+"name": "Non-Fissile Uranium"
+},
+{
+"amount": 6.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+]
+},
+"Recipe_NuclearFuelRod": {
+"durationSec": 150.0,
+"ingredients": [
+{
+"amount": 50,
+"fluid": false,
+"item": "Desc_UraniumCell",
+"name": "Encased Uranium Cell"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_SteelPlateReinforced",
+"name": "Encased Industrial Beam"
+},
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_ElectromagneticControlRod",
+"name": "Electromagnetic Control Rod"
+}
+],
+"name": "Uranium Fuel Rod",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_NuclearFuelRod",
+"name": "Uranium Fuel Rod"
+}
+]
+},
+"Recipe_PackagedAlumina": {
+"durationSec": 1.0,
+"ingredients": [
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_AluminaSolution",
+"name": "Alumina Solution"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_FluidCanister",
+"name": "Empty Canister"
+}
+],
+"name": "Packaged Alumina Solution",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_PackagedAlumina",
+"name": "Packaged Alumina Solution"
+}
+]
+},
+"Recipe_PackagedBiofuel": {
+"durationSec": 3.0,
+"ingredients": [
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_LiquidBiofuel",
+"name": "Liquid Biofuel"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_FluidCanister",
+"name": "Empty Canister"
+}
+],
+"name": "Packaged Liquid Biofuel",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_PackagedBiofuel",
+"name": "Packaged Liquid Biofuel"
+}
+]
+},
+"Recipe_PackagedCrudeOil": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_LiquidOil",
+"name": "Crude Oil"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_FluidCanister",
+"name": "Empty Canister"
+}
+],
+"name": "Packaged Oil",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_PackagedOil",
+"name": "Packaged Oil"
+}
+]
+},
+"Recipe_PackagedIonizedFuel": {
+"durationSec": 3.0,
+"ingredients": [
+{
+"amount": 4.0,
+"fluid": true,
+"item": "Desc_IonizedFuel",
+"name": "Ionized Fuel"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_GasTank",
+"name": "Empty Fluid Tank"
+}
+],
+"name": "Packaged Ionized Fuel",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_PackagedIonizedFuel",
+"name": "Packaged Ionized Fuel"
+}
+]
+},
+"Recipe_PackagedNitricAcid": {
+"durationSec": 2.0,
+"ingredients": [
+{
+"amount": 1.0,
+"fluid": true,
+"item": "Desc_NitricAcid",
+"name": "Nitric Acid"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_GasTank",
+"name": "Empty Fluid Tank"
+}
+],
+"name": "Packaged Nitric Acid",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_PackagedNitricAcid",
+"name": "Packaged Nitric Acid"
+}
+]
+},
+"Recipe_PackagedNitrogen": {
+"durationSec": 1.0,
+"ingredients": [
+{
+"amount": 4.0,
+"fluid": true,
+"item": "Desc_NitrogenGas",
+"name": "Nitrogen Gas"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_GasTank",
+"name": "Empty Fluid Tank"
+}
+],
+"name": "Packaged Nitrogen Gas",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_PackagedNitrogenGas",
+"name": "Packaged Nitrogen Gas"
+}
+]
+},
+"Recipe_PackagedOilResidue": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_HeavyOilResidue",
+"name": "Heavy Oil Residue"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_FluidCanister",
+"name": "Empty Canister"
+}
+],
+"name": "Packaged Heavy Oil Residue",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_PackagedOilResidue",
+"name": "Packaged Heavy Oil Residue"
+}
+]
+},
+"Recipe_PackagedRocketFuel": {
+"durationSec": 1.0,
+"ingredients": [
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_RocketFuel",
+"name": "Rocket Fuel"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_GasTank",
+"name": "Empty Fluid Tank"
+}
+],
+"name": "Packaged Rocket Fuel",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_PackagedRocketFuel",
+"name": "Packaged Rocket Fuel"
+}
+]
+},
+"Recipe_PackagedSulfuricAcid": {
+"durationSec": 3.0,
+"ingredients": [
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_SulfuricAcid",
+"name": "Sulfuric Acid"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_FluidCanister",
+"name": "Empty Canister"
+}
+],
+"name": "Packaged Sulfuric Acid",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_PackagedSulfuricAcid",
+"name": "Packaged Sulfuric Acid"
+}
+]
+},
+"Recipe_PackagedTurboFuel": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_LiquidTurboFuel",
+"name": "Turbofuel"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_FluidCanister",
+"name": "Empty Canister"
+}
+],
+"name": "Packaged Turbofuel",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_TurboFuel",
+"name": "Packaged Turbofuel"
+}
+]
+},
+"Recipe_PackagedWater": {
+"durationSec": 2.0,
+"ingredients": [
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_FluidCanister",
+"name": "Empty Canister"
+}
+],
+"name": "Packaged Water",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_PackagedWater",
+"name": "Packaged Water"
+}
+]
+},
+"Recipe_PetroleumCoke": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 4.0,
+"fluid": true,
+"item": "Desc_HeavyOilResidue",
+"name": "Heavy Oil Residue"
+}
+],
+"name": "Petroleum Coke",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_PetroleumCoke",
+"name": "Petroleum Coke"
+}
+]
+},
+"Recipe_Plastic": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 3.0,
+"fluid": true,
+"item": "Desc_LiquidOil",
+"name": "Crude Oil"
+}
+],
+"name": "Plastic",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Plastic",
+"name": "Plastic"
+},
+{
+"amount": 1.0,
+"fluid": true,
+"item": "Desc_HeavyOilResidue",
+"name": "Heavy Oil Residue"
+}
+]
+},
+"Recipe_Plutonium": {
+"durationSec": 60.0,
+"ingredients": [
+{
+"amount": 100,
+"fluid": false,
+"item": "Desc_NonFissibleUranium",
+"name": "Non-Fissile Uranium"
+},
+{
+"amount": 25,
+"fluid": false,
+"item": "Desc_NuclearWaste",
+"name": "Uranium Waste"
+}
+],
+"name": "Plutonium Pellet",
+"producedIn": [
+"Build_HadronCollider"
+],
+"products": [
+{
+"amount": 30,
+"fluid": false,
+"item": "Desc_PlutoniumPellet",
+"name": "Plutonium Pellet"
+}
+]
+},
+"Recipe_PlutoniumCell": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_PlutoniumPellet",
+"name": "Plutonium Pellet"
+},
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_Cement",
+"name": "Concrete"
+}
+],
+"name": "Encased Plutonium Cell",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_PlutoniumCell",
+"name": "Encased Plutonium Cell"
+}
+]
+},
+"Recipe_PlutoniumFuelRod": {
+"durationSec": 240.0,
+"ingredients": [
+{
+"amount": 30,
+"fluid": false,
+"item": "Desc_PlutoniumCell",
+"name": "Encased Plutonium Cell"
+},
+{
+"amount": 18,
+"fluid": false,
+"item": "Desc_SteelPlate",
+"name": "Steel Beam"
+},
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_ElectromagneticControlRod",
+"name": "Electromagnetic Control Rod"
+},
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_AluminumPlateReinforced",
+"name": "Heat Sink"
+}
+],
+"name": "Plutonium Fuel Rod",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_PlutoniumFuelRod",
+"name": "Plutonium Fuel Rod"
+}
+]
+},
+"Recipe_PowerCrystalShard_1": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Crystal",
+"name": "Blue Power Slug"
+}
+],
+"name": "Power Shard (1)",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CrystalShard",
+"name": "Power Shard"
+}
+]
+},
+"Recipe_PowerCrystalShard_2": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Crystal_mk2",
+"name": "Yellow Power Slug"
+}
+],
+"name": "Power Shard (2)",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_CrystalShard",
+"name": "Power Shard"
+}
+]
+},
+"Recipe_PowerCrystalShard_3": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Crystal_mk3",
+"name": "Purple Power Slug"
+}
+],
+"name": "Power Shard (5)",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_CrystalShard",
+"name": "Power Shard"
+}
+]
+},
+"Recipe_PressureConversionCube": {
+"durationSec": 60.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_ModularFrameFused",
+"name": "Fused Modular Frame"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_ModularFrameLightweight",
+"name": "Radio Control Unit"
+}
+],
+"name": "Pressure Conversion Cube",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_PressureConversionCube",
+"name": "Pressure Conversion Cube"
+}
+]
+},
+"Recipe_Protein_Crab": {
+"durationSec": 3.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_HatcherParts",
+"name": "Hatcher Remains"
+}
+],
+"name": "Hatcher Protein",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_AlienProtein",
+"name": "Alien Protein"
+}
+]
+},
+"Recipe_Protein_Hog": {
+"durationSec": 3.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_HogParts",
+"name": "Hog Remains"
+}
+],
+"name": "Hog Protein",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_AlienProtein",
+"name": "Alien Protein"
+}
+]
+},
+"Recipe_Protein_Spitter": {
+"durationSec": 3.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SpitterParts",
+"name": "Spitter Remains"
+}
+],
+"name": "Spitter Protein",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_AlienProtein",
+"name": "Alien Protein"
+}
+]
+},
+"Recipe_Protein_Stinger": {
+"durationSec": 3.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_StingerParts",
+"name": "Stinger Remains"
+}
+],
+"name": "Stinger Protein",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_AlienProtein",
+"name": "Alien Protein"
+}
+]
+},
+"Recipe_PureAluminumIngot": {
+"durationSec": 2.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_AluminumScrap",
+"name": "Aluminum Scrap"
+}
+],
+"name": "Alternate: Pure Aluminum Ingot",
+"producedIn": [
+"Build_SmelterMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_AluminumIngot",
+"name": "Aluminum Ingot"
+}
+]
+},
+"Recipe_QuantumEnergy": {
+"durationSec": 3.0,
+"ingredients": [],
+"name": "Excited Photonic Matter",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 10.0,
+"fluid": true,
+"item": "Desc_QuantumEnergy",
+"name": "Excited Photonic Matter"
+}
+]
+},
+"Recipe_QuartzCrystal": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_RawQuartz",
+"name": "Raw Quartz"
+}
+],
+"name": "Quartz Crystal",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_QuartzCrystal",
+"name": "Quartz Crystal"
+}
+]
+},
+"Recipe_Quartz_Bauxite": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_OreBauxite",
+"name": "Bauxite"
+}
+],
+"name": "Raw Quartz (Bauxite)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_RawQuartz",
+"name": "Raw Quartz"
+}
+]
+},
+"Recipe_Quartz_Coal": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 24,
+"fluid": false,
+"item": "Desc_Coal",
+"name": "Coal"
+}
+],
+"name": "Raw Quartz (Coal)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_RawQuartz",
+"name": "Raw Quartz"
+}
+]
+},
+"Recipe_Quickwire": {
+"durationSec": 5.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_GoldIngot",
+"name": "Caterium Ingot"
+}
+],
+"name": "Quickwire",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_HighSpeedWire",
+"name": "Quickwire"
+}
+]
+},
+"Recipe_RadioControlUnit": {
+"durationSec": 48.0,
+"ingredients": [
+{
+"amount": 32,
+"fluid": false,
+"item": "Desc_AluminumCasing",
+"name": "Aluminum Casing"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CrystalOscillator",
+"name": "Crystal Oscillator"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Computer",
+"name": "Computer"
+}
+],
+"name": "Radio Control Unit",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_ModularFrameLightweight",
+"name": "Radio Control Unit"
+}
+]
+},
+"Recipe_Rebar_Explosive": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_SpikedRebar",
+"name": "Iron Rebar"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_GunpowderMK2",
+"name": "Smokeless Powder"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_SteelPipe",
+"name": "Steel Pipe"
+}
+],
+"name": "Explosive Rebar",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Rebar_Explosive",
+"name": "Explosive Rebar"
+}
+]
+},
+"Recipe_Rebar_Spreadshot": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_SpikedRebar",
+"name": "Iron Rebar"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_QuartzCrystal",
+"name": "Quartz Crystal"
+}
+],
+"name": "Shatter Rebar",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Rebar_Spreadshot",
+"name": "Shatter Rebar"
+}
+]
+},
+"Recipe_Rebar_Stunshot": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SpikedRebar",
+"name": "Iron Rebar"
+},
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_HighSpeedWire",
+"name": "Quickwire"
+}
+],
+"name": "Stun Rebar",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Rebar_Stunshot",
+"name": "Stun Rebar"
+}
+]
+},
+"Recipe_ResidualFuel": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 6.0,
+"fluid": true,
+"item": "Desc_HeavyOilResidue",
+"name": "Heavy Oil Residue"
+}
+],
+"name": "Residual Fuel",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 4.0,
+"fluid": true,
+"item": "Desc_LiquidFuel",
+"name": "Fuel"
+}
+]
+},
+"Recipe_ResidualPlastic": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_PolymerResin",
+"name": "Polymer Resin"
+},
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+],
+"name": "Residual Plastic",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Plastic",
+"name": "Plastic"
+}
+]
+},
+"Recipe_ResidualRubber": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_PolymerResin",
+"name": "Polymer Resin"
+},
+{
+"amount": 4.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+],
+"name": "Residual Rubber",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Rubber",
+"name": "Rubber"
+}
+]
+},
+"Recipe_RocketFuel": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 6.0,
+"fluid": true,
+"item": "Desc_LiquidTurboFuel",
+"name": "Turbofuel"
+},
+{
+"amount": 1.0,
+"fluid": true,
+"item": "Desc_NitricAcid",
+"name": "Nitric Acid"
+}
+],
+"name": "Rocket Fuel",
+"producedIn": [
+"Build_Blender"
+],
+"products": [
+{
+"amount": 10.0,
+"fluid": true,
+"item": "Desc_RocketFuel",
+"name": "Rocket Fuel"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CompactedCoal",
+"name": "Compacted Coal"
+}
+]
+},
+"Recipe_Rotor": {
+"durationSec": 15.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_IronRod",
+"name": "Iron Rod"
+},
+{
+"amount": 25,
+"fluid": false,
+"item": "Desc_IronScrew",
+"name": "Screws"
+}
+],
+"name": "Rotor",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Rotor",
+"name": "Rotor"
+}
+]
+},
+"Recipe_Rubber": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 3.0,
+"fluid": true,
+"item": "Desc_LiquidOil",
+"name": "Crude Oil"
+}
+],
+"name": "Rubber",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Rubber",
+"name": "Rubber"
+},
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_HeavyOilResidue",
+"name": "Heavy Oil Residue"
+}
+]
+},
+"Recipe_SAMFluctuator": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_Wire",
+"name": "Wire"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_SteelPipe",
+"name": "Steel Pipe"
+}
+],
+"name": "SAM Fluctuator",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SAMFluctuator",
+"name": "SAM Fluctuator"
+}
+]
+},
+"Recipe_Screw": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_IronRod",
+"name": "Iron Rod"
+}
+],
+"name": "Screws",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_IronScrew",
+"name": "Screws"
+}
+]
+},
+"Recipe_Silica": {
+"durationSec": 8.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_RawQuartz",
+"name": "Raw Quartz"
+}
+],
+"name": "Silica",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_Silica",
+"name": "Silica"
+}
+]
+},
+"Recipe_SingularityCell": {
+"durationSec": 60.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_9",
+"name": "Nuclear Pasta"
+},
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_DarkMatter",
+"name": "Dark Matter Crystal"
+},
+{
+"amount": 100,
+"fluid": false,
+"item": "Desc_IronPlate",
+"name": "Iron Plate"
+},
+{
+"amount": 200,
+"fluid": false,
+"item": "Desc_Cement",
+"name": "Concrete"
+}
+],
+"name": "Singularity Cell",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_SingularityCell",
+"name": "Singularity Cell"
+}
+]
+},
+"Recipe_Snow": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_Gift",
+"name": "FICSMAS Gift"
+}
+],
+"name": "FICSMAS Actual Snow",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Snow",
+"name": "FICSMAS Actual Snow"
+}
+]
+},
+"Recipe_Snowball": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_Snow",
+"name": "FICSMAS Actual Snow"
+}
+],
+"name": "Snowball",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SnowballProjectile",
+"name": "Snowball"
+}
+]
+},
+"Recipe_SpaceElevatorPart_1": {
+"durationSec": 30.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_IronPlateReinforced",
+"name": "Reinforced Iron Plate"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Rotor",
+"name": "Rotor"
+}
+],
+"name": "Smart Plating",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_1",
+"name": "Smart Plating"
+}
+]
+},
+"Recipe_SpaceElevatorPart_10": {
+"durationSec": 120.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_7",
+"name": "Assembly Director System"
+},
+{
+"amount": 80,
+"fluid": false,
+"item": "Desc_FicsiteMesh",
+"name": "Ficsite Trigon"
+},
+{
+"amount": 20.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+],
+"name": "Biochemical Sculptor",
+"producedIn": [
+"Build_Blender"
+],
+"products": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_10",
+"name": "Biochemical Sculptor"
+}
+]
+},
+"Recipe_SpaceElevatorPart_11": {
+"durationSec": 60.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_8",
+"name": "Thermal Propulsion Rocket"
+},
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_SingularityCell",
+"name": "Singularity Cell"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_QuantumOscillator",
+"name": "Superposition Oscillator"
+},
+{
+"amount": 40,
+"fluid": false,
+"item": "Desc_DarkMatter",
+"name": "Dark Matter Crystal"
+}
+],
+"name": "Ballistic Warp Drive",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_11",
+"name": "Ballistic Warp Drive"
+}
+]
+},
+"Recipe_SpaceElevatorPart_12": {
+"durationSec": 15.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_6",
+"name": "Magnetic Field Generator"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_TemporalProcessor",
+"name": "Neural-Quantum Processor"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_QuantumOscillator",
+"name": "Superposition Oscillator"
+},
+{
+"amount": 25.0,
+"fluid": true,
+"item": "Desc_QuantumEnergy",
+"name": "Excited Photonic Matter"
+}
+],
+"name": "AI Expansion Server",
+"producedIn": [
+"Build_QuantumEncoder"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_12",
+"name": "AI Expansion Server"
+},
+{
+"amount": 25.0,
+"fluid": true,
+"item": "Desc_DarkEnergy",
+"name": "Dark Matter Residue"
+}
+]
+},
+"Recipe_SpaceElevatorPart_2": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_ModularFrame",
+"name": "Modular Frame"
+},
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_SteelPlate",
+"name": "Steel Beam"
+}
+],
+"name": "Versatile Framework",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_2",
+"name": "Versatile Framework"
+}
+]
+},
+"Recipe_SpaceElevatorPart_3": {
+"durationSec": 24.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Stator",
+"name": "Stator"
+},
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_Cable",
+"name": "Cable"
+}
+],
+"name": "Automated Wiring",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_3",
+"name": "Automated Wiring"
+}
+]
+},
+"Recipe_SpaceElevatorPart_4": {
+"durationSec": 60.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Motor",
+"name": "Motor"
+},
+{
+"amount": 15,
+"fluid": false,
+"item": "Desc_Rubber",
+"name": "Rubber"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_1",
+"name": "Smart Plating"
+}
+],
+"name": "Modular Engine",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_4",
+"name": "Modular Engine"
+}
+]
+},
+"Recipe_SpaceElevatorPart_5": {
+"durationSec": 60.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_3",
+"name": "Automated Wiring"
+},
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_CircuitBoard",
+"name": "Circuit Board"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_ModularFrameHeavy",
+"name": "Heavy Modular Frame"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Computer",
+"name": "Computer"
+}
+],
+"name": "Adaptive Control Unit",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_5",
+"name": "Adaptive Control Unit"
+}
+]
+},
+"Recipe_SpaceElevatorPart_6": {
+"durationSec": 120.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_2",
+"name": "Versatile Framework"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_ElectromagneticControlRod",
+"name": "Electromagnetic Control Rod"
+}
+],
+"name": "Magnetic Field Generator",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_6",
+"name": "Magnetic Field Generator"
+}
+]
+},
+"Recipe_SpaceElevatorPart_7": {
+"durationSec": 80.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_5",
+"name": "Adaptive Control Unit"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_ComputerSuper",
+"name": "Supercomputer"
+}
+],
+"name": "Assembly Director System",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_7",
+"name": "Assembly Director System"
+}
+]
+},
+"Recipe_SpaceElevatorPart_8": {
+"durationSec": 120.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_4",
+"name": "Modular Engine"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_MotorLightweight",
+"name": "Turbo Motor"
+},
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_CoolingSystem",
+"name": "Cooling System"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_ModularFrameFused",
+"name": "Fused Modular Frame"
+}
+],
+"name": "Thermal Propulsion Rocket",
+"producedIn": [
+"Build_ManufacturerMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_8",
+"name": "Thermal Propulsion Rocket"
+}
+]
+},
+"Recipe_SpaceElevatorPart_9": {
+"durationSec": 120.0,
+"ingredients": [
+{
+"amount": 200,
+"fluid": false,
+"item": "Desc_CopperDust",
+"name": "Copper Powder"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_PressureConversionCube",
+"name": "Pressure Conversion Cube"
+}
+],
+"name": "Nuclear Pasta",
+"producedIn": [
+"Build_HadronCollider"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SpaceElevatorPart_9",
+"name": "Nuclear Pasta"
+}
+]
+},
+"Recipe_SpikedRebar": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_IronRod",
+"name": "Iron Rod"
+}
+],
+"name": "Iron Rebar",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SpikedRebar",
+"name": "Iron Rebar"
+}
+]
+},
+"Recipe_Stator": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_SteelPipe",
+"name": "Steel Pipe"
+},
+{
+"amount": 8,
+"fluid": false,
+"item": "Desc_Wire",
+"name": "Wire"
+}
+],
+"name": "Stator",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Stator",
+"name": "Stator"
+}
+]
+},
+"Recipe_SteelBeam": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 4,
+"fluid": false,
+"item": "Desc_SteelIngot",
+"name": "Steel Ingot"
+}
+],
+"name": "Steel Beam",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SteelPlate",
+"name": "Steel Beam"
+}
+]
+},
+"Recipe_SteelPipe": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_SteelIngot",
+"name": "Steel Ingot"
+}
+],
+"name": "Steel Pipe",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_SteelPipe",
+"name": "Steel Pipe"
+}
+]
+},
+"Recipe_Sulfur_Coal": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_Coal",
+"name": "Coal"
+}
+],
+"name": "Sulfur (Coal)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_Sulfur",
+"name": "Sulfur"
+}
+]
+},
+"Recipe_Sulfur_Iron": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 30,
+"fluid": false,
+"item": "Desc_OreIron",
+"name": "Iron Ore"
+}
+],
+"name": "Sulfur (Iron)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_Sulfur",
+"name": "Sulfur"
+}
+]
+},
+"Recipe_SulfuricAcid": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_Sulfur",
+"name": "Sulfur"
+},
+{
+"amount": 5.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+}
+],
+"name": "Sulfuric Acid",
+"producedIn": [
+"Build_OilRefinery"
+],
+"products": [
+{
+"amount": 5.0,
+"fluid": true,
+"item": "Desc_SulfuricAcid",
+"name": "Sulfuric Acid"
+}
+]
+},
+"Recipe_SuperpositionOscillator": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_DarkMatter",
+"name": "Dark Matter Crystal"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CrystalOscillator",
+"name": "Crystal Oscillator"
+},
+{
+"amount": 9,
+"fluid": false,
+"item": "Desc_AluminumPlate",
+"name": "Alclad Aluminum Sheet"
+},
+{
+"amount": 25.0,
+"fluid": true,
+"item": "Desc_QuantumEnergy",
+"name": "Excited Photonic Matter"
+}
+],
+"name": "Superposition Oscillator",
+"producedIn": [
+"Build_QuantumEncoder"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_QuantumOscillator",
+"name": "Superposition Oscillator"
+},
+{
+"amount": 25.0,
+"fluid": true,
+"item": "Desc_DarkEnergy",
+"name": "Dark Matter Residue"
+}
+]
+},
+"Recipe_SyntheticPowerShard": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_TimeCrystal",
+"name": "Time Crystal"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_DarkMatter",
+"name": "Dark Matter Crystal"
+},
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_QuartzCrystal",
+"name": "Quartz Crystal"
+},
+{
+"amount": 12.0,
+"fluid": true,
+"item": "Desc_QuantumEnergy",
+"name": "Excited Photonic Matter"
+}
+],
+"name": "Synthetic Power Shard",
+"producedIn": [
+"Build_QuantumEncoder"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CrystalShard",
+"name": "Power Shard"
+},
+{
+"amount": 12.0,
+"fluid": true,
+"item": "Desc_DarkEnergy",
+"name": "Dark Matter Residue"
+}
+]
+},
+"Recipe_TemporalProcessor": {
+"durationSec": 20.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_TimeCrystal",
+"name": "Time Crystal"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_ComputerSuper",
+"name": "Supercomputer"
+},
+{
+"amount": 15,
+"fluid": false,
+"item": "Desc_FicsiteMesh",
+"name": "Ficsite Trigon"
+},
+{
+"amount": 25.0,
+"fluid": true,
+"item": "Desc_QuantumEnergy",
+"name": "Excited Photonic Matter"
+}
+],
+"name": "Neural-Quantum Processor",
+"producedIn": [
+"Build_QuantumEncoder"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_TemporalProcessor",
+"name": "Neural-Quantum Processor"
+},
+{
+"amount": 25.0,
+"fluid": true,
+"item": "Desc_DarkEnergy",
+"name": "Dark Matter Residue"
+}
+]
+},
+"Recipe_TimeCrystal": {
+"durationSec": 10.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Diamond",
+"name": "Diamonds"
+}
+],
+"name": "Time Crystal",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_TimeCrystal",
+"name": "Time Crystal"
+}
+]
+},
+"Recipe_UnpackageAlumina": {
+"durationSec": 1.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_PackagedAlumina",
+"name": "Packaged Alumina Solution"
+}
+],
+"name": "Unpackage Alumina Solution",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_AluminaSolution",
+"name": "Alumina Solution"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_FluidCanister",
+"name": "Empty Canister"
+}
+]
+},
+"Recipe_UnpackageBioFuel": {
+"durationSec": 2.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_PackagedBiofuel",
+"name": "Packaged Liquid Biofuel"
+}
+],
+"name": "Unpackage Liquid Biofuel",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_LiquidBiofuel",
+"name": "Liquid Biofuel"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_FluidCanister",
+"name": "Empty Canister"
+}
+]
+},
+"Recipe_UnpackageFuel": {
+"durationSec": 2.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Fuel",
+"name": "Packaged Fuel"
+}
+],
+"name": "Unpackage Fuel",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_LiquidFuel",
+"name": "Fuel"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_FluidCanister",
+"name": "Empty Canister"
+}
+]
+},
+"Recipe_UnpackageIonizedFuel": {
+"durationSec": 3.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_PackagedIonizedFuel",
+"name": "Packaged Ionized Fuel"
+}
+],
+"name": "Unpackage Ionized Fuel",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 4.0,
+"fluid": true,
+"item": "Desc_IonizedFuel",
+"name": "Ionized Fuel"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_GasTank",
+"name": "Empty Fluid Tank"
+}
+]
+},
+"Recipe_UnpackageNitricAcid": {
+"durationSec": 3.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_PackagedNitricAcid",
+"name": "Packaged Nitric Acid"
+}
+],
+"name": "Unpackage Nitric Acid",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 1.0,
+"fluid": true,
+"item": "Desc_NitricAcid",
+"name": "Nitric Acid"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_GasTank",
+"name": "Empty Fluid Tank"
+}
+]
+},
+"Recipe_UnpackageNitrogen": {
+"durationSec": 1.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_PackagedNitrogenGas",
+"name": "Packaged Nitrogen Gas"
+}
+],
+"name": "Unpackage Nitrogen Gas",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 4.0,
+"fluid": true,
+"item": "Desc_NitrogenGas",
+"name": "Nitrogen Gas"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_GasTank",
+"name": "Empty Fluid Tank"
+}
+]
+},
+"Recipe_UnpackageOil": {
+"durationSec": 2.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_PackagedOil",
+"name": "Packaged Oil"
+}
+],
+"name": "Unpackage Oil",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_LiquidOil",
+"name": "Crude Oil"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_FluidCanister",
+"name": "Empty Canister"
+}
+]
+},
+"Recipe_UnpackageOilResidue": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_PackagedOilResidue",
+"name": "Packaged Heavy Oil Residue"
+}
+],
+"name": "Unpackage Heavy Oil Residue",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_HeavyOilResidue",
+"name": "Heavy Oil Residue"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_FluidCanister",
+"name": "Empty Canister"
+}
+]
+},
+"Recipe_UnpackageRocketFuel": {
+"durationSec": 1.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_PackagedRocketFuel",
+"name": "Packaged Rocket Fuel"
+}
+],
+"name": "Unpackage Rocket Fuel",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_RocketFuel",
+"name": "Rocket Fuel"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_GasTank",
+"name": "Empty Fluid Tank"
+}
+]
+},
+"Recipe_UnpackageSulfuricAcid": {
+"durationSec": 1.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_PackagedSulfuricAcid",
+"name": "Packaged Sulfuric Acid"
+}
+],
+"name": "Unpackage Sulfuric Acid",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 1.0,
+"fluid": true,
+"item": "Desc_SulfuricAcid",
+"name": "Sulfuric Acid"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_FluidCanister",
+"name": "Empty Canister"
+}
+]
+},
+"Recipe_UnpackageTurboFuel": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_TurboFuel",
+"name": "Packaged Turbofuel"
+}
+],
+"name": "Unpackage Turbofuel",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_LiquidTurboFuel",
+"name": "Turbofuel"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_FluidCanister",
+"name": "Empty Canister"
+}
+]
+},
+"Recipe_UnpackageWater": {
+"durationSec": 1.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_PackagedWater",
+"name": "Packaged Water"
+}
+],
+"name": "Unpackage Water",
+"producedIn": [
+"Build_Packager"
+],
+"products": [
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_Water",
+"name": "Water"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_FluidCanister",
+"name": "Empty Canister"
+}
+]
+},
+"Recipe_UraniumCell": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 10,
+"fluid": false,
+"item": "Desc_OreUranium",
+"name": "Uranium"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_Cement",
+"name": "Concrete"
+},
+{
+"amount": 8.0,
+"fluid": true,
+"item": "Desc_SulfuricAcid",
+"name": "Sulfuric Acid"
+}
+],
+"name": "Encased Uranium Cell",
+"producedIn": [
+"Build_Blender"
+],
+"products": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_UraniumCell",
+"name": "Encased Uranium Cell"
+},
+{
+"amount": 2.0,
+"fluid": true,
+"item": "Desc_SulfuricAcid",
+"name": "Sulfuric Acid"
+}
+]
+},
+"Recipe_Uranium_Bauxite": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_SAMIngot",
+"name": "Reanimated SAM"
+},
+{
+"amount": 48,
+"fluid": false,
+"item": "Desc_OreBauxite",
+"name": "Bauxite"
+}
+],
+"name": "Uranium Ore (Bauxite)",
+"producedIn": [
+"Build_Converter"
+],
+"products": [
+{
+"amount": 12,
+"fluid": false,
+"item": "Desc_OreUranium",
+"name": "Uranium"
+}
+]
+},
+"Recipe_Wire": {
+"durationSec": 4.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_CopperIngot",
+"name": "Copper Ingot"
+}
+],
+"name": "Wire",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Wire",
+"name": "Wire"
+}
+]
+},
+"Recipe_XmasBall1": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Gift",
+"name": "FICSMAS Gift"
+}
+],
+"name": "Red FICSMAS Ornament",
+"producedIn": [
+"Build_SmelterMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_XmasBall1",
+"name": "Red FICSMAS Ornament"
+}
+]
+},
+"Recipe_XmasBall2": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Gift",
+"name": "FICSMAS Gift"
+}
+],
+"name": "Blue FICSMAS Ornament",
+"producedIn": [
+"Build_SmelterMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_XmasBall2",
+"name": "Blue FICSMAS Ornament"
+}
+]
+},
+"Recipe_XmasBall3": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_XmasBall1",
+"name": "Red FICSMAS Ornament"
+},
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_CopperIngot",
+"name": "Copper Ingot"
+}
+],
+"name": "Copper FICSMAS Ornament",
+"producedIn": [
+"Build_FoundryMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_XmasBall3",
+"name": "Copper FICSMAS Ornament"
+}
+]
+},
+"Recipe_XmasBall4": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_XmasBall2",
+"name": "Blue FICSMAS Ornament"
+},
+{
+"amount": 3,
+"fluid": false,
+"item": "Desc_IronIngot",
+"name": "Iron Ingot"
+}
+],
+"name": "Iron FICSMAS Ornament",
+"producedIn": [
+"Build_FoundryMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_XmasBall4",
+"name": "Iron FICSMAS Ornament"
+}
+]
+},
+"Recipe_XmasBallCluster": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_XmasBall3",
+"name": "Copper FICSMAS Ornament"
+},
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_XmasBall4",
+"name": "Iron FICSMAS Ornament"
+}
+],
+"name": "FICSMAS Ornament Bundle",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_XmasBallCluster",
+"name": "FICSMAS Ornament Bundle"
+}
+]
+},
+"Recipe_XmasBow": {
+"durationSec": 12.0,
+"ingredients": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_Gift",
+"name": "FICSMAS Gift"
+}
+],
+"name": "FICSMAS Bow",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_XmasBow",
+"name": "FICSMAS Bow"
+}
+]
+},
+"Recipe_XmasBranch": {
+"durationSec": 6.0,
+"ingredients": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_Gift",
+"name": "FICSMAS Gift"
+}
+],
+"name": "FICSMAS Tree Branch",
+"producedIn": [
+"Build_ConstructorMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_XmasBranch",
+"name": "FICSMAS Tree Branch"
+}
+]
+},
+"Recipe_XmasStar": {
+"durationSec": 60.0,
+"ingredients": [
+{
+"amount": 5,
+"fluid": false,
+"item": "Desc_XmasWreath",
+"name": "FICSMAS Wreath"
+},
+{
+"amount": 20,
+"fluid": false,
+"item": "Desc_CandyCane",
+"name": "Candy Cane"
+}
+],
+"name": "FICSMAS Wonder Star",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 1,
+"fluid": false,
+"item": "Desc_XmasStar",
+"name": "FICSMAS Wonder Star"
+}
+]
+},
+"Recipe_XmasWreath": {
+"durationSec": 60.0,
+"ingredients": [
+{
+"amount": 15,
+"fluid": false,
+"item": "Desc_XmasBranch",
+"name": "FICSMAS Tree Branch"
+},
+{
+"amount": 6,
+"fluid": false,
+"item": "Desc_XmasBallCluster",
+"name": "FICSMAS Ornament Bundle"
+}
+],
+"name": "FICSMAS Wreath",
+"producedIn": [
+"Build_AssemblerMk1"
+],
+"products": [
+{
+"amount": 2,
+"fluid": false,
+"item": "Desc_XmasWreath",
+"name": "FICSMAS Wreath"
+}
+]
+}
+}

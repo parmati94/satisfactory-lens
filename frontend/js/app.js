@@ -163,12 +163,11 @@ document.addEventListener('alpine:init', () => {
 
     // ── Phase 2: Save Viewer ──────────────────────────────────────────────
     saveStatus: null,
-    saveTab: 'players',       // sub-tab within save viewer: 'players' | 'buildings' | 'resources' | 'power'
+    saveTab: 'players',       // sub-tab: 'players' | 'progression' | 'production' | 'power' | 'storage' | 'structures'
     saveDataLoading: false,
     saveDataError: null,
     svPlayers: null,
     svBuildings: null,
-    svResources: null,
     svPower: null,
     svStorage: null,
     expandedPlayer: null,    // instanceName of expanded player row
@@ -176,6 +175,9 @@ document.addEventListener('alpine:init', () => {
     expandedBuildingType: null,   // typePath of expanded building-type row (per-instance list)
     highlightedInstanceName: null,// transient highlight target after a map → instance jump
     buildingInstanceCap: {},      // per-typePath count of how many instance rows to render
+    svMachineDetail: {},          // buildClass → fetched per-instance machine detail (on demand)
+    machineDetailLoading: {},     // buildClass → bool while its detail is being fetched
+    expandedMachine: null,        // instanceName of the machine row whose buffers are expanded
     showSettings: false,
     headerReloading: false,
     confirmDialog: { show: false, title: '', message: '', confirmLabel: 'Confirm', danger: true, resolve: null },
@@ -462,6 +464,27 @@ document.addEventListener('alpine:init', () => {
         .filter(cat => cat.types.length > 0);
     },
 
+    // The building categories belong to different intent tabs: Production (crafting +
+    // extractors), Power (generators), Storage (its own tab), and Structures (the
+    // structural remainder). One computed feeds the three building-list tabs.
+    _productionCats: new Set(['Production', 'Miners & Extractors']),
+    _powerCats: new Set(['Power']),
+    buildingCategoriesForActiveTab() {
+      const cats = this.filteredBuildingCategories();
+      if (this.saveTab === 'production') return cats.filter(c => this._productionCats.has(c.category));
+      if (this.saveTab === 'power')      return cats.filter(c => this._powerCats.has(c.category));
+      if (this.saveTab === 'structures') return cats.filter(c =>
+        !this._productionCats.has(c.category) && !this._powerCats.has(c.category) && c.category !== 'Storage');
+      return [];
+    },
+    // Display label for a category header within the intent tabs (the data category
+    // stays 'Production'/'Power'; only the shown label changes to avoid tab/section clash).
+    categoryDisplayLabel(category) {
+      if (category === 'Production') return 'Crafting';
+      if (category === 'Power') return 'Generators';
+      return category;
+    },
+
     // Categories worth drilling into per-instance on the Buildings tab: machines with
     // meaningful per-instance state (recipe/clock) the user might want to locate or
     // edit. Storage is deliberately excluded — the dedicated Storage tab already lists
@@ -473,19 +496,60 @@ document.addEventListener('alpine:init', () => {
       return this._instanceableCategories.has(category);
     },
 
+    // The full ordered instance list for an expanded type: the rich machine detail
+    // (recipe/clock/buffers) once fetched, else the lean position list from the
+    // buildings payload. Both carry pos; rich entries add a `kind` + instanceName.
+    instanceList(type) {
+      return this.machineDetailFor(type.buildClass) || type.instances || [];
+    },
+    instKey(inst) {
+      return inst.instanceName || inst.name || '';
+    },
+    // Format a production output's throughput, e.g. "40/min" or "12.5 m³/min".
+    fmtRate(o) {
+      if (!o) return '';
+      const n = o.perMin ?? 0;
+      const v = n >= 100 ? Math.round(n) : Math.round(n * 10) / 10;
+      return `${v}${o.fluid ? ' m³' : ''}/min`;
+    },
+
     // How many instance rows to render for a type (capped so a 500-constructor type
     // doesn't lag Alpine). "Show more" bumps the cap in INSTANCE_PAGE steps.
     INSTANCE_PAGE: 100,
     visibleInstances(type) {
       const cap = this.buildingInstanceCap[type.typePath] ?? this.INSTANCE_PAGE;
-      return type.instances.slice(0, cap);
+      return this.instanceList(type).slice(0, cap);
     },
     moreInstances(type) {
       this.buildingInstanceCap[type.typePath] =
         (this.buildingInstanceCap[type.typePath] ?? this.INSTANCE_PAGE) + this.INSTANCE_PAGE;
     },
     toggleBuildingType(type) {
-      this.expandedBuildingType = this.expandedBuildingType === type.typePath ? null : type.typePath;
+      const opening = this.expandedBuildingType !== type.typePath;
+      this.expandedBuildingType = opening ? type.typePath : null;
+      if (opening) this.loadMachineDetail(type.buildClass);
+    },
+
+    // Fetch (and cache) the rich per-instance detail for a machine type — recipe,
+    // clock, throughput, buffers. Called when a type is expanded. Types the backend
+    // can't model return [] → rows fall back to lean position rows.
+    async loadMachineDetail(buildClass) {
+      if (this.svMachineDetail[buildClass] || this.machineDetailLoading[buildClass]) return;
+      this.machineDetailLoading[buildClass] = true;
+      try {
+        this.svMachineDetail[buildClass] = await api.save.machineInstances(buildClass);
+      } catch (e) {
+        this.svMachineDetail[buildClass] = [];
+        console.warn('machine detail unavailable:', e.message);
+      } finally {
+        this.machineDetailLoading[buildClass] = false;
+      }
+    },
+
+    // The fetched detail for a type, or null if not loaded / empty (→ lean rows).
+    machineDetailFor(buildClass) {
+      const d = this.svMachineDetail[buildClass];
+      return d && d.length ? d : null;
     },
 
     // Group the flat storage list by container type (buildClass) for the Storage
@@ -523,7 +587,6 @@ document.addEventListener('alpine:init', () => {
       this.svPlayers = null;
       this.svStorage = null;
       this.svBuildings = null;
-      this.svResources = null;
       this.svPower = null;
       this.svResourceNodes = null;
       this.svMapPins = null;
@@ -532,6 +595,9 @@ document.addEventListener('alpine:init', () => {
       this.expandedBuildingType = null;
       this.highlightedInstanceName = null;
       this.buildingInstanceCap = {};
+      this.svMachineDetail = {};
+      this.machineDetailLoading = {};
+      this.expandedMachine = null;
     },
 
     // Single reload action (header button) — reloads whatever the active save source
@@ -587,7 +653,7 @@ document.addEventListener('alpine:init', () => {
     async switchSaveTab(tab) {
       this.saveTab = tab;
       this.saveDataError = null;
-      if (tab !== 'buildings') this.buildingsSearch = '';
+      if (tab !== 'production' && tab !== 'structures') this.buildingsSearch = '';
       await this.loadSaveActiveSubTab();
     },
 
@@ -595,8 +661,9 @@ document.addEventListener('alpine:init', () => {
       if (!this.saveStatus?.loaded) return;
       if (this.saveTab === 'players'   && !this.svPlayers)   await this.loadSvPlayers();
       if (this.saveTab === 'storage'   && !this.svStorage)   await this.loadSvStorage();
-      if (this.saveTab === 'buildings' && !this.svBuildings) await this.loadSvBuildings();
-      if (this.saveTab === 'resources' && !this.svResources) await this.loadSvResources();
+      // Production / Power / Structures all read the buildings census; Power also
+      // needs the circuit summary.
+      if (['production', 'power', 'structures'].includes(this.saveTab) && !this.svBuildings) await this.loadSvBuildings();
       if (this.saveTab === 'power'     && !this.svPower)     await this.loadSvPower();
       if (this.saveTab === 'progression' && !this.svSchematics) await this.loadSvSchematics();
     },
@@ -958,17 +1025,6 @@ document.addEventListener('alpine:init', () => {
       }
     },
 
-    async loadSvResources() {
-      this.saveDataLoading = true;
-      this.saveDataError = null;
-      try {
-        this.svResources = await api.save.resources();
-      } catch (e) {
-        this.saveDataError = e.message;
-      } finally {
-        this.saveDataLoading = false;
-      }
-    },
 
     async loadSvPower() {
       this.saveDataLoading = true;
@@ -1311,6 +1367,7 @@ document.addEventListener('alpine:init', () => {
         // After openPopup — replacing an existing card fires popupclose, which
         // nulls _cardEntry; set it last so the action button keeps its reference.
         _cardEntry = hit.entry;
+        if (!hit.isSpline) this._enrichBuildingCard(hit.entry);
       });
 
       const center = bounds.getCenter();
@@ -1637,9 +1694,33 @@ document.addEventListener('alpine:init', () => {
       </div>`;
     },
 
-    // Click detail card content. One key fact (position for machines, length for
-    // splines) plus the launch button into the Save Viewer.
-    _buildingCardHtml(entry, isSpline) {
+    // A small item-icon row (input → output etc.) for the map card. `detail` is a
+    // fetched MachineInstance; returns extra .sf-card-row fragments by kind.
+    _cardMachineHtml(detail) {
+      const icon = (cls, name) => `<img src="/assets/items/${cls}.png" title="${name || ''}" style="width:18px;height:18px;object-fit:contain;vertical-align:middle" onerror="this.style.display='none'">`;
+      if (detail.kind === 'production') {
+        const ins = (detail.inputs || []).map(i => icon(i.item, i.name)).join('');
+        const outs = (detail.outputs || []).map(o => icon(o.item, o.name)).join('');
+        const arrow = ins && outs ? `<span style="color:#9ca3af;margin:0 2px">→</span>` : '';
+        const rate = detail.outputs?.[0] ? this.fmtRate(detail.outputs[0]) : '';
+        const boost = detail.boostPct > 100 ? ` · ×${detail.boostPct / 100}` : '';
+        return `<div class="sf-card-row"><span class="sf-card-k">Recipe</span><span class="sf-card-v">${detail.recipeName || 'None'}</span></div>
+          <div style="display:flex;align-items:center;gap:3px;margin:2px 0 4px">${ins}${arrow}${outs}</div>
+          <div class="sf-card-row"><span class="sf-card-k">Output</span><span class="sf-card-v">${rate ? rate + ' · ' : ''}${detail.clockPct}%${boost}</span></div>`;
+      }
+      if (detail.kind === 'generator') {
+        return `<div class="sf-card-row"><span class="sf-card-k">Fuel</span><span class="sf-card-v">${detail.fuelClass ? icon(detail.fuelClass, detail.fuelName) + ' ' : ''}${detail.fuelName || 'None'}</span></div>`
+          + (detail.powerMW ? `<div class="sf-card-row"><span class="sf-card-k">Power</span><span class="sf-card-v">${detail.powerMW} MW</span></div>` : '');
+      }
+      // extractor
+      return `<div class="sf-card-row"><span class="sf-card-k">Resource</span><span class="sf-card-v">${detail.resourceClass ? icon(detail.resourceClass, detail.resourceName) + ' ' : ''}${detail.resourceName || '—'}</span></div>
+        <div class="sf-card-row"><span class="sf-card-k">Clock</span><span class="sf-card-v">${detail.clockPct}%</span></div>`;
+    },
+
+    // Click detail card content. Position/length fact, plus — for machines whose
+    // per-instance detail has been fetched — a recipe (in→out) / fuel / resource
+    // summary, and the launch button into the Save Viewer.
+    _buildingCardHtml(entry, isSpline, detail) {
       let factLabel, factValue;
       if (isSpline) {
         let len = 0;
@@ -1653,6 +1734,7 @@ document.addEventListener('alpine:init', () => {
         factLabel = 'Position';
         factValue = `${(entry.cx / 100).toFixed(0)} m, ${(entry.cy / 100).toFixed(0)} m`;
       }
+      const machineHtml = detail ? this._cardMachineHtml(detail) : '';
       return `<div class="sf-card">
         <div class="sf-card-head">
           <img class="sf-card-icon" src="/assets/buildings/${entry.buildClass}.png" onerror="this.style.display='none'">
@@ -1662,6 +1744,7 @@ document.addEventListener('alpine:init', () => {
           </div>
         </div>
         <div class="sf-card-body">
+          ${machineHtml}
           <div class="sf-card-row"><span class="sf-card-k">${factLabel}</span><span class="sf-card-v">${factValue}</span></div>
         </div>
         <button class="sf-card-action" type="button">Open in Save Tools
@@ -1670,9 +1753,25 @@ document.addEventListener('alpine:init', () => {
       </div>`;
     },
 
-    // Jump to the Save Tools Buildings tab and locate the *exact* clicked instance:
-    // filter to its type, expand the type's per-instance list, then scroll to and
-    // highlight the instance whose position matches the one clicked on the map.
+    // After a machine is clicked on the map, fetch its type's detail and, if the
+    // card is still showing that instance, re-render with recipe/fuel/resource info.
+    async _enrichBuildingCard(entry) {
+      if (!entry || !this.isInstanceableCategory(entry.category)) return;
+      await this.loadMachineDetail(entry.buildClass);
+      if (_cardEntry !== entry) return; // popup changed/closed while loading
+      const list = this.svMachineDetail[entry.buildClass];
+      if (!list?.length) return;
+      let best = null, bestD = Infinity;
+      for (const m of list) {
+        const d = Math.hypot(Math.round(m.pos.x) - entry.gx, Math.round(m.pos.y) - entry.gy);
+        if (d < bestD) { bestD = d; best = m; }
+      }
+      if (best) _detailPopup.setContent(this._buildingCardHtml(entry, false, best));
+    },
+
+    // Jump to the Save Tools tab that owns this building's category and locate the
+    // *exact* clicked instance: filter to its type, expand the per-instance list, then
+    // scroll to + highlight the instance whose position matches the map click.
     // Matching is by position (buildClass + nearest x/y) so the lean map footprints
     // payload stays free of instanceNames.
     async openInSaveViewer(entry) {
@@ -1680,7 +1779,7 @@ document.addEventListener('alpine:init', () => {
 
       // Storage containers → the dedicated Storage tab (inventory + edit), which is
       // strictly more useful than a bare per-instance row. Falls through to the
-      // Buildings tab only if the container isn't one the Storage tab tracks
+      // category's normal tab only if the container isn't one the Storage tab tracks
       // (e.g. Dimensional Depot / lockers).
       if (entry.category === 'Storage') {
         this.saveTab = 'storage';
@@ -1689,7 +1788,10 @@ document.addEventListener('alpine:init', () => {
         if (this._focusStorageInstance(entry.buildClass, entry.gx, entry.gy)) return;
       }
 
-      this.saveTab = 'buildings';
+      // Route to the intent tab that renders this category.
+      this.saveTab = this._powerCats.has(entry.category) ? 'power'
+        : this._productionCats.has(entry.category) ? 'production'
+        : 'structures';
       this.buildingsSearch = entry.label;
       await this.switchTab('saveviewer');
       if (!this.svBuildings) await this.loadSvBuildings();
@@ -1720,33 +1822,39 @@ document.addEventListener('alpine:init', () => {
       return true;
     },
 
-    // Find the type (by buildClass) + the instance nearest (x, y), expand it, and
-    // scroll/highlight its row. Shared by the map → instance jump.
-    _focusBuildingInstance(buildClass, x, y) {
+    // Find the type (by buildClass) + the instance nearest (x, y), expand it (loading
+    // its rich detail), then scroll to + highlight that instance's row. Shared by the
+    // map → instance jump. Matches against whichever list will render (rich detail if
+    // available, else lean positions) so the index/cap line up.
+    async _focusBuildingInstance(buildClass, x, y) {
       let target = null;
       for (const cat of this.svBuildings?.categories ?? []) {
         const type = cat.types.find(t => t.buildClass === buildClass);
         if (type) { target = type; break; }
       }
-      if (!target?.instances?.length) return;
+      if (!target) return;
 
+      this.expandedBuildingType = target.typePath;
+      await this.loadMachineDetail(buildClass);
+
+      const list = this.instanceList(target);
+      if (!list.length) return;
       let bestIdx = 0, bestD = Infinity;
-      for (let i = 0; i < target.instances.length; i++) {
-        const p = target.instances[i].pos;
+      for (let i = 0; i < list.length; i++) {
+        const p = list[i].pos;
         const d = Math.hypot(Math.round(p.x) - x, Math.round(p.y) - y);
         if (d < bestD) { bestD = d; bestIdx = i; }
       }
 
-      this.expandedBuildingType = target.typePath;
       // Ensure the matched row is within the rendered (capped) window.
       if (bestIdx >= (this.buildingInstanceCap[target.typePath] ?? this.INSTANCE_PAGE)) {
         this.buildingInstanceCap[target.typePath] = bestIdx + 1;
       }
-      this.highlightedInstanceName = `${buildClass}#${bestIdx}`;
+      const name = this.instKey(list[bestIdx]);
+      this.highlightedInstanceName = name;
 
       this.$nextTick(() => {
-        const el = document.getElementById(`binst-${buildClass}-${bestIdx}`);
-        el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        document.getElementById(`binst-${name}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
       });
       // Clear the highlight after it has had a moment to register.
       clearTimeout(this._instHighlightTimer);
@@ -1777,6 +1885,7 @@ document.addEventListener('alpine:init', () => {
         _detailPopup.setLatLng(latlng).setContent(this._buildingCardHtml(best, false));
         _leafletMap.openPopup(_detailPopup);
         _cardEntry = best;
+        this._enrichBuildingCard(best);
       };
       tryFocus();
     },
