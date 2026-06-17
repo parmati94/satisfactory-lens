@@ -1,24 +1,5 @@
 <div x-show="activeTab === 'map'" class="flex flex-col" style="height: calc(100vh - 98px);">
 
-  <!-- Status bar -->
-  <div class="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-gray-900 border-b border-gray-800 text-xs text-gray-400">
-    <div class="flex items-center gap-3">
-      <span x-show="saveStatus?.loaded" class="flex items-center gap-2">
-        <span class="text-gray-200 font-medium" x-text="saveStatus?.sourceName"></span>
-        <span x-show="svPlayers?.length" class="text-accent-400">
-          · <span x-text="svPlayers?.length"></span> player<span x-show="svPlayers?.length !== 1">s</span> on map
-        </span>
-        <span x-show="svPlayers !== null && !svPlayers?.length" class="text-gray-500">· No players in save</span>
-      </span>
-      <span x-show="!saveStatus?.loaded" class="text-gray-500">
-        No save loaded — load a save in <button @click="switchTab('saveviewer')" class="underline hover:text-gray-300 transition-colors">Save Tools</button> to show player positions
-      </span>
-    </div>
-    <span x-show="svMapPins?.stamps?.length" class="text-gray-500">
-      · <span x-text="svMapPins?.stamps?.length ?? 0"></span> stamp<span x-show="(svMapPins?.stamps?.length ?? 0) !== 1">s</span>
-    </span>
-  </div>
-
   <!-- Padded viewport -->
   <div class="flex-1 min-h-0 p-4 bg-gray-950">
 
@@ -27,6 +8,36 @@
 
       <!-- Leaflet map fills the wrapper -->
       <div id="leaflet-map" class="h-full w-full" style="background: #030712;"></div>
+
+      <!-- Context pill — top-center: what save you're looking at + quick counts -->
+      <div class="absolute top-4 left-1/2 -translate-x-1/2 max-w-[calc(100%-7rem)] flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-gray-900/90 backdrop-blur-md border border-gray-700/50 shadow-xl text-xs pointer-events-none"
+           style="z-index:1000">
+        <template x-if="saveStatus?.loaded">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <svg class="w-3.5 h-3.5 text-accent-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8a2 2 0 012-2h10a2 2 0 012 2M5 8a2 2 0 00-2 2v6a2 2 0 002 2h14a2 2 0 002-2v-6a2 2 0 00-2-2M5 8h14M9 12h6" />
+            </svg>
+            <span class="text-gray-200 font-medium truncate" x-text="saveStatus?.sourceName"></span>
+            <span class="w-px h-3.5 bg-gray-700 shrink-0"></span>
+            <span class="flex items-center gap-1.5 shrink-0 tabular-nums">
+              <span x-show="svPlayers?.length" class="text-accent-300">
+                <span x-text="svPlayers?.length"></span> player<span x-show="svPlayers?.length !== 1">s</span>
+              </span>
+              <span x-show="svPlayers !== null && !svPlayers?.length" class="text-gray-500">No players</span>
+              <span x-show="svMapPins?.stamps?.length" class="text-gray-600">·</span>
+              <span x-show="svMapPins?.stamps?.length" class="text-gray-400">
+                <span x-text="svMapPins?.stamps?.length ?? 0"></span> stamp<span x-show="(svMapPins?.stamps?.length ?? 0) !== 1">s</span>
+              </span>
+            </span>
+          </div>
+        </template>
+        <template x-if="!saveStatus?.loaded">
+          <div class="flex items-center gap-1.5 text-gray-500 pointer-events-auto">
+            <span>No save loaded —</span>
+            <button @click="switchTab('saveviewer')" class="text-accent-300 hover:text-accent-200 font-medium transition-colors">Load in Save Tools</button>
+          </div>
+        </template>
+      </div>
 
       <!-- Live coordinate readout — bottom-left, follows the cursor's map position -->
       <div x-show="mouseCoord.x !== null"
@@ -164,21 +175,39 @@
                 x-text="buildingCategoriesAllOn() ? 'None' : 'All'"></button>
             </div>
             <template x-for="c in buildingCategories" :key="c.category">
-              <button @click="toggleBuildingCategory(c.category)"
-                class="w-full flex items-center gap-2 px-2 py-1 rounded-lg transition-all hover:bg-gray-800/60"
+              <div class="w-full flex items-center gap-2 px-2 py-1 rounded-lg transition-all hover:bg-gray-800/60"
                 :class="categoryFilters[c.category] ? 'bg-gray-800/30' : ''">
-                <span class="w-2.5 h-2.5 rounded-full flex-shrink-0 border transition-opacity"
-                      :style="categoryFilters[c.category] ? ('background-color:' + c.color + ';border-color:' + c.color) : ('background-color:transparent;border-color:' + c.color + '80')"></span>
-                <span class="text-xs flex-1 text-left truncate transition-colors"
-                      :class="categoryFilters[c.category] ? 'text-gray-300' : 'text-gray-600'" x-text="c.category"></span>
-                <span class="text-[10px] text-gray-600 tabular-nums" x-text="'(' + c.count + ')'"></span>
-                <div class="w-3 h-3 rounded-sm border flex-shrink-0 flex items-center justify-center transition-all"
-                     :class="categoryFilters[c.category] ? 'bg-accent-500/80 border-accent-500' : 'border-gray-600'">
-                  <svg x-show="categoryFilters[c.category]" fill="none" stroke="white" viewBox="0 0 24 24" style="width:7px;height:7px">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M5 13l4 4L19 7"/>
-                  </svg>
-                </div>
-              </button>
+                <!-- Swatch: opens the dark color popover for sprite categories, a static dot for spline ones -->
+                <template x-if="c.recolorable">
+                  <button @click.stop="openColorPicker(c.category, $event)" title="Click to recolor"
+                          class="group/sw relative flex-shrink-0 leading-none rounded-md p-1 -m-0.5 hover:bg-gray-700/60 transition-colors">
+                    <span class="block w-3 h-3 rounded-full ring-1 ring-white/25 transition-transform group-hover/sw:scale-110"
+                          :style="categoryFilters[c.category] ? ('background-color:' + effectiveCategoryColor(c.category)) : ('background-color:transparent;box-shadow:inset 0 0 0 2px ' + effectiveCategoryColor(c.category))"></span>
+                    <!-- tiny pencil badge so it reads as editable -->
+                    <span class="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-gray-800 ring-1 ring-gray-600 flex items-center justify-center text-gray-300 opacity-80 group-hover/sw:opacity-100">
+                      <svg width="6" height="6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path stroke-linecap="round" stroke-linejoin="round" d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </span>
+                  </button>
+                </template>
+                <template x-if="!c.recolorable">
+                  <span class="w-3 h-3 mx-1 rounded-full flex-shrink-0 border transition-opacity"
+                        :style="categoryFilters[c.category] ? ('background-color:' + c.color + ';border-color:' + c.color) : ('background-color:transparent;border-color:' + c.color + '80')"></span>
+                </template>
+                <!-- Toggle visibility -->
+                <button @click="toggleBuildingCategory(c.category)" class="flex items-center gap-2 flex-1 min-w-0 text-left">
+                  <span class="text-xs flex-1 truncate transition-colors"
+                        :class="categoryFilters[c.category] ? 'text-gray-300' : 'text-gray-600'" x-text="c.category"></span>
+                  <span class="text-[10px] text-gray-600 tabular-nums" x-text="'(' + c.count + ')'"></span>
+                  <span x-show="hasCategoryColorOverride(c.category)" title="Custom color"
+                        class="w-1 h-1 rounded-full bg-accent-400 flex-shrink-0"></span>
+                  <div class="w-3 h-3 rounded-sm border flex-shrink-0 flex items-center justify-center transition-all"
+                       :class="categoryFilters[c.category] ? 'bg-accent-500/80 border-accent-500' : 'border-gray-600'">
+                    <svg x-show="categoryFilters[c.category]" fill="none" stroke="white" viewBox="0 0 24 24" style="width:7px;height:7px">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </div>
+                </button>
+              </div>
             </template>
           </div>
 
@@ -287,6 +316,78 @@
       <!-- ────────────────────────────────────────────────────────────────── -->
 
     </div>
+  </div>
+
+  <!-- ── Category color picker — dark popover, fixed-anchored to the swatch ─── -->
+  <div x-show="colorPicker.open"
+       x-transition:enter="transition ease-out duration-100"
+       x-transition:enter-start="opacity-0 scale-95"
+       x-transition:enter-end="opacity-100 scale-100"
+       x-transition:leave="transition ease-in duration-75"
+       x-transition:leave-start="opacity-100 scale-100"
+       x-transition:leave-end="opacity-0 scale-95"
+       @click.outside="closeColorPicker()"
+       @keydown.escape.window="closeColorPicker()"
+       class="fixed w-60 bg-gray-800 rounded-xl border border-gray-700 shadow-2xl p-3"
+       :style="`top:${colorPicker.top}px; left:${colorPicker.left}px; z-index:1100`"
+       x-cloak>
+    <div class="flex items-center justify-between mb-2.5">
+      <div class="min-w-0">
+        <div class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 leading-none mb-1">Color</div>
+        <div class="text-xs font-medium text-gray-200 truncate" x-text="colorPicker.category"></div>
+      </div>
+      <button @click="closeColorPicker()" class="p-1 -m-1 text-gray-500 hover:text-gray-300 rounded-md hover:bg-gray-700/60 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Saturation / Value box -->
+    <div class="relative w-full h-28 rounded-lg overflow-hidden cursor-crosshair select-none touch-none mb-2.5 ring-1 ring-white/10"
+         @pointerdown="pickerSVDown($event)"
+         :style="`background:
+            linear-gradient(to top, #000, transparent),
+            linear-gradient(to right, #fff, transparent),
+            ${pickerHueHex()}`">
+      <span class="absolute w-3.5 h-3.5 -ml-1.5 -mt-1.5 rounded-full border-2 border-white shadow pointer-events-none"
+            :style="`left:${colorPicker.s * 100}%; top:${(1 - colorPicker.v) * 100}%; background:${pickerHex()}`"></span>
+    </div>
+
+    <!-- Hue slider -->
+    <div class="relative w-full h-3.5 rounded-full cursor-pointer select-none touch-none mb-2.5 ring-1 ring-white/10"
+         @pointerdown="pickerHueDown($event)"
+         style="background:linear-gradient(to right,#f00 0%,#ff0 17%,#0f0 33%,#0ff 50%,#00f 67%,#f0f 83%,#f00 100%)">
+      <span class="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 -ml-1.5 rounded-full border-2 border-white shadow pointer-events-none"
+            :style="`left:${(colorPicker.h / 360) * 100}%; background:${pickerHueHex()}`"></span>
+    </div>
+
+    <!-- Hex input + live preview -->
+    <div class="flex items-center gap-2 mb-2.5">
+      <span class="w-7 h-7 rounded-md ring-1 ring-white/15 shrink-0" :style="`background-color:${pickerHex()}`"></span>
+      <input type="text" maxlength="7" spellcheck="false"
+             :value="pickerHex()"
+             @input="pickerSetHex($event.target.value)"
+             class="flex-1 min-w-0 bg-gray-900 border border-gray-700 rounded-md px-2 py-1.5 text-xs font-mono text-gray-200 uppercase focus:outline-none focus:border-accent-500 transition-colors">
+    </div>
+
+    <!-- Preset quick-picks -->
+    <div class="grid grid-cols-9 gap-1.5 mb-2.5">
+      <template x-for="hex in mapColorPresets" :key="hex">
+        <button @click="pickerPick(hex)"
+                class="aspect-square rounded transition-transform hover:scale-110"
+                :style="`background-color:${hex}`"
+                :class="pickerHex() === hex ? 'ring-2 ring-white' : 'ring-1 ring-white/15'"></button>
+      </template>
+    </div>
+
+    <!-- Reset -->
+    <button @click="pickerReset()"
+            x-show="hasCategoryColorOverride(colorPicker.category)"
+            class="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-md border border-gray-700 text-xs font-medium text-gray-400 hover:text-gray-200 hover:border-gray-600 transition-colors">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      Reset to default
+    </button>
   </div>
 
 </div>

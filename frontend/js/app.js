@@ -187,6 +187,21 @@ document.addEventListener('alpine:init', () => {
     // both built dynamically from the loaded footprints/splines.
     categoryFilters: {},
     buildingCategories: [],
+    // Per-category color overrides (category → '#rrggbb'), persisted to
+    // localStorage. Override wins over the backend default palette; applies to
+    // building sprites (splines keep their default for now). See applyTheme-style
+    // persistence in _loadCategoryColors/_persistCategoryColors.
+    categoryColorOverrides: {},
+    // Dark-themed color picker popover (replaces the native OS picker). Anchored
+    // to the clicked swatch via fixed positioning so it escapes the filter
+    // panel's overflow/blur clipping.
+    colorPicker: { open: false, category: null, top: 0, left: 0, h: 0, s: 0, v: 0.5 },
+    // Curated palette that reads well on the dark map (reds → grays).
+    mapColorPresets: [
+      '#e0533d', '#e07a3d', '#e0a93d', '#d9c84a', '#a8c84f', '#6fae84',
+      '#4fb09a', '#4f9bb0', '#5d86b0', '#6f7fd1', '#9a83c0', '#c47fa3',
+      '#d0698a', '#b0524f', '#8a98a8', '#6b7280', '#475569', '#c8cdd6',
+    ],
     svMapPins: null,
     svBuildingFootprints: null,
     mouseCoord: { x: null, y: null }, // live game coords under the cursor (cm)
@@ -234,6 +249,8 @@ document.addEventListener('alpine:init', () => {
     async init() {
       // Apply the saved accent theme before anything paints.
       this.applyTheme(localStorage.getItem('sl-theme') || 'orange');
+      // Restore any saved per-category map color overrides.
+      this._loadCategoryColors();
 
       try {
         const authStatus = await api.auth.status();
@@ -1438,16 +1455,19 @@ document.addEventListener('alpine:init', () => {
       const data = this.svBuildingFootprints;
       if (!data) { this.buildingCategories = []; return; }
       const m = new Map();
-      const bump = (cat, color, n) => {
+      // `recolorable` marks sprite-backed categories — only those can be retinted
+      // live today (spline categories keep their default; see PLANNING).
+      const bump = (cat, color, n, isSprite) => {
         let e = m.get(cat);
-        if (!e) { e = { category: cat, color, count: 0 }; m.set(cat, e); }
+        if (!e) { e = { category: cat, color, count: 0, recolorable: false }; m.set(cat, e); }
         e.count += n;
+        if (isSprite) e.recolorable = true;
       };
       for (let i = 0; i < (data.typeIndex?.length ?? 0); i++) {
         const t = data.types[data.typeIndex[i]];
-        bump(t.category, t.color, 1);
+        bump(t.category, t.color, 1, true);
       }
-      for (const g of (data.splines ?? [])) bump(g.category, g.color, g.lines.length);
+      for (const g of (data.splines ?? [])) bump(g.category, g.color, g.lines.length, false);
 
       this.buildingCategories = Array.from(m.values()).sort((a, b) => b.count - a.count);
       for (const c of this.buildingCategories) {
@@ -1482,6 +1502,155 @@ document.addEventListener('alpine:init', () => {
         for (const o of objs) o.visible = vis;
       }
       if (redraw) _buildingOverlay?.redraw();
+    },
+
+    // ── Per-category map colors ───────────────────────────────────────────
+    // The backend bakes one default hex per category; users can override it per
+    // category (persisted to localStorage). Override wins; building sprites
+    // recolor live in place. Splines keep their default for now (their color is
+    // baked into the Graphics geometry — see PLANNING).
+    _categoryDefaultColor(cat) {
+      return this.buildingCategories.find((c) => c.category === cat)?.color || '#828b99';
+    },
+    effectiveCategoryColor(cat) {
+      return this.categoryColorOverrides[cat] || this._categoryDefaultColor(cat);
+    },
+    hasCategoryColorOverride(cat) {
+      return !!this.categoryColorOverrides[cat];
+    },
+    // Open the dark color popover anchored to the clicked swatch. Prefers the
+    // right of the swatch (panel sits on the map's left edge); flips/clamps to
+    // stay on-screen. Seeds the HSV picker from the category's current color.
+    openColorPicker(cat, evt) {
+      const r = evt.currentTarget.getBoundingClientRect();
+      const W = 240, H = 340, M = 8;
+      let left = r.right + M;
+      if (left + W > window.innerWidth - M) left = r.left - W - M;
+      if (left < M) left = M;
+      let top = r.top;
+      if (top + H > window.innerHeight - M) top = window.innerHeight - H - M;
+      if (top < M) top = M;
+      const { h, s, v } = this._hexToHsv(this.effectiveCategoryColor(cat));
+      this.colorPicker = { open: true, category: cat, top, left, h, s, v };
+    },
+    closeColorPicker() {
+      this.colorPicker.open = false;
+    },
+
+    // ── HSV color picker plumbing ─────────────────────────────────────────
+    _hsvToHex(h, s, v) {
+      const c = v * s;
+      const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+      const m = v - c;
+      let r = 0, g = 0, b = 0;
+      if (h < 60)       { r = c; g = x; }
+      else if (h < 120) { r = x; g = c; }
+      else if (h < 180) { g = c; b = x; }
+      else if (h < 240) { g = x; b = c; }
+      else if (h < 300) { r = x; b = c; }
+      else              { r = c; b = x; }
+      const to = (n) => Math.round((n + m) * 255).toString(16).padStart(2, '0');
+      return `#${to(r)}${to(g)}${to(b)}`;
+    },
+    _hexToHsv(hex) {
+      if (!/^#[0-9a-fA-F]{6}$/.test(hex || '')) return { h: 0, s: 0, v: 0.5 };
+      const n = parseInt(hex.slice(1), 16);
+      const r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+      let h = 0;
+      if (d !== 0) {
+        if (max === r)      h = ((g - b) / d) % 6;
+        else if (max === g) h = (b - r) / d + 2;
+        else                h = (r - g) / d + 4;
+        h *= 60; if (h < 0) h += 360;
+      }
+      return { h, s: max === 0 ? 0 : d / max, v: max };
+    },
+    // Current picker color as hex (drives the SV-box hue, preview, thumbs).
+    pickerHex() {
+      const p = this.colorPicker;
+      return this._hsvToHex(p.h, p.s, p.v);
+    },
+    pickerHueHex() {
+      return this._hsvToHex(this.colorPicker.h, 1, 1);
+    },
+    _applyPickerColor() {
+      const p = this.colorPicker;
+      this.setCategoryColor(p.category, this._hsvToHex(p.h, p.s, p.v));
+    },
+    // Pointer drag helper: applies onMove now and on every move until release.
+    _startDrag(evt, onMove) {
+      evt.preventDefault();
+      const move = (e) => onMove(e);
+      const up = () => {
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+      };
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+      onMove(evt);
+    },
+    pickerSVDown(evt) {
+      const rect = evt.currentTarget.getBoundingClientRect();
+      this._startDrag(evt, (e) => {
+        this.colorPicker.s = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+        this.colorPicker.v = 1 - Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height));
+        this._applyPickerColor();
+      });
+    },
+    pickerHueDown(evt) {
+      const rect = evt.currentTarget.getBoundingClientRect();
+      this._startDrag(evt, (e) => {
+        this.colorPicker.h = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width)) * 360;
+        this._applyPickerColor();
+      });
+    },
+    // Preset / hex entry: set the color AND re-sync the HSV thumbs.
+    pickerPick(hex) {
+      Object.assign(this.colorPicker, this._hexToHsv(hex));
+      this.setCategoryColor(this.colorPicker.category, hex);
+    },
+    pickerSetHex(val) {
+      if (!/^#[0-9a-fA-F]{6}$/.test(val)) return; // wait for a complete hex
+      this.pickerPick(val.toLowerCase());
+    },
+    pickerReset() {
+      this.resetCategoryColor(this.colorPicker.category);
+      Object.assign(this.colorPicker, this._hexToHsv(this.effectiveCategoryColor(this.colorPicker.category)));
+    },
+    setCategoryColor(cat, hex) {
+      if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+      this.categoryColorOverrides[cat] = hex.toLowerCase();
+      this._persistCategoryColors();
+      this._recolorCategorySprites(cat);
+    },
+    resetCategoryColor(cat) {
+      if (!this.categoryColorOverrides[cat]) return;
+      delete this.categoryColorOverrides[cat];
+      this._persistCategoryColors();
+      this._recolorCategorySprites(cat);
+    },
+    // Live in-place recolor: retint a category's sprites without rebuilding the
+    // overlay. Each category's display objects include the sprite layer Container
+    // (its children are the sprites) and any spline Graphics (childless — skipped).
+    _recolorCategorySprites(cat) {
+      const objs = _categoryDisplayObjects.get(cat);
+      if (!objs) return;
+      const tint = parseInt(this.effectiveCategoryColor(cat).slice(1), 16);
+      for (const o of objs) {
+        if (o.children) for (const child of o.children) child.tint = tint;
+      }
+      _buildingOverlay?.redraw();
+    },
+    _loadCategoryColors() {
+      try {
+        this.categoryColorOverrides = JSON.parse(localStorage.getItem('sl-map-colors') || '{}') || {};
+      } catch {
+        this.categoryColorOverrides = {};
+      }
+    },
+    _persistCategoryColors() {
+      localStorage.setItem('sl-map-colors', JSON.stringify(this.categoryColorOverrides));
     },
 
     mapResetView() {
@@ -1722,9 +1891,18 @@ document.addEventListener('alpine:init', () => {
       const eyX = (p2.x - p0.x) / 1000, eyY = (p2.y - p0.y) / 1000;
       const gameToLayer = (gx, gy) => ({ x: p0.x + gx * exX + gy * eyX, y: p0.y + gx * exY + gy * eyY });
 
-      for (const type of data.types) {
-        if (type._tint === undefined) type._tint = parseInt(type.color.slice(1), 16);
-      }
+      // Resolve a category's sprite tint, honoring any user color override over
+      // the backend default. Memoised per rebuild so it's one parse per category.
+      const _tintMemo = new Map();
+      const tintForCategory = (cat, fallbackHex) => {
+        let t = _tintMemo.get(cat);
+        if (t === undefined) {
+          const hex = this.categoryColorOverrides[cat] || fallbackHex;
+          t = parseInt(hex.slice(1), 16);
+          _tintMemo.set(cat, t);
+        }
+        return t;
+      };
 
       // Track every display object per category so per-category filters can flip
       // their visibility without a full rebuild.
@@ -1779,7 +1957,7 @@ document.addEventListener('alpine:init', () => {
 
         const sprite = new PIXI.Sprite(SHARP_CATEGORIES.has(type.category) ? PIXI.Texture.WHITE : roundedTex);
         sprite.anchor.set(0.5);
-        sprite.tint = type._tint;
+        sprite.tint = tintForCategory(type.category, type.color);
         sprite.alpha = 0.88;
         sprite.x = point.x;
         sprite.y = point.y;
