@@ -56,12 +56,12 @@ export const api = {
     watch: () => apiFetch('/api/save/watch', { method: 'POST' }),
     players: () => apiFetch('/api/save/players'),
     buildings: () => apiFetch('/api/save/buildings'),
-    resources: () => apiFetch('/api/save/resources'),
     power: () => apiFetch('/api/save/power'),
     resourceNodes: () => apiFetch('/api/save/resource-nodes'),
     mapPins: () => apiFetch('/api/save/map-pins'),
     storage: () => apiFetch('/api/save/storage'),
     buildingFootprints: () => apiFetch('/api/save/building-footprints'),
+    machineInstances: (cls) => apiFetch('/api/save/machine-instances?class=' + encodeURIComponent(cls)),
     schematics: () => apiFetch('/api/save/schematics'),
     persistEdits: ({ saveName, mode, edits }) =>
       apiFetch('/api/save/edit/persist', { method: 'POST', body: { saveName, mode, edits } }),

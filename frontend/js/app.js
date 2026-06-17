@@ -163,16 +163,21 @@ document.addEventListener('alpine:init', () => {
 
     // ── Phase 2: Save Viewer ──────────────────────────────────────────────
     saveStatus: null,
-    saveTab: 'players',       // sub-tab within save viewer: 'players' | 'buildings' | 'resources' | 'power'
+    saveTab: 'players',       // sub-tab: 'players' | 'progression' | 'production' | 'power' | 'storage' | 'structures'
     saveDataLoading: false,
     saveDataError: null,
     svPlayers: null,
     svBuildings: null,
-    svResources: null,
     svPower: null,
     svStorage: null,
     expandedPlayer: null,    // instanceName of expanded player row
     expandedStorage: null,   // instanceName of expanded storage row
+    expandedBuildingType: null,   // typePath of expanded building-type row (per-instance list)
+    highlightedInstanceName: null,// transient highlight target after a map → instance jump
+    buildingInstanceCap: {},      // per-typePath count of how many instance rows to render
+    svMachineDetail: {},          // buildClass → fetched per-instance machine detail (on demand)
+    machineDetailLoading: {},     // buildClass → bool while its detail is being fetched
+    expandedMachine: null,        // instanceName of the machine row whose buffers are expanded
     showSettings: false,
     headerReloading: false,
     confirmDialog: { show: false, title: '', message: '', confirmLabel: 'Confirm', danger: true, resolve: null },
@@ -187,7 +192,7 @@ document.addEventListener('alpine:init', () => {
     persistModal: { show: false, saveName: '', overwrite: false, loading: false, error: null },
     changesModal: { show: false },
     itemCatalog: null, // { itemClass: { path, name, stack } } for the slot picker
-    slotEditor: { show: false, invName: '', slot: 0, contextLabel: '', search: '', selClass: '', count: 1, baseline: null },
+    slotEditor: { show: false, invName: '', slot: 0, contextLabel: '', search: '', selClass: '', count: 1, baseline: null, x: 0, y: 0 },
     svSchematics: null,       // baseline purchased set (path → true)
     schematicCatalog: null,   // full progression catalog (array)
     schematicsSearch: '',
@@ -459,6 +464,108 @@ document.addEventListener('alpine:init', () => {
         .filter(cat => cat.types.length > 0);
     },
 
+    // The building categories belong to different intent tabs: Production (crafting +
+    // extractors), Power (generators), Storage (its own tab), and Structures (the
+    // structural remainder). One computed feeds the three building-list tabs.
+    _productionCats: new Set(['Production', 'Miners & Extractors']),
+    _powerCats: new Set(['Power']),
+    buildingCategoriesForActiveTab() {
+      const cats = this.filteredBuildingCategories();
+      if (this.saveTab === 'production') return cats.filter(c => this._productionCats.has(c.category));
+      if (this.saveTab === 'power')      return cats.filter(c => this._powerCats.has(c.category));
+      if (this.saveTab === 'structures') return cats.filter(c =>
+        !this._productionCats.has(c.category) && !this._powerCats.has(c.category) && c.category !== 'Storage');
+      return [];
+    },
+    // Display label for a category header within the intent tabs (the data category
+    // stays 'Production'/'Power'; only the shown label changes to avoid tab/section clash).
+    categoryDisplayLabel(category) {
+      if (category === 'Production') return 'Crafting';
+      if (category === 'Power') return 'Generators';
+      return category;
+    },
+
+    // Categories worth drilling into per-instance on the Buildings tab: machines with
+    // meaningful per-instance state (recipe/clock) the user might want to locate or
+    // edit. Storage is deliberately excluded — the dedicated Storage tab already lists
+    // every container with its inventory + edit controls, so a per-instance list here
+    // would be redundant; map clicks on a container route straight to the Storage tab.
+    // Everything else (foundations, walls, belts…) stays a compact type-count card.
+    _instanceableCategories: new Set(['Production', 'Power', 'Miners & Extractors']),
+    isInstanceableCategory(category) {
+      return this._instanceableCategories.has(category);
+    },
+
+    // The full ordered instance list for an expanded type: the rich machine detail
+    // (recipe/clock/buffers) once fetched, else the lean position list from the
+    // buildings payload. Both carry pos; rich entries add a `kind` + instanceName.
+    instanceList(type) {
+      return this.machineDetailFor(type.buildClass) || type.instances || [];
+    },
+    instKey(inst) {
+      return inst.instanceName || inst.name || '';
+    },
+    // Format a production output's throughput, e.g. "40/min" or "12.5 m³/min".
+    fmtRate(o) {
+      if (!o) return '';
+      const n = o.perMin ?? 0;
+      const v = n >= 100 ? Math.round(n) : Math.round(n * 10) / 10;
+      return `${v}${o.fluid ? ' m³' : ''}/min`;
+    },
+
+    // How many instance rows to render for a type (capped so a 500-constructor type
+    // doesn't lag Alpine). "Show more" bumps the cap in INSTANCE_PAGE steps.
+    INSTANCE_PAGE: 100,
+    visibleInstances(type) {
+      const cap = this.buildingInstanceCap[type.typePath] ?? this.INSTANCE_PAGE;
+      return this.instanceList(type).slice(0, cap);
+    },
+    moreInstances(type) {
+      this.buildingInstanceCap[type.typePath] =
+        (this.buildingInstanceCap[type.typePath] ?? this.INSTANCE_PAGE) + this.INSTANCE_PAGE;
+    },
+    toggleBuildingType(type) {
+      const opening = this.expandedBuildingType !== type.typePath;
+      this.expandedBuildingType = opening ? type.typePath : null;
+      if (opening) this.loadMachineDetail(type.buildClass);
+    },
+
+    // Fetch (and cache) the rich per-instance detail for a machine type — recipe,
+    // clock, throughput, buffers. Called when a type is expanded. Types the backend
+    // can't model return [] → rows fall back to lean position rows.
+    async loadMachineDetail(buildClass) {
+      if (this.svMachineDetail[buildClass] || this.machineDetailLoading[buildClass]) return;
+      this.machineDetailLoading[buildClass] = true;
+      try {
+        this.svMachineDetail[buildClass] = await api.save.machineInstances(buildClass);
+      } catch (e) {
+        this.svMachineDetail[buildClass] = [];
+        console.warn('machine detail unavailable:', e.message);
+      } finally {
+        this.machineDetailLoading[buildClass] = false;
+      }
+    },
+
+    // The fetched detail for a type, or null if not loaded / empty (→ lean rows).
+    machineDetailFor(buildClass) {
+      const d = this.svMachineDetail[buildClass];
+      return d && d.length ? d : null;
+    },
+
+    // Group the flat storage list by container type (buildClass) for the Storage
+    // tab's collapsible type sections — mirrors the Buildings tab grouping. Sorted
+    // by container count (desc), then label.
+    storageGroups() {
+      const groups = new Map();
+      for (const c of this.svStorage ?? []) {
+        let g = groups.get(c.buildClass);
+        if (!g) { g = { buildClass: c.buildClass, label: c.label, containers: [] }; groups.set(c.buildClass, g); }
+        g.containers.push(c);
+      }
+      return Array.from(groups.values())
+        .sort((a, b) => b.containers.length - a.containers.length || a.label.localeCompare(b.label));
+    },
+
     reloadTooltipText() {
       if (this.newerSaveAvailable && this.newerSaveName) return `Newer save available: ${this.newerSaveName}`;
       if (this.saveStatus?.sourceName) return `Reload ${this.saveStatus.sourceName}`;
@@ -480,12 +587,17 @@ document.addEventListener('alpine:init', () => {
       this.svPlayers = null;
       this.svStorage = null;
       this.svBuildings = null;
-      this.svResources = null;
       this.svPower = null;
       this.svResourceNodes = null;
       this.svMapPins = null;
       this.svBuildingFootprints = null;
       this.svSchematics = null;
+      this.expandedBuildingType = null;
+      this.highlightedInstanceName = null;
+      this.buildingInstanceCap = {};
+      this.svMachineDetail = {};
+      this.machineDetailLoading = {};
+      this.expandedMachine = null;
     },
 
     // Single reload action (header button) — reloads whatever the active save source
@@ -541,7 +653,7 @@ document.addEventListener('alpine:init', () => {
     async switchSaveTab(tab) {
       this.saveTab = tab;
       this.saveDataError = null;
-      if (tab !== 'buildings') this.buildingsSearch = '';
+      if (tab !== 'production' && tab !== 'structures') this.buildingsSearch = '';
       await this.loadSaveActiveSubTab();
     },
 
@@ -549,8 +661,9 @@ document.addEventListener('alpine:init', () => {
       if (!this.saveStatus?.loaded) return;
       if (this.saveTab === 'players'   && !this.svPlayers)   await this.loadSvPlayers();
       if (this.saveTab === 'storage'   && !this.svStorage)   await this.loadSvStorage();
-      if (this.saveTab === 'buildings' && !this.svBuildings) await this.loadSvBuildings();
-      if (this.saveTab === 'resources' && !this.svResources) await this.loadSvResources();
+      // Production / Power / Structures all read the buildings census; Power also
+      // needs the circuit summary.
+      if (['production', 'power', 'structures'].includes(this.saveTab) && !this.svBuildings) await this.loadSvBuildings();
       if (this.saveTab === 'power'     && !this.svPower)     await this.loadSvPower();
       if (this.saveTab === 'progression' && !this.svSchematics) await this.loadSvSchematics();
     },
@@ -668,31 +781,51 @@ document.addEventListener('alpine:init', () => {
       return this.slotGrid(contents, totalSlots).map((slot, idx) => this.effectiveSlot(invName, idx, slot));
     },
 
-    async openSlotEditor(invName, slot, contextLabel, baselineSlot) {
+    async openSlotEditor(invName, slot, contextLabel, baselineSlot, ev) {
       await this.loadItemCatalog();
       const eff = this.effectiveSlot(invName, slot, baselineSlot);
+      // Anchor the popover to the clicked slot (clamped to the viewport in slotEditorStyle()).
+      const x = ev?.clientX ?? (window.innerWidth / 2);
+      const y = ev?.clientY ?? (window.innerHeight / 2);
       this.slotEditor = {
         show: true, invName, slot, contextLabel,
         search: '',
         selClass: eff?.itemClass ?? '',
         count: eff?.count ?? 1,
         baseline: baselineSlot ?? null,
+        x, y,
       };
+      this.$nextTick(() => document.getElementById('slot-search')?.focus());
     },
 
-    // Filtered, capped item list for the picker grid.
+    // Fixed-position style for the anchored popover, clamped so it never leaves the
+    // viewport (flips left/up near the right/bottom edges).
+    slotEditorStyle() {
+      const W = 280, H = 360, M = 8;
+      const vw = window.innerWidth, vh = window.innerHeight;
+      let left = this.slotEditor.x + 12;
+      let top = this.slotEditor.y + 12;
+      if (left + W > vw - M) left = Math.max(M, this.slotEditor.x - W - 12);
+      if (top + H > vh - M) top = Math.max(M, vh - H - M);
+      return `left:${left}px;top:${top}px;width:${W}px`;
+    },
+
+    // Short, search-driven item list (a handful, not a wall of icons).
     slotEditorItems() {
       if (!this.itemCatalog) return [];
       const q = this.slotEditor.search.toLowerCase().trim();
-      const all = Object.entries(this.itemCatalog).map(([cls, v]) => ({ cls, name: v.name }));
+      const all = Object.entries(this.itemCatalog).map(([cls, v]) => ({ cls, name: v.name, stack: v.stack }));
       const filtered = q ? all.filter(i => i.name.toLowerCase().includes(q) || i.cls.toLowerCase().includes(q)) : all;
       filtered.sort((a, b) => a.name.localeCompare(b.name));
-      return filtered.slice(0, 120);
+      return filtered.slice(0, 8);
     },
 
     selectSlotItem(cls) {
       this.slotEditor.selClass = cls;
-      if (!(Number(this.slotEditor.count) > 0)) this.slotEditor.count = 1;
+      // Default a freshly-picked item to a full stack; keep an existing positive qty.
+      if (!(Number(this.slotEditor.count) > 0)) {
+        this.slotEditor.count = this.itemCatalog?.[cls]?.stack ?? 1;
+      }
     },
 
     applySlotEdit() {
@@ -723,6 +856,38 @@ document.addEventListener('alpine:init', () => {
         };
       }
       this.slotEditor.show = false;
+    },
+
+    // ── Player health editing ─────────────────────────────────────────────
+    _healthKey(player) { return `player:${player.instanceName}:health`; },
+    effectiveHealth(player) {
+      const e = this.editBuffer[this._healthKey(player)];
+      return e ? e.value : player.health;
+    },
+    isHealthEdited(player) { return !!this.editBuffer[this._healthKey(player)]; },
+    // Effective HP clamped to a 0–100 integer, for the status bar + readout.
+    healthPct(player) { return Math.max(0, Math.min(100, Math.round(this.effectiveHealth(player) ?? 0))); },
+    // Tailwind tones for the health bar fill / numeric readout (green→yellow→red).
+    healthBarClass(player) {
+      const h = this.effectiveHealth(player) ?? 0;
+      return h > 50 ? 'bg-green-500' : h > 20 ? 'bg-yellow-500' : 'bg-red-500';
+    },
+    healthTextClass(player) {
+      const h = this.effectiveHealth(player) ?? 0;
+      return h > 50 ? 'text-green-400' : h > 20 ? 'text-yellow-400' : 'text-red-400';
+    },
+    setPlayerHealthValue(player, hp) {
+      const v = Math.max(0, Math.min(100, Math.round(Number(hp) || 0)));
+      const key = this._healthKey(player);
+      if (v === Math.round(player.health ?? 0)) {
+        const { [key]: _, ...rest } = this.editBuffer;
+        this.editBuffer = rest;
+      } else {
+        this.editBuffer = {
+          ...this.editBuffer,
+          [key]: { kind: 'SetPlayerHealth', target: player.instanceName, value: v, label: player.playerName, changeText: `Health → ${v} HP` },
+        };
+      }
     },
 
     // ── Schematic (progression) editing ───────────────────────────────────
@@ -891,17 +1056,6 @@ document.addEventListener('alpine:init', () => {
       }
     },
 
-    async loadSvResources() {
-      this.saveDataLoading = true;
-      this.saveDataError = null;
-      try {
-        this.svResources = await api.save.resources();
-      } catch (e) {
-        this.saveDataError = e.message;
-      } finally {
-        this.saveDataLoading = false;
-      }
-    },
 
     async loadSvPower() {
       this.saveDataLoading = true;
@@ -1244,6 +1398,7 @@ document.addEventListener('alpine:init', () => {
         // After openPopup — replacing an existing card fires popupclose, which
         // nulls _cardEntry; set it last so the action button keeps its reference.
         _cardEntry = hit.entry;
+        if (!hit.isSpline) this._enrichBuildingCard(hit.entry);
       });
 
       const center = bounds.getCenter();
@@ -1421,6 +1576,9 @@ document.addEventListener('alpine:init', () => {
           const hh = fp.depth / 2;
           _buildingHitList.push({
             cx: worldX, cy: worldY, hw, hh, cos, sin,
+            // Raw (un-offset) instance position — the key for matching this map
+            // instance to its row in the Save Tools Buildings tab (and back).
+            gx: data.x[i], gy: data.y[i],
             // Layer-point centre + yaw for drawing the outline in the overlay's
             // (rebuild-zoom) coordinate space, matching how the sprite is placed.
             lpx: point.x, lpy: point.y, yaw,
@@ -1567,9 +1725,33 @@ document.addEventListener('alpine:init', () => {
       </div>`;
     },
 
-    // Click detail card content. One key fact (position for machines, length for
-    // splines) plus the launch button into the Save Viewer.
-    _buildingCardHtml(entry, isSpline) {
+    // A small item-icon row (input → output etc.) for the map card. `detail` is a
+    // fetched MachineInstance; returns extra .sf-card-row fragments by kind.
+    _cardMachineHtml(detail) {
+      const icon = (cls, name) => `<img src="/assets/items/${cls}.png" title="${name || ''}" style="width:18px;height:18px;object-fit:contain;vertical-align:middle" onerror="this.style.display='none'">`;
+      if (detail.kind === 'production') {
+        const ins = (detail.inputs || []).map(i => icon(i.item, i.name)).join('');
+        const outs = (detail.outputs || []).map(o => icon(o.item, o.name)).join('');
+        const arrow = ins && outs ? `<span style="color:#9ca3af;margin:0 2px">→</span>` : '';
+        const rate = detail.outputs?.[0] ? this.fmtRate(detail.outputs[0]) : '';
+        const boost = detail.boostPct > 100 ? ` · ×${detail.boostPct / 100}` : '';
+        return `<div class="sf-card-row"><span class="sf-card-k">Recipe</span><span class="sf-card-v">${detail.recipeName || 'None'}</span></div>
+          <div style="display:flex;align-items:center;gap:3px;margin:2px 0 4px">${ins}${arrow}${outs}</div>
+          <div class="sf-card-row"><span class="sf-card-k">Output</span><span class="sf-card-v">${rate ? rate + ' · ' : ''}${detail.clockPct}%${boost}</span></div>`;
+      }
+      if (detail.kind === 'generator') {
+        return `<div class="sf-card-row"><span class="sf-card-k">Fuel</span><span class="sf-card-v">${detail.fuelClass ? icon(detail.fuelClass, detail.fuelName) + ' ' : ''}${detail.fuelName || 'None'}</span></div>`
+          + (detail.powerMW ? `<div class="sf-card-row"><span class="sf-card-k">Power</span><span class="sf-card-v">${detail.powerMW} MW</span></div>` : '');
+      }
+      // extractor
+      return `<div class="sf-card-row"><span class="sf-card-k">Resource</span><span class="sf-card-v">${detail.resourceClass ? icon(detail.resourceClass, detail.resourceName) + ' ' : ''}${detail.resourceName || '—'}</span></div>
+        <div class="sf-card-row"><span class="sf-card-k">Clock</span><span class="sf-card-v">${detail.clockPct}%</span></div>`;
+    },
+
+    // Click detail card content. Position/length fact, plus — for machines whose
+    // per-instance detail has been fetched — a recipe (in→out) / fuel / resource
+    // summary, and the launch button into the Save Viewer.
+    _buildingCardHtml(entry, isSpline, detail) {
       let factLabel, factValue;
       if (isSpline) {
         let len = 0;
@@ -1583,6 +1765,7 @@ document.addEventListener('alpine:init', () => {
         factLabel = 'Position';
         factValue = `${(entry.cx / 100).toFixed(0)} m, ${(entry.cy / 100).toFixed(0)} m`;
       }
+      const machineHtml = detail ? this._cardMachineHtml(detail) : '';
       return `<div class="sf-card">
         <div class="sf-card-head">
           <img class="sf-card-icon" src="/assets/buildings/${entry.buildClass}.png" onerror="this.style.display='none'">
@@ -1592,22 +1775,156 @@ document.addEventListener('alpine:init', () => {
           </div>
         </div>
         <div class="sf-card-body">
+          ${machineHtml}
           <div class="sf-card-row"><span class="sf-card-k">${factLabel}</span><span class="sf-card-v">${factValue}</span></div>
         </div>
-        <button class="sf-card-action" type="button">Open in Save Viewer
+        <button class="sf-card-action" type="button">Open in Save Tools
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
         </button>
       </div>`;
     },
 
-    // Jump to the Save Viewer with the Buildings tab filtered to this type. This
-    // is the first-step linkage; locating the exact instance comes later (needs
-    // per-instance rows in the Save Viewer).
+    // After a machine is clicked on the map, fetch its type's detail and, if the
+    // card is still showing that instance, re-render with recipe/fuel/resource info.
+    async _enrichBuildingCard(entry) {
+      if (!entry || !this.isInstanceableCategory(entry.category)) return;
+      await this.loadMachineDetail(entry.buildClass);
+      if (_cardEntry !== entry) return; // popup changed/closed while loading
+      const list = this.svMachineDetail[entry.buildClass];
+      if (!list?.length) return;
+      let best = null, bestD = Infinity;
+      for (const m of list) {
+        const d = Math.hypot(Math.round(m.pos.x) - entry.gx, Math.round(m.pos.y) - entry.gy);
+        if (d < bestD) { bestD = d; best = m; }
+      }
+      if (best) _detailPopup.setContent(this._buildingCardHtml(entry, false, best));
+    },
+
+    // Jump to the Save Tools tab that owns this building's category and locate the
+    // *exact* clicked instance: filter to its type, expand the per-instance list, then
+    // scroll to + highlight the instance whose position matches the map click.
+    // Matching is by position (buildClass + nearest x/y) so the lean map footprints
+    // payload stays free of instanceNames.
     async openInSaveViewer(entry) {
       _leafletMap?.closePopup(_detailPopup);
-      this.saveTab = 'buildings';
-      this.buildingsSearch = entry.label;
+
+      // Storage containers → the dedicated Storage tab (inventory + edit), which is
+      // strictly more useful than a bare per-instance row. Falls through to the
+      // category's normal tab only if the container isn't one the Storage tab tracks
+      // (e.g. Dimensional Depot / lockers).
+      if (entry.category === 'Storage') {
+        this.saveTab = 'storage';
+        await this.switchTab('saveviewer');
+        if (!this.svStorage) await this.loadSvStorage();
+        if (this._focusStorageInstance(entry.buildClass, entry.gx, entry.gy)) return;
+      }
+
+      // Route to the intent tab that renders this category.
+      this.saveTab = this._powerCats.has(entry.category) ? 'power'
+        : this._productionCats.has(entry.category) ? 'production'
+        : 'structures';
+      // The search box only lives on Production/Structures; the Power tab's
+      // generator group isn't filtered by it, so don't leak the label there.
+      this.buildingsSearch = this.saveTab === 'power' ? '' : entry.label;
       await this.switchTab('saveviewer');
+      if (!this.svBuildings) await this.loadSvBuildings();
+      this._focusBuildingInstance(entry.buildClass, entry.gx, entry.gy);
+    },
+
+    // Locate a storage container in the Storage tab by buildClass + nearest position
+    // (the tab stores positions in metres; map x/y are game-cm). Expands + scrolls to
+    // + highlights it. Returns true if matched, false to let the caller fall back.
+    _focusStorageInstance(buildClass, x, y) {
+      const mx = Math.round(x / 100), my = Math.round(y / 100);
+      let best = null, bestD = Infinity;
+      for (const c of this.svStorage ?? []) {
+        if (c.buildClass !== buildClass || !c.position) continue;
+        const d = Math.hypot(c.position.x - mx, c.position.y - my);
+        if (d < bestD) { bestD = d; best = c; }
+      }
+      if (!best) return false;
+
+      this.expandedStorage = best.instanceName;
+      this.highlightedInstanceName = best.instanceName;
+      this.$nextTick(() => {
+        document.getElementById(`storagerow-${best.instanceName}`)
+          ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      });
+      clearTimeout(this._instHighlightTimer);
+      this._instHighlightTimer = setTimeout(() => { this.highlightedInstanceName = null; }, 4000);
+      return true;
+    },
+
+    // Find the type (by buildClass) + the instance nearest (x, y), expand it (loading
+    // its rich detail), then scroll to + highlight that instance's row. Shared by the
+    // map → instance jump. Matches against whichever list will render (rich detail if
+    // available, else lean positions) so the index/cap line up.
+    async _focusBuildingInstance(buildClass, x, y) {
+      let target = null;
+      for (const cat of this.svBuildings?.categories ?? []) {
+        const type = cat.types.find(t => t.buildClass === buildClass);
+        if (type) { target = type; break; }
+      }
+      if (!target) return;
+
+      this.expandedBuildingType = target.typePath;
+      await this.loadMachineDetail(buildClass);
+
+      const list = this.instanceList(target);
+      if (!list.length) return;
+      let bestIdx = 0, bestD = Infinity;
+      for (let i = 0; i < list.length; i++) {
+        const p = list[i].pos;
+        const d = Math.hypot(Math.round(p.x) - x, Math.round(p.y) - y);
+        if (d < bestD) { bestD = d; bestIdx = i; }
+      }
+
+      // Ensure the matched row is within the rendered (capped) window.
+      if (bestIdx >= (this.buildingInstanceCap[target.typePath] ?? this.INSTANCE_PAGE)) {
+        this.buildingInstanceCap[target.typePath] = bestIdx + 1;
+      }
+      const inst = list[bestIdx];
+      const name = this.instKey(inst);
+      this.highlightedInstanceName = name;
+      // Auto-expand the matched instance's inspector card (only machines with
+      // rich detail are expandable — lean structural rows have no `kind`).
+      if (inst.kind) this.expandedMachine = name;
+
+      this.$nextTick(() => {
+        document.getElementById(`binst-${name}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      });
+      // Clear the highlight after it has had a moment to register.
+      clearTimeout(this._instHighlightTimer);
+      this._instHighlightTimer = setTimeout(() => { this.highlightedInstanceName = null; }, 4000);
+    },
+
+    // Reciprocal of openInSaveViewer: from a Buildings-tab instance row, switch to
+    // the Map and pan to + highlight that machine, reusing the map's own hit-test
+    // entry (matched by nearest position) so the highlight + detail card match a
+    // real click. Best-effort: if the Pixi overlay/hit list isn't built yet, retry
+    // once it is.
+    async showBuildingOnMap(buildClass, x, y) {
+      await this.switchTab('map');
+      const tryFocus = (attempt = 0) => {
+        let best = null, bestD = Infinity;
+        for (const b of _buildingHitList) {
+          if (b.buildClass !== buildClass) continue;
+          const d = Math.hypot(b.gx - x, b.gy - y);
+          if (d < bestD) { bestD = d; best = b; }
+        }
+        if (!best) {
+          if (attempt < 10) setTimeout(() => tryFocus(attempt + 1), 200);
+          return;
+        }
+        const latlng = gameToLatLng(best.cx, best.cy);
+        _leafletMap.setView(latlng, Math.max(_leafletMap.getZoom(), _leafletMap.getMaxZoom() - 1), { animate: true });
+        this._drawBuildingHighlight(best);
+        _detailPopup.setLatLng(latlng).setContent(this._buildingCardHtml(best, false));
+        _leafletMap.openPopup(_detailPopup);
+        _cardEntry = best;
+        this._enrichBuildingCard(best);
+      };
+      tryFocus();
     },
 
     // Draws the orange outline as a rotated rect in the overlay's coordinate

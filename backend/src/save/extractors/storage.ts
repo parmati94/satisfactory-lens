@@ -60,13 +60,13 @@ function itemClass(pathName: string): string {
 
 // ── Inventory stack parsing ───────────────────────────────────────────────────
 
-interface ParsedStacks {
+export interface ParsedStacks {
   contents: InventoryItem[];
   usedSlots: number;
   totalSlots: number;
 }
 
-function parseStacks(entity: any): ParsedStacks {
+export function parseStacks(entity: any): ParsedStacks {
   const stacks: any[] = entity?.properties?.mInventoryStacks?.values ?? [];
   const contents: InventoryItem[] = [];
   let usedSlots = 0;

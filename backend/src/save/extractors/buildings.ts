@@ -282,6 +282,10 @@ export interface Quat {
 export interface BuildingInstance {
   pos: Vec3;
   rot: Quat;
+  // Stable entity name for heavy buildables (machines/generators/extractors/
+  // storage). Absent for lightweight buildables (foundations/walls), which have
+  // no per-instance identity. Used as a row key + future edit target.
+  name?: string;
 }
 
 export interface BuildingCount {
@@ -374,7 +378,10 @@ export function forEachBuildingInstance(
 export function extractBuildings(save: SatisfactorySave): BuildingSummary {
   const counts = new Map<string, BuildingEntry>();
 
-  forEachBuildingInstance(save, (typePath, instance) => addCount(counts, typePath, instance));
+  forEachBuildingInstance(save, (typePath, instance, obj) => {
+    if (obj?.instanceName) instance.name = obj.instanceName;
+    addCount(counts, typePath, instance);
+  });
 
   // Group by category
   const catMap = new Map<string, BuildingCategory>();

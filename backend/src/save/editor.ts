@@ -73,6 +73,27 @@ function applySetInventorySlot(save: SatisfactorySave, edit: SaveEdit): void {
   }
 }
 
+// Set a player's current health. target: player instanceName, value: number (HP).
+// Health lives on the linked FGHealthComponent; mCurrentHealth may be absent at
+// full health, so we create the FloatProperty if needed.
+function applySetPlayerHealth(save: SatisfactorySave, edit: SaveEdit): void {
+  const hp = edit.value as number;
+  if (typeof hp !== 'number' || !isFinite(hp)) {
+    throw new Error(`SetPlayerHealth: invalid value for ${edit.target}`);
+  }
+  const player = findEntity(save, edit.target);
+  const hcRef = player?.properties?.mHealthComponent?.value?.pathName;
+  const hc = hcRef ? findEntity(save, hcRef) : null;
+  if (!hc) throw new Error(`SetPlayerHealth: health component not found for ${edit.target}`);
+  if (!hc.properties) hc.properties = {};
+  let prop = hc.properties.mCurrentHealth;
+  if (!prop) {
+    prop = { type: 'FloatProperty', name: 'mCurrentHealth', propertyTagType: { name: 'FloatProperty', children: [] }, value: 0 };
+    hc.properties.mCurrentHealth = prop;
+  }
+  prop.value = Math.max(0, hp);
+}
+
 // Unlock/re-lock a schematic. target: schematic pathName, value: { purchased: bool }.
 function applySetSchematicPurchased(save: SatisfactorySave, edit: SaveEdit): void {
   const v = edit.value as { purchased: boolean };
@@ -91,6 +112,7 @@ function applySetSchematicPurchased(save: SatisfactorySave, edit: SaveEdit): voi
 const MUTATORS: Record<string, (save: SatisfactorySave, edit: SaveEdit) => void> = {
   SetPlayerPosition: applySetPlayerPosition,
   SetInventorySlot: applySetInventorySlot,
+  SetPlayerHealth: applySetPlayerHealth,
   SetSchematicPurchased: applySetSchematicPurchased,
 };
 

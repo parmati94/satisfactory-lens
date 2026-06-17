@@ -12,12 +12,12 @@ import {
 } from '../save/watcher';
 import { extractPlayers } from '../save/extractors/players';
 import { extractBuildings } from '../save/extractors/buildings';
-import { extractResources } from '../save/extractors/resources';
 import { extractPower } from '../save/extractors/power';
 import { extractResourceNodes } from '../save/extractors/resourceNodes';
 import { extractMapPins } from '../save/extractors/mapPins';
 import { extractStorage } from '../save/extractors/storage';
 import { extractBuildingFootprints } from '../save/extractors/buildingFootprints';
+import { extractMachineInstances } from '../save/extractors/machines';
 import { persistEdits, type SaveEdit } from '../save/editor';
 import { groundZ } from '../save/worldHeight';
 import { extractPurchasedSchematics } from '../save/extractors/schematics';
@@ -118,16 +118,21 @@ router.get('/api/save/buildings', (_req, res) => {
 });
 
 
-// GET /api/save/resources
-router.get('/api/save/resources', (_req, res) => {
+// GET /api/save/machine-instances?class=Build_ConstructorMk1
+// On-demand per-type machine detail (recipe/clock/boost/rate + buffer contents)
+// for the Buildings tab's per-instance rows — never shipped in bulk.
+router.get('/api/save/machine-instances', (req, res) => {
   const save = getSave();
   if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
+  const buildClass = (req.query.class as string ?? '').trim();
+  if (!buildClass) { res.status(400).json({ error: 'Missing class query param' }); return; }
   try {
-    res.json(extractResources(save));
+    res.json(extractMachineInstances(save, buildClass));
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }
 });
+
 
 // GET /api/save/power
 router.get('/api/save/power', (_req, res) => {
