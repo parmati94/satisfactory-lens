@@ -192,7 +192,7 @@ document.addEventListener('alpine:init', () => {
     persistModal: { show: false, saveName: '', overwrite: false, loading: false, error: null },
     changesModal: { show: false },
     itemCatalog: null, // { itemClass: { path, name, stack } } for the slot picker
-    slotEditor: { show: false, invName: '', slot: 0, contextLabel: '', search: '', selClass: '', count: 1, baseline: null },
+    slotEditor: { show: false, invName: '', slot: 0, contextLabel: '', search: '', selClass: '', count: 1, baseline: null, x: 0, y: 0 },
     svSchematics: null,       // baseline purchased set (path → true)
     schematicCatalog: null,   // full progression catalog (array)
     schematicsSearch: '',
@@ -781,31 +781,51 @@ document.addEventListener('alpine:init', () => {
       return this.slotGrid(contents, totalSlots).map((slot, idx) => this.effectiveSlot(invName, idx, slot));
     },
 
-    async openSlotEditor(invName, slot, contextLabel, baselineSlot) {
+    async openSlotEditor(invName, slot, contextLabel, baselineSlot, ev) {
       await this.loadItemCatalog();
       const eff = this.effectiveSlot(invName, slot, baselineSlot);
+      // Anchor the popover to the clicked slot (clamped to the viewport in slotEditorStyle()).
+      const x = ev?.clientX ?? (window.innerWidth / 2);
+      const y = ev?.clientY ?? (window.innerHeight / 2);
       this.slotEditor = {
         show: true, invName, slot, contextLabel,
         search: '',
         selClass: eff?.itemClass ?? '',
         count: eff?.count ?? 1,
         baseline: baselineSlot ?? null,
+        x, y,
       };
+      this.$nextTick(() => document.getElementById('slot-search')?.focus());
     },
 
-    // Filtered, capped item list for the picker grid.
+    // Fixed-position style for the anchored popover, clamped so it never leaves the
+    // viewport (flips left/up near the right/bottom edges).
+    slotEditorStyle() {
+      const W = 280, H = 360, M = 8;
+      const vw = window.innerWidth, vh = window.innerHeight;
+      let left = this.slotEditor.x + 12;
+      let top = this.slotEditor.y + 12;
+      if (left + W > vw - M) left = Math.max(M, this.slotEditor.x - W - 12);
+      if (top + H > vh - M) top = Math.max(M, vh - H - M);
+      return `left:${left}px;top:${top}px;width:${W}px`;
+    },
+
+    // Short, search-driven item list (a handful, not a wall of icons).
     slotEditorItems() {
       if (!this.itemCatalog) return [];
       const q = this.slotEditor.search.toLowerCase().trim();
-      const all = Object.entries(this.itemCatalog).map(([cls, v]) => ({ cls, name: v.name }));
+      const all = Object.entries(this.itemCatalog).map(([cls, v]) => ({ cls, name: v.name, stack: v.stack }));
       const filtered = q ? all.filter(i => i.name.toLowerCase().includes(q) || i.cls.toLowerCase().includes(q)) : all;
       filtered.sort((a, b) => a.name.localeCompare(b.name));
-      return filtered.slice(0, 120);
+      return filtered.slice(0, 8);
     },
 
     selectSlotItem(cls) {
       this.slotEditor.selClass = cls;
-      if (!(Number(this.slotEditor.count) > 0)) this.slotEditor.count = 1;
+      // Default a freshly-picked item to a full stack; keep an existing positive qty.
+      if (!(Number(this.slotEditor.count) > 0)) {
+        this.slotEditor.count = this.itemCatalog?.[cls]?.stack ?? 1;
+      }
     },
 
     applySlotEdit() {
@@ -845,6 +865,17 @@ document.addEventListener('alpine:init', () => {
       return e ? e.value : player.health;
     },
     isHealthEdited(player) { return !!this.editBuffer[this._healthKey(player)]; },
+    // Effective HP clamped to a 0–100 integer, for the status bar + readout.
+    healthPct(player) { return Math.max(0, Math.min(100, Math.round(this.effectiveHealth(player) ?? 0))); },
+    // Tailwind tones for the health bar fill / numeric readout (green→yellow→red).
+    healthBarClass(player) {
+      const h = this.effectiveHealth(player) ?? 0;
+      return h > 50 ? 'bg-green-500' : h > 20 ? 'bg-yellow-500' : 'bg-red-500';
+    },
+    healthTextClass(player) {
+      const h = this.effectiveHealth(player) ?? 0;
+      return h > 50 ? 'text-green-400' : h > 20 ? 'text-yellow-400' : 'text-red-400';
+    },
     setPlayerHealthValue(player, hp) {
       const v = Math.max(0, Math.min(100, Math.round(Number(hp) || 0)));
       const key = this._healthKey(player);
@@ -1792,7 +1823,9 @@ document.addEventListener('alpine:init', () => {
       this.saveTab = this._powerCats.has(entry.category) ? 'power'
         : this._productionCats.has(entry.category) ? 'production'
         : 'structures';
-      this.buildingsSearch = entry.label;
+      // The search box only lives on Production/Structures; the Power tab's
+      // generator group isn't filtered by it, so don't leak the label there.
+      this.buildingsSearch = this.saveTab === 'power' ? '' : entry.label;
       await this.switchTab('saveviewer');
       if (!this.svBuildings) await this.loadSvBuildings();
       this._focusBuildingInstance(entry.buildClass, entry.gx, entry.gy);
@@ -1850,8 +1883,12 @@ document.addEventListener('alpine:init', () => {
       if (bestIdx >= (this.buildingInstanceCap[target.typePath] ?? this.INSTANCE_PAGE)) {
         this.buildingInstanceCap[target.typePath] = bestIdx + 1;
       }
-      const name = this.instKey(list[bestIdx]);
+      const inst = list[bestIdx];
+      const name = this.instKey(inst);
       this.highlightedInstanceName = name;
+      // Auto-expand the matched instance's inspector card (only machines with
+      // rich detail are expandable — lean structural rows have no `kind`).
+      if (inst.kind) this.expandedMachine = name;
 
       this.$nextTick(() => {
         document.getElementById(`binst-${name}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' });

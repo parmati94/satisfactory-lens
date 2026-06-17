@@ -171,10 +171,13 @@
                   </svg>
                 </div>
                 <span class="font-semibold text-white text-sm" x-text="player.playerName"></span>
-                <span x-show="player.health !== null"
-                      class="text-xs px-1.5 py-0.5 rounded font-medium"
-                      :class="player.health > 50 ? 'bg-green-900/40 text-green-400' : player.health > 20 ? 'bg-yellow-900/40 text-yellow-400' : 'bg-red-900/40 text-red-400'"
-                      x-text="Math.round(player.health) + ' HP'"></span>
+                <div x-show="player.health !== null" class="flex items-center gap-1.5 flex-shrink-0" title="Health">
+                  <div class="w-16 h-1.5 rounded-full bg-gray-900/70 overflow-hidden border border-gray-700/50">
+                    <div class="h-full rounded-full transition-all" :class="healthBarClass(player)" :style="`width:${healthPct(player)}%`"></div>
+                  </div>
+                  <span class="text-xs font-semibold tabular-nums" :class="healthTextClass(player)" x-text="healthPct(player)"></span>
+                  <span x-show="isHealthEdited(player)" class="w-1.5 h-1.5 rounded-full bg-orange-400" title="edited"></span>
+                </div>
               </div>
               <!-- Position (reflects staged edits; orange when edited) -->
               <div class="hidden sm:flex items-center gap-3 text-xs font-mono"
@@ -202,13 +205,35 @@
                  x-transition:enter-end="opacity-100 translate-y-0"
                  class="border-t border-gray-700/60">
 
-              <!-- Teleport / position editor -->
-              <div class="px-4 pt-3 pb-1">
+              <!-- Teleport / position editor (read-only until "Teleport" is armed) -->
+              <div class="px-4 pt-3 pb-1" x-data="{ open: isPositionEdited(player) }">
                 <div class="flex items-center gap-2 mb-2">
-                  <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500">Position (m)</p>
+                  <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500">Position</p>
                   <span x-show="isPositionEdited(player)" class="text-[10px] font-medium text-orange-300">• edited</span>
+                  <button @click="open = !open"
+                          class="ml-auto inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md border transition-colors"
+                          :class="open ? 'border-orange-500/50 text-orange-200 bg-orange-500/10' : 'border-gray-600/60 text-gray-300 hover:text-orange-200 hover:border-orange-500/50 hover:bg-orange-500/10'">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-5.686-7-11a7 7 0 1114 0c0 5.314-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>
+                    </svg>
+                    <span x-text="open ? 'Done' : 'Teleport'"></span>
+                  </button>
                 </div>
-                <div class="flex flex-wrap items-center gap-2">
+
+                <!-- Read-only coordinates -->
+                <div x-show="!open" class="flex items-center gap-4 pb-2 text-xs font-mono"
+                     :class="isPositionEdited(player) ? 'text-orange-300' : 'text-gray-400'">
+                  <span x-text="'X ' + (effectivePosition(player).x / 100).toFixed(0)"></span>
+                  <span x-text="'Y ' + (effectivePosition(player).y / 100).toFixed(0)"></span>
+                  <span x-text="'Z ' + (effectivePosition(player).z / 100).toFixed(0)"></span>
+                  <span class="text-gray-600">m</span>
+                </div>
+
+                <div x-show="open"
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     class="flex flex-wrap items-center gap-2 pb-1">
                   <template x-for="axis in ['x','y','z']" :key="axis">
                     <label class="flex items-center gap-1.5 text-xs text-gray-400">
                       <span class="uppercase font-mono w-3 text-gray-500" x-text="axis"></span>
@@ -238,13 +263,36 @@
                 </div>
               </div>
 
-              <!-- Health -->
-              <div x-show="player.health !== null" class="px-4 pt-3 pb-1">
+              <!-- Health (read-only bar until "Edit" is armed) -->
+              <div x-show="player.health !== null" class="px-4 pt-3 pb-1" x-data="{ open: isHealthEdited(player) }">
                 <div class="flex items-center gap-2 mb-2">
                   <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500">Health</p>
                   <span x-show="isHealthEdited(player)" class="text-[10px] font-medium text-orange-300">• edited</span>
+                  <button @click="open = !open"
+                          class="ml-auto inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md border transition-colors"
+                          :class="open ? 'border-orange-500/50 text-orange-200 bg-orange-500/10' : 'border-gray-600/60 text-gray-300 hover:text-orange-200 hover:border-orange-500/50 hover:bg-orange-500/10'">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    <span x-text="open ? 'Done' : 'Edit'"></span>
+                  </button>
                 </div>
-                <div class="flex items-center gap-2">
+
+                <!-- Status bar -->
+                <div class="flex items-center gap-3">
+                  <div class="relative flex-1 h-2.5 rounded-full bg-gray-900/70 overflow-hidden border border-gray-700/50">
+                    <div class="h-full rounded-full transition-all" :class="healthBarClass(player)" :style="`width:${healthPct(player)}%`"></div>
+                  </div>
+                  <span class="text-xs font-semibold tabular-nums w-16 text-right" :class="healthTextClass(player)"
+                        x-text="healthPct(player) + ' / 100'"></span>
+                </div>
+
+                <!-- Editor -->
+                <div x-show="open"
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     class="flex items-center gap-2 mt-2.5">
                   <input type="number" min="0" max="100" step="1"
                          :value="Math.round(effectiveHealth(player))"
                          @change="setPlayerHealthValue(player, $event.target.value)"
@@ -256,6 +304,11 @@
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                     Full
                   </button>
+                  <button x-show="isHealthEdited(player)" @click="setPlayerHealthValue(player, Math.round(player.health))"
+                          class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md border border-gray-700/50 text-gray-500 hover:text-gray-300 hover:border-gray-600 transition-colors">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M4 9a9 9 0 11-1 4"/></svg>
+                    Reset
+                  </button>
                 </div>
               </div>
 
@@ -266,7 +319,7 @@
                 <div class="flex flex-wrap gap-1.5 pb-3">
                   <template x-for="(slot, idx) in effectiveSlotGrid(player.inventoryName, player.inventory, player.inventorySlots)" :key="idx">
                     <button type="button" x-data="{ imgErr: false }" class="relative"
-                         @click="openSlotEditor(player.inventoryName, idx, player.playerName + ' · Inventory', slotGrid(player.inventory, player.inventorySlots)[idx])"
+                         @click.stop="openSlotEditor(player.inventoryName, idx, player.playerName + ' · Inventory', slotGrid(player.inventory, player.inventorySlots)[idx], $event)"
                          @mouseenter="slot && showItemTooltip($event, slot)"
                          @mouseleave="hideTooltip()">
                       <template x-if="slot !== null">
@@ -419,7 +472,7 @@
               <div class="flex flex-wrap gap-1.5">
                 <template x-for="(slot, idx) in effectiveSlotGrid(c.inventoryName, c.contents, c.totalSlots)" :key="idx">
                   <button type="button" x-data="{ imgErr: false }" class="relative"
-                       @click="openSlotEditor(c.inventoryName, idx, c.label, slotGrid(c.contents, c.totalSlots)[idx])"
+                       @click.stop="openSlotEditor(c.inventoryName, idx, c.label, slotGrid(c.contents, c.totalSlots)[idx], $event)"
                        @mouseenter="slot && showItemTooltip($event, slot)"
                        @mouseleave="hideTooltip()">
                     <template x-if="slot !== null">
@@ -1126,65 +1179,56 @@
     </div>
   </div>
 
-  <!-- ── Inventory slot editor modal ───────────────────────────────────────── -->
-  <div x-show="slotEditor.show" x-transition.opacity
-       class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-       @click.self="slotEditor.show = false" style="display:none">
-    <div class="w-full max-w-lg mx-4 bg-gray-900 border border-gray-700/60 rounded-2xl shadow-2xl p-5 flex flex-col" style="max-height:85vh">
-      <div class="flex items-center justify-between mb-1">
-        <h3 class="text-base font-semibold text-gray-100">Edit slot <span x-text="slotEditor.slot"></span></h3>
-        <button @click="slotEditor.show = false" class="text-gray-500 hover:text-gray-300 transition-colors">✕</button>
-      </div>
-      <p class="text-xs text-gray-500 mb-4" x-text="slotEditor.contextLabel"></p>
+  <!-- ── Inventory slot picker (compact anchored popover) ──────────────────── -->
+  <div x-show="slotEditor.show" x-transition.opacity.duration.100ms
+       @keydown.escape.window="slotEditor.show = false"
+       @scroll.window="slotEditor.show = false"
+       class="fixed z-50 bg-gray-900 border border-gray-700/70 rounded-xl shadow-2xl p-2.5 flex flex-col"
+       :style="slotEditorStyle()"
+       @click.outside="slotEditor.show = false"
+       style="display:none">
 
-      <!-- Selected item + quantity -->
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-14 h-14 rounded-lg border border-gray-700 bg-gray-800/60 flex items-center justify-center flex-shrink-0 overflow-hidden">
-          <template x-if="slotEditor.selClass">
-            <img :src="'/assets/items/' + slotEditor.selClass + '.png'" class="w-full h-full object-contain" @error="$el.style.display='none'">
-          </template>
-          <template x-if="!slotEditor.selClass">
-            <span class="text-[10px] text-gray-600">Empty</span>
-          </template>
-        </div>
-        <div class="min-w-0 flex-1">
-          <p class="text-sm font-medium text-gray-200 truncate"
-             x-text="slotEditor.selClass ? (itemCatalog?.[slotEditor.selClass]?.name ?? slotEditor.selClass) : 'No item selected'"></p>
-          <div class="flex items-center gap-2 mt-1.5">
-            <label class="text-xs text-gray-500">Qty</label>
-            <input type="number" min="0" x-model.number="slotEditor.count"
-                   class="w-24 px-2 py-1 rounded-md bg-gray-800 border border-gray-700 text-sm text-gray-200 focus:outline-none focus:border-orange-500/60">
-            <button x-show="slotEditor.selClass" @click="slotEditor.count = (itemCatalog?.[slotEditor.selClass]?.stack ?? 1)"
-                    class="text-[11px] text-gray-500 hover:text-orange-300 transition-colors">
-              max <span x-text="'(' + (itemCatalog?.[slotEditor.selClass]?.stack ?? '') + ')'"></span>
-            </button>
-            <button @click="slotEditor.selClass = ''; slotEditor.count = 0"
-                    class="text-[11px] text-gray-500 hover:text-red-300 transition-colors ml-auto">Clear slot</button>
-          </div>
-        </div>
-      </div>
+    <!-- Search (autofocused) -->
+    <div class="relative mb-1.5">
+      <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <input id="slot-search" type="text" x-model="slotEditor.search"
+             placeholder="Search items…"
+             @keydown.enter="slotEditorItems().length && selectSlotItem(slotEditorItems()[0].cls)"
+             class="w-full pl-8 pr-2 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-sm text-gray-200 focus:outline-none focus:border-orange-500/60">
+    </div>
 
-      <!-- Item picker -->
-      <input type="text" x-model="slotEditor.search" placeholder="Search items…"
-             class="w-full px-3 py-2 mb-2 rounded-lg bg-gray-800 border border-gray-700 text-sm text-gray-200 focus:outline-none focus:border-orange-500/60">
-      <div class="flex-1 overflow-y-auto rounded-lg border border-gray-700/50 bg-gray-800/30 p-2 grid grid-cols-6 gap-1.5" style="min-height:140px">
-        <template x-for="it in slotEditorItems()" :key="it.cls">
-          <button @click="selectSlotItem(it.cls)" :title="it.name"
-            class="aspect-square rounded-md border flex items-center justify-center p-1 transition-all"
-            :class="slotEditor.selClass === it.cls ? 'bg-orange-500/20 border-orange-500/60' : 'bg-gray-800/40 border-gray-700/40 hover:border-gray-600'">
-            <img :src="'/assets/items/' + it.cls + '.png'" class="w-full h-full object-contain" @error="$el.style.visibility='hidden'">
-          </button>
+    <!-- Result list — a handful, search-driven -->
+    <div class="overflow-y-auto rounded-lg border border-gray-700/40 bg-gray-800/30 divide-y divide-gray-800" style="max-height:200px">
+      <template x-for="it in slotEditorItems()" :key="it.cls">
+        <button @click="selectSlotItem(it.cls)"
+          class="w-full flex items-center gap-2 px-2 py-1.5 text-left transition-colors"
+          :class="slotEditor.selClass === it.cls ? 'bg-orange-500/15' : 'hover:bg-gray-700/50'">
+          <img :src="'/assets/items/' + it.cls + '.png'" class="w-6 h-6 object-contain flex-shrink-0" @error="$el.style.visibility='hidden'">
+          <span class="flex-1 min-w-0 text-sm text-gray-200 truncate" x-text="it.name"></span>
+          <span class="text-[10px] text-gray-600 flex-shrink-0" x-text="'×' + it.stack"></span>
+        </button>
+      </template>
+      <p x-show="slotEditorItems().length === 0" class="text-center text-xs text-gray-600 py-4">No matches</p>
+    </div>
+
+    <!-- Selected item + quantity + actions -->
+    <div class="flex items-center gap-2 mt-2 pt-2 border-t border-gray-800">
+      <div class="w-8 h-8 rounded-md border border-gray-700 bg-gray-800/60 flex items-center justify-center flex-shrink-0 overflow-hidden">
+        <template x-if="slotEditor.selClass">
+          <img :src="'/assets/items/' + slotEditor.selClass + '.png'" class="w-full h-full object-contain" @error="$el.style.display='none'">
         </template>
-        <p x-show="slotEditorItems().length === 0" class="col-span-6 text-center text-xs text-gray-600 py-6">No matching items</p>
+        <template x-if="!slotEditor.selClass"><span class="text-[9px] text-gray-600">∅</span></template>
       </div>
-      <p class="text-[10px] text-gray-600 mt-1">Showing up to 120 results — refine with search.</p>
-
-      <div class="flex items-center justify-end gap-2 mt-4">
-        <button @click="slotEditor.show = false"
-          class="text-sm px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 transition-colors">Cancel</button>
-        <button @click="applySlotEdit()"
-          class="text-sm font-semibold px-3 py-2 rounded-lg bg-orange-500 hover:bg-orange-400 text-white transition-colors">Apply</button>
-      </div>
+      <input type="number" min="0" x-model.number="slotEditor.count"
+             :placeholder="slotEditor.selClass ? (itemCatalog?.[slotEditor.selClass]?.stack ?? '') : ''"
+             title="Quantity"
+             class="w-16 px-2 py-1 rounded-md bg-gray-800 border border-gray-700 text-sm text-gray-200 focus:outline-none focus:border-orange-500/60">
+      <button x-show="slotEditor.selClass" @click="slotEditor.selClass = ''; slotEditor.count = 0"
+              class="text-[11px] text-gray-500 hover:text-red-300 transition-colors">Clear</button>
+      <button @click="applySlotEdit()"
+        class="ml-auto text-sm font-semibold px-3 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-400 text-white transition-colors">Apply</button>
     </div>
   </div>
 </div>
