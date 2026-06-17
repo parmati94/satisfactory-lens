@@ -11,7 +11,7 @@
         <span x-show="svPlayers !== null && !svPlayers?.length" class="text-gray-500">· No players in save</span>
       </span>
       <span x-show="!saveStatus?.loaded" class="text-gray-500">
-        No save loaded — load a save in <button @click="switchTab('saveviewer')" class="underline hover:text-gray-300 transition-colors">Save Viewer</button> to show player positions
+        No save loaded — load a save in <button @click="switchTab('saveviewer')" class="underline hover:text-gray-300 transition-colors">Save Tools</button> to show player positions
       </span>
     </div>
     <span x-show="svMapPins?.stamps?.length" class="text-gray-500">
