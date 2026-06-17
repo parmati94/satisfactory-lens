@@ -33,6 +33,21 @@ let _categoryDisplayObjects = new Map();
 // non-foundation building sprite. Same draw cost/batching as PIXI.Texture.WHITE —
 // the corner radius simply scales with each footprint when the texture stretches.
 let _roundedTex = null;
+// Per-build-class silhouette textures, baked once from each class's outline
+// polygon (see getOutlineTexture). Keyed by buildClass; persists across sprite
+// rebuilds like _roundedTex. Each value is { texture, w, h, cx, cy } in game-cm.
+let _outlineTexCache = new Map();
+// Reads the current accent's `--accent-500` (an "R G B" triplet) and packs it
+// into a 0xRRGGBB int for PIXI tinting, so the building highlight follows the
+// active theme. Falls back to orange-500 if the var isn't resolvable.
+function accentHexInt() {
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue('--accent-500').trim();
+  const m = raw.match(/(\d+)\s+(\d+)\s+(\d+)/);
+  if (!m) return 0xf97316;
+  return (Number(m[1]) << 16) | (Number(m[2]) << 8) | Number(m[3]);
+}
+
 function getRoundedTexture(PIXI, renderer) {
   if (_roundedTex) return _roundedTex;
   const S = 96;
@@ -48,6 +63,62 @@ function getRoundedTexture(PIXI, renderer) {
   });
   g.destroy(true);
   return _roundedTex;
+}
+
+// Bake a building's top-down silhouette polygon (building-local game-cm) into a
+// white texture, once per build class. Drawn white so the per-category tint
+// (sprite.tint) colours it exactly like the rounded-rect sprites — so silhouette
+// buildings keep batching, tinting and live recolour for free. Returns the
+// texture plus the polygon's bbox size (w,h) and centre offset (cx,cy) in
+// game-cm, which the caller uses to size and place the sprite.
+function getOutlineTexture(PIXI, renderer, buildClass, outline) {
+  const cached = _outlineTexCache.get(buildClass);
+  if (cached) return cached;
+
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const [x, y] of outline) {
+    if (x < minX) minX = x; if (x > maxX) maxX = x;
+    if (y < minY) minY = y; if (y > maxY) maxY = y;
+  }
+  const w = Math.max(maxX - minX, 1);
+  const h = Math.max(maxY - minY, 1);
+
+  // Draw at a fixed pixel budget on the longer side; resolution>1 supersamples
+  // so edges stay smooth when the sprite is scaled to its real footprint.
+  const TARGET = 128;
+  const s = TARGET / Math.max(w, h);
+  const g = new PIXI.Graphics();
+  g.beginFill(0xffffff);
+  g.moveTo((outline[0][0] - minX) * s, (outline[0][1] - minY) * s);
+  for (let i = 1; i < outline.length; i++) {
+    g.lineTo((outline[i][0] - minX) * s, (outline[i][1] - minY) * s);
+  }
+  g.closePath();
+  g.endFill();
+  const texture = renderer.generateTexture(g, {
+    resolution: 3,
+    scaleMode: PIXI.SCALE_MODES.LINEAR,
+  });
+  g.destroy(true);
+
+  const meta = { texture, w, h, cx: (minX + maxX) / 2, cy: (minY + maxY) / 2 };
+  _outlineTexCache.set(buildClass, meta);
+  return meta;
+}
+
+// Per-build-class top-down height-relief textures, loaded from the static PNGs
+// baked offline (generate_building_footprints.py). Grayscale relief in RGB +
+// alpha mask, so the per-category sprite tint colours it like the other sprites
+// (recolour/visibility stay free). Loads async; the sprite is scaled by the
+// manifest's native pixel size so it's correct the instant the image arrives.
+let _reliefTexCache = new Map();
+function getReliefTexture(PIXI, buildClass) {
+  let t = _reliefTexCache.get(buildClass);
+  if (!t) {
+    t = PIXI.Texture.from(`/assets/building-relief/${buildClass}.png`);
+    _reliefTexCache.set(buildClass, t);
+  }
+  return t;
 }
 
 // Building hover tooltip — a Leaflet tooltip rather than our own DOM/Alpine
@@ -117,6 +188,18 @@ document.addEventListener('alpine:init', () => {
     loading: false,
     error: null,
 
+    // App Settings (gear button) — client-side prefs (theme picker, …). Distinct
+    // from the Server panel, which lives behind its own header icon now.
+    showAppSettings: false,
+    theme: 'orange',
+    themes: [
+      { id: 'orange', label: 'Orange', swatch: '#f97316' },
+      { id: 'blue', label: 'Blue', swatch: '#3b82f6' },
+      { id: 'emerald', label: 'Emerald', swatch: '#10b981' },
+      { id: 'violet', label: 'Violet', swatch: '#8b5cf6' },
+      { id: 'rose', label: 'Rose', swatch: '#f43f5e' },
+    ],
+
     // SF server connection
     sfStatus: { connected: false, host: '', port: 7777 },
     showConnectModal: false,
@@ -126,9 +209,17 @@ document.addEventListener('alpine:init', () => {
 
     // Phase 1 tab data
     serverState: null,
+    factorySnapshotLoading: false,
     saves: null,
     serverOptions: null,
     advancedSettings: null,
+    // Server panel (gear button) — tabbed: 'overview' (live health) | 'config' (editable settings)
+    settingsTab: 'overview',
+    settingsEditMode: false,   // Configuration tab: false = read-only view, true = editable
+    serverHealth: null,        // { latencyMs, ... } from GET /api/server/health
+    healthLoading: false,
+    settingEdits: {},          // override dict keyed 'server:<key>' / 'advanced:<key>' → new value
+    settingsSaving: false,
     newSaveName: '',
     actionLoading: false,
     actionResult: null,
@@ -156,6 +247,21 @@ document.addEventListener('alpine:init', () => {
     // both built dynamically from the loaded footprints/splines.
     categoryFilters: {},
     buildingCategories: [],
+    // Per-category color overrides (category → '#rrggbb'), persisted to
+    // localStorage. Override wins over the backend default palette; applies to
+    // building sprites (splines keep their default for now). See applyTheme-style
+    // persistence in _loadCategoryColors/_persistCategoryColors.
+    categoryColorOverrides: {},
+    // Dark-themed color picker popover (replaces the native OS picker). Anchored
+    // to the clicked swatch via fixed positioning so it escapes the filter
+    // panel's overflow/blur clipping.
+    colorPicker: { open: false, category: null, top: 0, left: 0, h: 0, s: 0, v: 0.5 },
+    // Curated palette that reads well on the dark map (reds → grays).
+    mapColorPresets: [
+      '#e0533d', '#e07a3d', '#e0a93d', '#d9c84a', '#a8c84f', '#6fae84',
+      '#4fb09a', '#4f9bb0', '#5d86b0', '#6f7fd1', '#9a83c0', '#c47fa3',
+      '#d0698a', '#b0524f', '#8a98a8', '#6b7280', '#475569', '#c8cdd6',
+    ],
     svMapPins: null,
     svBuildingFootprints: null,
     mouseCoord: { x: null, y: null }, // live game coords under the cursor (cm)
@@ -201,6 +307,11 @@ document.addEventListener('alpine:init', () => {
     // ─────────────────────────────────────────────────────────────────────
 
     async init() {
+      // Apply the saved accent theme before anything paints.
+      this.applyTheme(localStorage.getItem('sl-theme') || 'orange');
+      // Restore any saved per-category map color overrides.
+      this._loadCategoryColors();
+
       try {
         const authStatus = await api.auth.status();
         if (!authStatus.authenticated) {
@@ -210,14 +321,26 @@ document.addEventListener('alpine:init', () => {
       } catch { /* login may be disabled */ }
 
       await this.checkSfStatus();
+
+      // Load save status first so the dashboard's factory snapshot knows whether a
+      // save is loaded. Works with a mounted save with no SF connection at all, or
+      // via the API once connected (status reflects whichever applies).
+      await this.loadSaveStatus();
+      this.connectSaveSSE();
+
       if (this.sfStatus.connected) {
         await this.loadDashboard();
       }
+    },
 
-      // Always load save status and connect SSE — works with a mounted save with no SF
-      // connection at all, or via the API once connected (status reflects whichever applies)
-      await this.loadSaveStatus();
-      this.connectSaveSSE();
+    // Sets the accent theme: flips `data-theme` on <html> (re-tints every
+    // accent-* utility) and persists the choice. The map highlight reads the
+    // accent live, so it follows on the next hover/focus. Unknown ids → orange.
+    applyTheme(id) {
+      if (!this.themes.some((t) => t.id === id)) id = 'orange';
+      this.theme = id;
+      document.documentElement.setAttribute('data-theme', id);
+      localStorage.setItem('sl-theme', id);
     },
 
     async checkSfStatus() {
@@ -293,7 +416,57 @@ document.addEventListener('alpine:init', () => {
       } finally {
         this.loading = false;
       }
+      // Best-effort factory snapshot from the loaded save (non-blocking, no spinner).
+      this.loadFactorySnapshot();
     },
+
+    // Pull the lightweight save-derived stats the dashboard's factory snapshot
+    // needs, reusing the Save Tools loaders + their cached state (power/buildings/
+    // storage/schematics). Skipped entirely when no save is loaded. None of these
+    // do per-instance machine fetches, so it stays cheap.
+    async loadFactorySnapshot() {
+      if (!this.saveStatus?.loaded) return;
+      this.factorySnapshotLoading = true;
+      try {
+        await Promise.all([
+          this.svPower      ? null : this.loadSvPower(),
+          this.svBuildings  ? null : this.loadSvBuildings(),
+          this.svStorage    ? null : this.loadSvStorage(),
+          this.svSchematics ? null : this.loadSvSchematics(),
+        ]);
+      } catch { /* snapshot is best-effort; tabs surface their own errors */ }
+      finally { this.factorySnapshotLoading = false; }
+    },
+
+    // True once the core snapshot inputs are present.
+    factorySnapshotReady() { return !!(this.svPower && this.svBuildings); },
+
+    // Power load as a % of actual production (0 production → 0). >100 means demand
+    // exceeds generation (shown red).
+    powerLoadPct() {
+      const p = this.svPower?.totalProducedMW ?? 0;
+      const d = this.svPower?.totalMaxDrawMW ?? 0;
+      return p > 0 ? Math.round((d / p) * 100) : 0;
+    },
+    powerLoadTone() {
+      const pct = this.powerLoadPct();
+      return pct > 100 ? 'bg-red-500' : pct > 85 ? 'bg-yellow-500' : 'bg-green-500';
+    },
+
+    // Crafting machines / generators / miners+extractors from the buildings census.
+    minersExtractorsCount() {
+      const cat = this.svBuildings?.categories?.find(c => c.category === 'Miners & Extractors');
+      return cat?.total ?? 0;
+    },
+
+    // Progression as % of the catalog's one-time unlocks that are purchased.
+    progressionPct() {
+      const total = this.schematicCatalog?.length ?? 0;
+      if (!total) return 0;
+      const have = Object.keys(this.svSchematics ?? {}).length;
+      return Math.min(100, Math.round((have / total) * 100));
+    },
+    progressionCount() { return Object.keys(this.svSchematics ?? {}).length; },
 
     // The single most recent save across the whole server (by saveDateTime), regardless
     // of which session it's in — distinct from "Loaded" (whatever's in Lens right now).
@@ -334,10 +507,135 @@ document.addEventListener('alpine:init', () => {
         ]);
         this.serverOptions = server;
         this.advancedSettings = advanced;
+        this.settingEdits = {}; // fresh baseline → drop any stale drafts
       } catch (e) {
         this.error = e.message;
       } finally {
         this.loading = false;
+      }
+    },
+
+    // ── Server panel (gear button) ────────────────────────────────────────
+    // Opens the tabbed panel and kicks off both the live health ping and the
+    // settings load (only when connected).
+    openServerPanel() {
+      this.showSettings = true;
+      this.settingsTab = 'overview';
+      this.settingsEditMode = false; // always open read-only
+
+      if (!this.sfStatus.connected) return;
+      this.loadServerHealth();
+      if (!this.serverOptions) this.loadSettings();
+    },
+
+    // Measured Lens→SF round-trip latency (+ liveness) for the Overview tab.
+    async loadServerHealth() {
+      this.healthLoading = true;
+      try {
+        this.serverHealth = await api.server.health();
+      } catch {
+        this.serverHealth = null; // unreachable → shown as offline in the UI
+      } finally {
+        this.healthLoading = false;
+      }
+    },
+
+    // Color tone for the latency readout (green < 80ms, yellow < 200ms, else red).
+    latencyTone(ms) {
+      if (ms == null) return 'text-gray-500';
+      return ms < 80 ? 'text-green-400' : ms < 200 ? 'text-yellow-400' : 'text-red-400';
+    },
+    // Color tone for tick rate against the 30/s target.
+    tickRateTone(r) {
+      if (r == null) return 'text-gray-500';
+      return r >= 28 ? 'text-green-400' : r >= 20 ? 'text-yellow-400' : 'text-red-400';
+    },
+
+    // ── Editable settings (Configuration tab) ─────────────────────────────
+    // The two SF settings maps are flat string→string. We render each entry as a
+    // typed widget inferred from its value (bool/number/text) and humanize the
+    // key, rather than hardcoding a key list that drifts across game versions.
+    _settingBaseMap(scope) {
+      return (scope === 'advanced'
+        ? this.advancedSettings?.advancedGameSettings
+        : this.serverOptions?.serverOptions) ?? {};
+    },
+    _settingKey(scope, key) { return `${scope}:${key}`; },
+
+    // True/False (string or bool) → boolean; pure-numeric string → number; else text.
+    settingWidgetType(value) {
+      const s = String(value).trim().toLowerCase();
+      if (s === 'true' || s === 'false') return 'bool';
+      if (s !== '' && !isNaN(Number(s))) return 'number';
+      return 'text';
+    },
+    settingIsBool(value) { return String(value).trim().toLowerCase() === 'true'; },
+
+    // "FG.DSS.AutoPause" → "Auto Pause"; "mPlayerLimit" → "Player Limit".
+    humanizeSettingKey(key) {
+      const tail = String(key).split('.').pop().replace(/^m(?=[A-Z])/, '');
+      return tail
+        .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+        .replace(/[_-]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    },
+
+    effectiveSetting(scope, key) {
+      const k = this._settingKey(scope, key);
+      return k in this.settingEdits ? this.settingEdits[k] : this._settingBaseMap(scope)[key];
+    },
+    isSettingEdited(scope, key) { return this._settingKey(scope, key) in this.settingEdits; },
+
+    // Set-semantics override; net-zero vs baseline drops the override.
+    setSetting(scope, key, value) {
+      const k = this._settingKey(scope, key);
+      const base = String(this._settingBaseMap(scope)[key]);
+      const next = String(value);
+      if (next === base) {
+        const { [k]: _, ...rest } = this.settingEdits;
+        this.settingEdits = rest;
+      } else {
+        this.settingEdits = { ...this.settingEdits, [k]: next };
+      }
+    },
+    toggleSetting(scope, key) {
+      this.setSetting(scope, key, this.settingIsBool(this.effectiveSetting(scope, key)) ? 'False' : 'True');
+    },
+
+    // Rows for a scope, sorted by humanized label, carrying widget metadata.
+    settingEntries(scope) {
+      return Object.keys(this._settingBaseMap(scope))
+        .map((key) => {
+          const value = this.effectiveSetting(scope, key);
+          return { key, scope, value, type: this.settingWidgetType(value),
+                   label: this.humanizeSettingKey(key), edited: this.isSettingEdited(scope, key) };
+        })
+        .sort((a, b) => a.label.localeCompare(b.label));
+    },
+
+    settingsDirtyCount() { return Object.keys(this.settingEdits).length; },
+    resetSettingDraft() { this.settingEdits = {}; },
+
+    // Apply changed keys, grouped by scope, via the existing PATCH routes.
+    async applySettings() {
+      const serverPayload = {}, advancedPayload = {};
+      for (const [k, v] of Object.entries(this.settingEdits)) {
+        const [scope, ...rest] = k.split(':');
+        const key = rest.join(':');
+        (scope === 'advanced' ? advancedPayload : serverPayload)[key] = v;
+      }
+      this.settingsSaving = true;
+      try {
+        if (Object.keys(serverPayload).length) await api.settings.setServer(serverPayload);
+        if (Object.keys(advancedPayload).length) await api.settings.setAdvanced(advancedPayload);
+        this.actionResult = { ok: true, message: 'Server settings applied.' };
+        this.settingsEditMode = false; // back to read-only after a successful apply
+        await this.loadSettings(); // re-baseline from the server (clears edits)
+      } catch (e) {
+        this.actionResult = { ok: false, message: e.message };
+      } finally {
+        this.settingsSaving = false;
       }
     },
 
@@ -1217,16 +1515,19 @@ document.addEventListener('alpine:init', () => {
       const data = this.svBuildingFootprints;
       if (!data) { this.buildingCategories = []; return; }
       const m = new Map();
-      const bump = (cat, color, n) => {
+      // `recolorable` marks sprite-backed categories — only those can be retinted
+      // live today (spline categories keep their default; see PLANNING).
+      const bump = (cat, color, n, isSprite) => {
         let e = m.get(cat);
-        if (!e) { e = { category: cat, color, count: 0 }; m.set(cat, e); }
+        if (!e) { e = { category: cat, color, count: 0, recolorable: false }; m.set(cat, e); }
         e.count += n;
+        if (isSprite) e.recolorable = true;
       };
       for (let i = 0; i < (data.typeIndex?.length ?? 0); i++) {
         const t = data.types[data.typeIndex[i]];
-        bump(t.category, t.color, 1);
+        bump(t.category, t.color, 1, true);
       }
-      for (const g of (data.splines ?? [])) bump(g.category, g.color, g.lines.length);
+      for (const g of (data.splines ?? [])) bump(g.category, g.color, g.lines.length, false);
 
       this.buildingCategories = Array.from(m.values()).sort((a, b) => b.count - a.count);
       for (const c of this.buildingCategories) {
@@ -1261,6 +1562,155 @@ document.addEventListener('alpine:init', () => {
         for (const o of objs) o.visible = vis;
       }
       if (redraw) _buildingOverlay?.redraw();
+    },
+
+    // ── Per-category map colors ───────────────────────────────────────────
+    // The backend bakes one default hex per category; users can override it per
+    // category (persisted to localStorage). Override wins; building sprites
+    // recolor live in place. Splines keep their default for now (their color is
+    // baked into the Graphics geometry — see PLANNING).
+    _categoryDefaultColor(cat) {
+      return this.buildingCategories.find((c) => c.category === cat)?.color || '#828b99';
+    },
+    effectiveCategoryColor(cat) {
+      return this.categoryColorOverrides[cat] || this._categoryDefaultColor(cat);
+    },
+    hasCategoryColorOverride(cat) {
+      return !!this.categoryColorOverrides[cat];
+    },
+    // Open the dark color popover anchored to the clicked swatch. Prefers the
+    // right of the swatch (panel sits on the map's left edge); flips/clamps to
+    // stay on-screen. Seeds the HSV picker from the category's current color.
+    openColorPicker(cat, evt) {
+      const r = evt.currentTarget.getBoundingClientRect();
+      const W = 240, H = 340, M = 8;
+      let left = r.right + M;
+      if (left + W > window.innerWidth - M) left = r.left - W - M;
+      if (left < M) left = M;
+      let top = r.top;
+      if (top + H > window.innerHeight - M) top = window.innerHeight - H - M;
+      if (top < M) top = M;
+      const { h, s, v } = this._hexToHsv(this.effectiveCategoryColor(cat));
+      this.colorPicker = { open: true, category: cat, top, left, h, s, v };
+    },
+    closeColorPicker() {
+      this.colorPicker.open = false;
+    },
+
+    // ── HSV color picker plumbing ─────────────────────────────────────────
+    _hsvToHex(h, s, v) {
+      const c = v * s;
+      const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+      const m = v - c;
+      let r = 0, g = 0, b = 0;
+      if (h < 60)       { r = c; g = x; }
+      else if (h < 120) { r = x; g = c; }
+      else if (h < 180) { g = c; b = x; }
+      else if (h < 240) { g = x; b = c; }
+      else if (h < 300) { r = x; b = c; }
+      else              { r = c; b = x; }
+      const to = (n) => Math.round((n + m) * 255).toString(16).padStart(2, '0');
+      return `#${to(r)}${to(g)}${to(b)}`;
+    },
+    _hexToHsv(hex) {
+      if (!/^#[0-9a-fA-F]{6}$/.test(hex || '')) return { h: 0, s: 0, v: 0.5 };
+      const n = parseInt(hex.slice(1), 16);
+      const r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+      let h = 0;
+      if (d !== 0) {
+        if (max === r)      h = ((g - b) / d) % 6;
+        else if (max === g) h = (b - r) / d + 2;
+        else                h = (r - g) / d + 4;
+        h *= 60; if (h < 0) h += 360;
+      }
+      return { h, s: max === 0 ? 0 : d / max, v: max };
+    },
+    // Current picker color as hex (drives the SV-box hue, preview, thumbs).
+    pickerHex() {
+      const p = this.colorPicker;
+      return this._hsvToHex(p.h, p.s, p.v);
+    },
+    pickerHueHex() {
+      return this._hsvToHex(this.colorPicker.h, 1, 1);
+    },
+    _applyPickerColor() {
+      const p = this.colorPicker;
+      this.setCategoryColor(p.category, this._hsvToHex(p.h, p.s, p.v));
+    },
+    // Pointer drag helper: applies onMove now and on every move until release.
+    _startDrag(evt, onMove) {
+      evt.preventDefault();
+      const move = (e) => onMove(e);
+      const up = () => {
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+      };
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+      onMove(evt);
+    },
+    pickerSVDown(evt) {
+      const rect = evt.currentTarget.getBoundingClientRect();
+      this._startDrag(evt, (e) => {
+        this.colorPicker.s = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+        this.colorPicker.v = 1 - Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height));
+        this._applyPickerColor();
+      });
+    },
+    pickerHueDown(evt) {
+      const rect = evt.currentTarget.getBoundingClientRect();
+      this._startDrag(evt, (e) => {
+        this.colorPicker.h = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width)) * 360;
+        this._applyPickerColor();
+      });
+    },
+    // Preset / hex entry: set the color AND re-sync the HSV thumbs.
+    pickerPick(hex) {
+      Object.assign(this.colorPicker, this._hexToHsv(hex));
+      this.setCategoryColor(this.colorPicker.category, hex);
+    },
+    pickerSetHex(val) {
+      if (!/^#[0-9a-fA-F]{6}$/.test(val)) return; // wait for a complete hex
+      this.pickerPick(val.toLowerCase());
+    },
+    pickerReset() {
+      this.resetCategoryColor(this.colorPicker.category);
+      Object.assign(this.colorPicker, this._hexToHsv(this.effectiveCategoryColor(this.colorPicker.category)));
+    },
+    setCategoryColor(cat, hex) {
+      if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+      this.categoryColorOverrides[cat] = hex.toLowerCase();
+      this._persistCategoryColors();
+      this._recolorCategorySprites(cat);
+    },
+    resetCategoryColor(cat) {
+      if (!this.categoryColorOverrides[cat]) return;
+      delete this.categoryColorOverrides[cat];
+      this._persistCategoryColors();
+      this._recolorCategorySprites(cat);
+    },
+    // Live in-place recolor: retint a category's sprites without rebuilding the
+    // overlay. Each category's display objects include the sprite layer Container
+    // (its children are the sprites) and any spline Graphics (childless — skipped).
+    _recolorCategorySprites(cat) {
+      const objs = _categoryDisplayObjects.get(cat);
+      if (!objs) return;
+      const tint = parseInt(this.effectiveCategoryColor(cat).slice(1), 16);
+      for (const o of objs) {
+        if (o.children) for (const child of o.children) child.tint = tint;
+      }
+      _buildingOverlay?.redraw();
+    },
+    _loadCategoryColors() {
+      try {
+        this.categoryColorOverrides = JSON.parse(localStorage.getItem('sl-map-colors') || '{}') || {};
+      } catch {
+        this.categoryColorOverrides = {};
+      }
+    },
+    _persistCategoryColors() {
+      localStorage.setItem('sl-map-colors', JSON.stringify(this.categoryColorOverrides));
     },
 
     mapResetView() {
@@ -1501,9 +1951,18 @@ document.addEventListener('alpine:init', () => {
       const eyX = (p2.x - p0.x) / 1000, eyY = (p2.y - p0.y) / 1000;
       const gameToLayer = (gx, gy) => ({ x: p0.x + gx * exX + gy * eyX, y: p0.y + gx * exY + gy * eyY });
 
-      for (const type of data.types) {
-        if (type._tint === undefined) type._tint = parseInt(type.color.slice(1), 16);
-      }
+      // Resolve a category's sprite tint, honoring any user color override over
+      // the backend default. Memoised per rebuild so it's one parse per category.
+      const _tintMemo = new Map();
+      const tintForCategory = (cat, fallbackHex) => {
+        let t = _tintMemo.get(cat);
+        if (t === undefined) {
+          const hex = this.categoryColorOverrides[cat] || fallbackHex;
+          t = parseInt(hex.slice(1), 16);
+          _tintMemo.set(cat, t);
+        }
+        return t;
+      };
 
       // Track every display object per category so per-category filters can flip
       // their visibility without a full rebuild.
@@ -1546,24 +2005,57 @@ document.addEventListener('alpine:init', () => {
         const type = data.types[data.typeIndex[i]];
         const yaw = data.yaw[i];
         const fp = type.footprint;
-
-        // Rotate the footprint's local-space offset by yaw before adding to world pos.
         const cos = Math.cos(yaw), sin = Math.sin(yaw);
-        const worldX = data.x[i] + fp.offsetX * cos - fp.offsetY * sin;
-        const worldY = data.y[i] + fp.offsetX * sin + fp.offsetY * cos;
+
+        // Resolve the drawn shape, best first: a top-down height-relief image
+        // (true 3-D detail) → a baked silhouette polygon → the box. All end up as
+        // tinted sprites so batching, the category tint and live recolour are
+        // identical; the relief is just a richer texture. drawnW/H + drawnCx/Cy
+        // describe the drawn footprint (cm); relief carries native pixel dims too.
+        let tex, drawnW, drawnH, drawnCx, drawnCy, reliefPx = null;
+        if (fp.relief) {
+          tex = getReliefTexture(PIXI, type.buildClass);
+          reliefPx = fp.relief;
+          drawnW = fp.relief.w; drawnH = fp.relief.d;
+          drawnCx = fp.relief.cx; drawnCy = fp.relief.cy;
+        } else if (fp.outline) {
+          const m = getOutlineTexture(PIXI, utils.getRenderer(), type.buildClass, fp.outline);
+          tex = m.texture;
+          drawnW = m.w; drawnH = m.h;
+          drawnCx = m.cx; drawnCy = m.cy;
+        } else {
+          tex = SHARP_CATEGORIES.has(type.category) ? PIXI.Texture.WHITE : roundedTex;
+          drawnW = fp.width; drawnH = fp.depth;
+          drawnCx = fp.offsetX; drawnCy = fp.offsetY;
+        }
+
+        // Shrink slightly so the dark map bleeds through between adjacent buildings.
+        const shrink = Math.max(1 - (GAP_CM * 2) / Math.min(drawnW, drawnH), MIN_RATIO);
+        const fillW = drawnW * shrink, fillH = drawnH * shrink;
+
+        // Rotate the shape's local-space centre offset by yaw before adding to world pos.
+        const worldX = data.x[i] + drawnCx * cos - drawnCy * sin;
+        const worldY = data.y[i] + drawnCx * sin + drawnCy * cos;
         const point = utils.latLngToLayerPoint(gameToLatLng(worldX, worldY));
 
-        const fillW = Math.max(fp.width - GAP_CM * 2, fp.width * MIN_RATIO);
-        const fillH = Math.max(fp.depth - GAP_CM * 2, fp.depth * MIN_RATIO);
-
-        const sprite = new PIXI.Sprite(SHARP_CATEGORIES.has(type.category) ? PIXI.Texture.WHITE : roundedTex);
+        const sprite = new PIXI.Sprite(tex);
         sprite.anchor.set(0.5);
-        sprite.tint = type._tint;
+        sprite.tint = tintForCategory(type.category, type.color);
         sprite.alpha = 0.88;
         sprite.x = point.x;
         sprite.y = point.y;
-        sprite.width = Math.max(fillW * unitsPerCm, 1);
-        sprite.height = Math.max(fillH * unitsPerCm, 1);
+        if (reliefPx) {
+          // Relief PNGs load async — scale by the manifest's native pixel size so
+          // the sprite is correct the moment the image arrives (sprite.width would
+          // bake in the 1×1 placeholder size and render wrong on load).
+          sprite.scale.set(
+            Math.max(fillW * unitsPerCm, 1) / reliefPx.pw,
+            Math.max(fillH * unitsPerCm, 1) / reliefPx.ph,
+          );
+        } else {
+          sprite.width = Math.max(fillW * unitsPerCm, 1);
+          sprite.height = Math.max(fillH * unitsPerCm, 1);
+        }
         sprite.rotation = yaw;
 
         categoryContainer(type.category).addChild(sprite);
@@ -1572,8 +2064,8 @@ document.addEventListener('alpine:init', () => {
         // Skip structural categories: they're numerous, uninteresting, and their
         // large 2-D footprints would block hover access to machines sitting on top.
         if (!SKIP_HIT_CATEGORIES.has(type.category)) {
-          const hw = fp.width / 2;
-          const hh = fp.depth / 2;
+          // Hit-test against the drawn footprint bbox (its centre is worldX/worldY).
+          const hw = drawnW / 2, hh = drawnH / 2;
           _buildingHitList.push({
             cx: worldX, cy: worldY, hw, hh, cos, sin,
             // Raw (un-offset) instance position — the key for matching this map
@@ -1587,6 +2079,10 @@ document.addEventListener('alpine:init', () => {
             label: type.label,
             buildClass: type.buildClass,
             category: type.category,
+            // Real silhouette polygon + its bbox centre, so the hover highlight
+            // traces the true shape. relief and outline buildings both carry it.
+            outline: fp.outline || null,
+            ocx: drawnCx, ocy: drawnCy,
           });
         }
       }
@@ -1935,18 +2431,39 @@ document.addEventListener('alpine:init', () => {
       const g = _highlightGfx;
       if (!g || !_buildingOverlayContainer) return;
       const scale = _buildingOverlayContainer.scale.x || 1;
+      g.clear();
+      g.position.set(b.lpx, b.lpy);
+      g.rotation = b.yaw;
+      const accent = accentHexInt();
+
+      // Silhouette buildings: trace the actual polygon (local cm relative to its
+      // bbox centre, scaled to layer space) so the highlight hugs the real shape.
+      if (b.outline) {
+        const upc = _unitsPerCm;
+        const drawPoly = () => {
+          g.moveTo((b.outline[0][0] - b.ocx) * upc, (b.outline[0][1] - b.ocy) * upc);
+          for (let i = 1; i < b.outline.length; i++) {
+            g.lineTo((b.outline[i][0] - b.ocx) * upc, (b.outline[i][1] - b.ocy) * upc);
+          }
+          g.closePath();
+        };
+        g.lineStyle((6 / scale), accent, 0.25);
+        drawPoly();
+        g.lineStyle((2 / scale), accent, 1);
+        drawPoly();
+        _buildingOverlay?.redraw();
+        return;
+      }
+
       const w = b.hw * 2 * _unitsPerCm;
       const h = b.hh * 2 * _unitsPerCm;
       // Match the sprite's rounded corners (~20% of the shorter side) so the
       // outline doesn't look squared-off against the rounded fill.
       const r = 0.2 * Math.min(w, h);
-      g.clear();
-      g.position.set(b.lpx, b.lpy);
-      g.rotation = b.yaw;
-      // Soft outer glow, then the crisp 2px line.
-      g.lineStyle((6 / scale), 0xf97316, 0.25);
+      // Soft outer glow, then the crisp 2px line. Colour follows the theme.
+      g.lineStyle((6 / scale), accent, 0.25);
       g.drawRoundedRect(-w / 2, -h / 2, w, h, r);
-      g.lineStyle((2 / scale), 0xf97316, 1);
+      g.lineStyle((2 / scale), accent, 1);
       g.drawRoundedRect(-w / 2, -h / 2, w, h, r);
       _buildingOverlay?.redraw();
     },

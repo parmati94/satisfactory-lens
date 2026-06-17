@@ -2,6 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Accent theme palettes ────────────────────────────────────────────────
+   Each `accent-*` Tailwind utility resolves to these CSS vars (see
+   tailwind.config.js). Values are space-separated `R G B` triplets so Tailwind
+   can apply `<alpha-value>`. `:root` is the default (orange); setting
+   `data-theme` on <html> swaps the whole accent in one shot. Add a theme by
+   copying a block and changing the triplets. */
+:root, [data-theme="orange"] {
+  --accent-50: 255 247 237;  --accent-100: 255 237 213; --accent-200: 254 215 170;
+  --accent-300: 253 186 116; --accent-400: 251 146 60;  --accent-500: 249 115 22;
+  --accent-600: 234 88 12;   --accent-700: 194 65 12;   --accent-800: 154 52 18;
+  --accent-900: 124 45 18;
+}
+[data-theme="blue"] {
+  --accent-50: 239 246 255;  --accent-100: 219 234 254; --accent-200: 191 219 254;
+  --accent-300: 147 197 253; --accent-400: 96 165 250;  --accent-500: 59 130 246;
+  --accent-600: 37 99 235;   --accent-700: 29 78 216;   --accent-800: 30 64 175;
+  --accent-900: 30 58 138;
+}
+[data-theme="emerald"] {
+  --accent-50: 236 253 245;  --accent-100: 209 250 229; --accent-200: 167 243 208;
+  --accent-300: 110 231 183; --accent-400: 52 211 153;  --accent-500: 16 185 129;
+  --accent-600: 5 150 105;   --accent-700: 4 120 87;    --accent-800: 6 95 70;
+  --accent-900: 6 78 59;
+}
+[data-theme="violet"] {
+  --accent-50: 245 243 255;  --accent-100: 237 233 254; --accent-200: 221 214 254;
+  --accent-300: 196 181 253; --accent-400: 167 139 250; --accent-500: 139 92 246;
+  --accent-600: 124 58 237;  --accent-700: 109 40 217;  --accent-800: 91 33 182;
+  --accent-900: 76 29 149;
+}
+[data-theme="rose"] {
+  --accent-50: 255 241 242;  --accent-100: 255 228 230; --accent-200: 254 205 211;
+  --accent-300: 253 164 175; --accent-400: 251 113 133; --accent-500: 244 63 94;
+  --accent-600: 225 29 72;   --accent-700: 190 18 60;   --accent-800: 159 18 57;
+  --accent-900: 136 19 55;
+}
+
 [x-cloak] { display: none !important; }
 
 /* Two-line truncation (schematic card names) — explicit in case the Tailwind
@@ -109,12 +146,12 @@
 .sf-card-action {
   display: flex; align-items: center; justify-content: center; gap: 6px;
   width: calc(100% - 24px); margin: 10px 12px 12px; padding: 8px;
-  font-size: 12px; font-weight: 600; color: #fdba74;
-  background: rgba(249, 115, 22, 0.12); border: 1px solid rgba(249, 115, 22, 0.3);
+  font-size: 12px; font-weight: 600; color: rgb(var(--accent-300));
+  background: rgb(var(--accent-500) / 0.12); border: 1px solid rgb(var(--accent-500) / 0.3);
   border-radius: 8px; cursor: pointer; transition: all 0.15s;
 }
 .sf-card-action:hover {
-  background: rgba(249, 115, 22, 0.2); border-color: rgba(249, 115, 22, 0.5); color: #fed7aa;
+  background: rgb(var(--accent-500) / 0.2); border-color: rgb(var(--accent-500) / 0.5); color: rgb(var(--accent-200));
 }
 
 /* Marker click popups (HUB / players / nodes / stamps) — dark theme matching the
