@@ -31,8 +31,14 @@ export function extractPlayers(save: SatisfactorySave): PlayerInfo[] {
       const playerName =
         nameProp && isStrProperty(nameProp) ? nameProp.value : 'Unknown';
 
-      const healthProp = obj.properties['mCurrentHealth'];
-      const health = healthProp && isFloatProperty(healthProp) ? healthProp.value : null;
+      // Health lives on a separate FGHealthComponent (referenced by mHealthComponent).
+      // At full health mCurrentHealth isn't serialized, so absent → full (100).
+      const hcRef: string = (obj.properties['mHealthComponent'] as any)?.value?.pathName ?? '';
+      const hc = hcRef ? byInstance.get(hcRef) : null;
+      const hcHealthProp = hc?.properties?.mCurrentHealth;
+      const health = hc
+        ? (hcHealthProp && isFloatProperty(hcHealthProp) ? hcHealthProp.value : 100)
+        : null;
 
       const { inventory, inventorySlots, equipment, equipmentSlots } = extractPlayerInventory(obj.instanceName, byInstance);
 

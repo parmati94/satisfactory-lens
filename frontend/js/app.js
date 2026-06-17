@@ -725,6 +725,27 @@ document.addEventListener('alpine:init', () => {
       this.slotEditor.show = false;
     },
 
+    // ── Player health editing ─────────────────────────────────────────────
+    _healthKey(player) { return `player:${player.instanceName}:health`; },
+    effectiveHealth(player) {
+      const e = this.editBuffer[this._healthKey(player)];
+      return e ? e.value : player.health;
+    },
+    isHealthEdited(player) { return !!this.editBuffer[this._healthKey(player)]; },
+    setPlayerHealthValue(player, hp) {
+      const v = Math.max(0, Math.min(100, Math.round(Number(hp) || 0)));
+      const key = this._healthKey(player);
+      if (v === Math.round(player.health ?? 0)) {
+        const { [key]: _, ...rest } = this.editBuffer;
+        this.editBuffer = rest;
+      } else {
+        this.editBuffer = {
+          ...this.editBuffer,
+          [key]: { kind: 'SetPlayerHealth', target: player.instanceName, value: v, label: player.playerName, changeText: `Health → ${v} HP` },
+        };
+      }
+    },
+
     // ── Schematic (progression) editing ───────────────────────────────────
     _schKey(path) { return `sch:${path}`; },
     effectivePurchased(path) {
