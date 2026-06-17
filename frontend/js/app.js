@@ -200,6 +200,9 @@ document.addEventListener('alpine:init', () => {
       { id: 'rose', label: 'Rose', swatch: '#f43f5e' },
     ],
 
+    // App auth (login may be disabled via config — drives the header logout control)
+    loginEnabled: false,
+
     // SF server connection
     sfStatus: { connected: false, host: '', port: 7777 },
     showConnectModal: false,
@@ -314,6 +317,7 @@ document.addEventListener('alpine:init', () => {
 
       try {
         const authStatus = await api.auth.status();
+        this.loginEnabled = !!authStatus.loginEnabled;
         if (!authStatus.authenticated) {
           window.location.href = '/login.html';
           return;
@@ -381,6 +385,14 @@ document.addEventListener('alpine:init', () => {
       this.serverOptions = null;
       this.advancedSettings = null;
       this.actionResult = null;
+    },
+
+    // Log out of the app UI (distinct from disconnecting the SF server). Only
+    // reachable when login is enabled; clears the session cookie then returns to
+    // the login page.
+    async logout() {
+      try { await api.auth.logout(); } catch { /* clear cookie best-effort */ }
+      window.location.href = '/login.html';
     },
 
     async switchTab(tab) {

@@ -10,6 +10,10 @@ export function createSessionToken(username: string): string {
 }
 
 export function setSessionCookie(res: Response, token: string): void {
+  // httpOnly (no JS access) + sameSite=strict (CSRF) are the protections that
+  // matter here. The Secure flag is intentionally omitted: it would break login
+  // over plain-HTTP local/self-host, and adds nothing when served over HTTPS+HSTS
+  // at the edge (the cookie never traverses plaintext anyway).
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: 'strict',

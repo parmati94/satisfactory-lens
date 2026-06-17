@@ -1,6 +1,6 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
-import { config } from './config';
+import { config, DEFAULT_SESSION_SECRET } from './config';
 import { requireAuth } from './auth';
 import { appAuthRouter } from './routes/appAuth';
 import { sfConnectRouter } from './routes/sfConnect';
@@ -12,10 +12,33 @@ import { saveViewerRouter } from './routes/saveViewer';
 import { mapTilesRouter } from './routes/mapTiles';
 import { autoLoadSaveIfNeeded } from './save/autoLoad';
 
+// Fail fast on an unsafe auth config: login enabled but the session secret is
+// still unset/the shipped placeholder means JWTs are forgeable. Only fires when
+// ENABLE_LOGIN=true, so default local/dev runs (login off) are unaffected.
+if (config.enableLogin && (!config.sessionSecret || config.sessionSecret === DEFAULT_SESSION_SECRET)) {
+  console.error(
+    '[auth] ENABLE_LOGIN=true but SESSION_SECRET is unset or the default placeholder.\n' +
+    '       Session tokens would be forgeable. Set a strong, random secret, e.g.:\n' +
+    '         SESSION_SECRET=$(openssl rand -hex 32)\n' +
+    '       Refusing to start.',
+  );
+  process.exit(1);
+}
+
 const app = express();
+
+// Behind a reverse proxy (nginx/Caddy/Cloudflare) — honour X-Forwarded-* so
+// req.ip (login rate limiting) reflects the real client. Harmless for local/dev.
+app.set('trust proxy', 1);
 
 app.use(express.json());
 app.use(cookieParser());
+
+// Health check stays public (used by Docker/edge probes) — registered before the
+// /api auth guard so it never 401s when login is enabled.
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', version: '1.0.0' });
+});
 
 // App auth routes — no requireAuth guard (login/logout/status must be public)
 app.use(appAuthRouter);
@@ -28,10 +51,6 @@ app.use(savesRouter);
 app.use(settingsRouter);
 app.use(saveViewerRouter);
 app.use(mapTilesRouter);
-
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', version: '1.0.0' });
-});
 
 // Auto-connect to SF server if SF_HOST is pre-configured via env
 if (config.sfHost) {
