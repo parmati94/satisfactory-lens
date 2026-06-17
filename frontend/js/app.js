@@ -33,6 +33,17 @@ let _categoryDisplayObjects = new Map();
 // non-foundation building sprite. Same draw cost/batching as PIXI.Texture.WHITE —
 // the corner radius simply scales with each footprint when the texture stretches.
 let _roundedTex = null;
+// Reads the current accent's `--accent-500` (an "R G B" triplet) and packs it
+// into a 0xRRGGBB int for PIXI tinting, so the building highlight follows the
+// active theme. Falls back to orange-500 if the var isn't resolvable.
+function accentHexInt() {
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue('--accent-500').trim();
+  const m = raw.match(/(\d+)\s+(\d+)\s+(\d+)/);
+  if (!m) return 0xf97316;
+  return (Number(m[1]) << 16) | (Number(m[2]) << 8) | Number(m[3]);
+}
+
 function getRoundedTexture(PIXI, renderer) {
   if (_roundedTex) return _roundedTex;
   const S = 96;
@@ -116,6 +127,18 @@ document.addEventListener('alpine:init', () => {
     activeTab: 'dashboard',
     loading: false,
     error: null,
+
+    // App Settings (gear button) — client-side prefs (theme picker, …). Distinct
+    // from the Server panel, which lives behind its own header icon now.
+    showAppSettings: false,
+    theme: 'orange',
+    themes: [
+      { id: 'orange', label: 'Orange', swatch: '#f97316' },
+      { id: 'blue', label: 'Blue', swatch: '#3b82f6' },
+      { id: 'emerald', label: 'Emerald', swatch: '#10b981' },
+      { id: 'violet', label: 'Violet', swatch: '#8b5cf6' },
+      { id: 'rose', label: 'Rose', swatch: '#f43f5e' },
+    ],
 
     // SF server connection
     sfStatus: { connected: false, host: '', port: 7777 },
@@ -209,6 +232,9 @@ document.addEventListener('alpine:init', () => {
     // ─────────────────────────────────────────────────────────────────────
 
     async init() {
+      // Apply the saved accent theme before anything paints.
+      this.applyTheme(localStorage.getItem('sl-theme') || 'orange');
+
       try {
         const authStatus = await api.auth.status();
         if (!authStatus.authenticated) {
@@ -228,6 +254,16 @@ document.addEventListener('alpine:init', () => {
       if (this.sfStatus.connected) {
         await this.loadDashboard();
       }
+    },
+
+    // Sets the accent theme: flips `data-theme` on <html> (re-tints every
+    // accent-* utility) and persists the choice. The map highlight reads the
+    // accent live, so it follows on the next hover/focus. Unknown ids → orange.
+    applyTheme(id) {
+      if (!this.themes.some((t) => t.id === id)) id = 'orange';
+      this.theme = id;
+      document.documentElement.setAttribute('data-theme', id);
+      localStorage.setItem('sl-theme', id);
     },
 
     async checkSfStatus() {
@@ -2128,10 +2164,11 @@ document.addEventListener('alpine:init', () => {
       g.clear();
       g.position.set(b.lpx, b.lpy);
       g.rotation = b.yaw;
-      // Soft outer glow, then the crisp 2px line.
-      g.lineStyle((6 / scale), 0xf97316, 0.25);
+      // Soft outer glow, then the crisp 2px line. Colour follows the theme.
+      const accent = accentHexInt();
+      g.lineStyle((6 / scale), accent, 0.25);
       g.drawRoundedRect(-w / 2, -h / 2, w, h, r);
-      g.lineStyle((2 / scale), 0xf97316, 1);
+      g.lineStyle((2 / scale), accent, 1);
       g.drawRoundedRect(-w / 2, -h / 2, w, h, r);
       _buildingOverlay?.redraw();
     },

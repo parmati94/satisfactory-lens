@@ -5,7 +5,7 @@
     <div class="flex items-center gap-3">
       <span x-show="saveStatus?.loaded" class="flex items-center gap-2">
         <span class="text-gray-200 font-medium" x-text="saveStatus?.sourceName"></span>
-        <span x-show="svPlayers?.length" class="text-orange-400">
+        <span x-show="svPlayers?.length" class="text-accent-400">
           · <span x-text="svPlayers?.length"></span> player<span x-show="svPlayers?.length !== 1">s</span> on map
         </span>
         <span x-show="svPlayers !== null && !svPlayers?.length" class="text-gray-500">· No players in save</span>
@@ -48,9 +48,9 @@
           title="Layer filters"
           class="w-10 h-10 flex items-center justify-center rounded-xl border backdrop-blur-md shadow-xl transition-all hover:scale-110"
           :class="mapFiltersOpen
-            ? 'bg-orange-500/20 border-orange-400/40 shadow-orange-900/20'
-            : 'bg-gray-900/95 border-gray-700/50 hover:bg-orange-500/10 hover:border-orange-500/30'">
-          <svg style="width:17px;height:17px" :class="mapFiltersOpen ? 'text-orange-300' : 'text-gray-300'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            ? 'bg-accent-500/20 border-accent-400/40 shadow-accent-900/20'
+            : 'bg-gray-900/95 border-gray-700/50 hover:bg-accent-500/10 hover:border-accent-500/30'">
+          <svg style="width:17px;height:17px" :class="mapFiltersOpen ? 'text-accent-300' : 'text-gray-300'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
           </svg>
         </button>
@@ -81,8 +81,8 @@
             class="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-all hover:bg-gray-800/70 group"
             :class="mapFilters.players ? 'bg-gray-800/40' : ''">
             <div class="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 border transition-all"
-                 :class="mapFilters.players ? 'bg-orange-500/20 border-orange-500/40' : 'bg-gray-800/60 border-gray-700/50'">
-              <svg :class="mapFilters.players ? 'text-orange-300' : 'text-gray-500'" fill="currentColor" viewBox="0 0 20 20" style="width:11px;height:11px">
+                 :class="mapFilters.players ? 'bg-accent-500/20 border-accent-500/40' : 'bg-gray-800/60 border-gray-700/50'">
+              <svg :class="mapFilters.players ? 'text-accent-300' : 'text-gray-500'" fill="currentColor" viewBox="0 0 20 20" style="width:11px;height:11px">
                 <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
               </svg>
             </div>
@@ -90,7 +90,7 @@
                   :class="mapFilters.players ? 'text-gray-200' : 'text-gray-500'">Players</span>
             <span class="text-[10px] text-gray-600 tabular-nums" x-text="'(' + (svPlayers?.length ?? 0) + ')'"></span>
             <div class="w-3.5 h-3.5 rounded-sm border-2 flex-shrink-0 flex items-center justify-center transition-all"
-                 :class="mapFilters.players ? 'bg-orange-500 border-orange-500' : 'border-gray-600'">
+                 :class="mapFilters.players ? 'bg-accent-500 border-accent-500' : 'border-gray-600'">
               <svg x-show="mapFilters.players" fill="none" stroke="white" viewBox="0 0 24 24" style="width:8px;height:8px">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M5 13l4 4L19 7"/>
               </svg>
@@ -102,15 +102,15 @@
             class="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-all hover:bg-gray-800/70 group"
             :class="mapFilters.hub ? 'bg-gray-800/40' : ''">
             <div class="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 border transition-all"
-                 :class="mapFilters.hub ? 'bg-orange-500/20 border-orange-500/40' : 'bg-gray-800/60 border-gray-700/50'">
-              <svg :class="mapFilters.hub ? 'text-orange-300' : 'text-gray-500'" fill="currentColor" viewBox="0 0 20 20" style="width:11px;height:11px">
+                 :class="mapFilters.hub ? 'bg-accent-500/20 border-accent-500/40' : 'bg-gray-800/60 border-gray-700/50'">
+              <svg :class="mapFilters.hub ? 'text-accent-300' : 'text-gray-500'" fill="currentColor" viewBox="0 0 20 20" style="width:11px;height:11px">
                 <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h4v-4h2v4h4a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
               </svg>
             </div>
             <span class="text-xs font-medium flex-1 text-left transition-colors"
                   :class="mapFilters.hub ? 'text-gray-200' : 'text-gray-500'">HUB</span>
             <div class="w-3.5 h-3.5 rounded-sm border-2 flex-shrink-0 flex items-center justify-center transition-all"
-                 :class="mapFilters.hub ? 'bg-orange-500 border-orange-500' : 'border-gray-600'">
+                 :class="mapFilters.hub ? 'bg-accent-500 border-accent-500' : 'border-gray-600'">
               <svg x-show="mapFilters.hub" fill="none" stroke="white" viewBox="0 0 24 24" style="width:8px;height:8px">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M5 13l4 4L19 7"/>
               </svg>
@@ -122,8 +122,8 @@
             class="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-all hover:bg-gray-800/70 group"
             :class="mapFilters.stamps ? 'bg-gray-800/40' : ''">
             <div class="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 border transition-all"
-                 :class="mapFilters.stamps ? 'bg-orange-500/20 border-orange-500/40' : 'bg-gray-800/60 border-gray-700/50'">
-              <svg :class="mapFilters.stamps ? 'text-orange-300' : 'text-gray-500'" fill="currentColor" viewBox="0 0 24 24" style="width:11px;height:11px">
+                 :class="mapFilters.stamps ? 'bg-accent-500/20 border-accent-500/40' : 'bg-gray-800/60 border-gray-700/50'">
+              <svg :class="mapFilters.stamps ? 'text-accent-300' : 'text-gray-500'" fill="currentColor" viewBox="0 0 24 24" style="width:11px;height:11px">
                 <path fill-rule="evenodd" d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z" clip-rule="evenodd"/>
               </svg>
             </div>
@@ -131,7 +131,7 @@
                   :class="mapFilters.stamps ? 'text-gray-200' : 'text-gray-500'">Map Stamps</span>
             <span class="text-[10px] text-gray-600 tabular-nums" x-text="'(' + (svMapPins?.stamps?.length ?? 0) + ')'"></span>
             <div class="w-3.5 h-3.5 rounded-sm border-2 flex-shrink-0 flex items-center justify-center transition-all"
-                 :class="mapFilters.stamps ? 'bg-orange-500 border-orange-500' : 'border-gray-600'">
+                 :class="mapFilters.stamps ? 'bg-accent-500 border-accent-500' : 'border-gray-600'">
               <svg x-show="mapFilters.stamps" fill="none" stroke="white" viewBox="0 0 24 24" style="width:8px;height:8px">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M5 13l4 4L19 7"/>
               </svg>
@@ -160,7 +160,7 @@
             <div class="flex items-center justify-between px-2 pb-0.5">
               <span class="text-[10px] text-gray-500">Categories</span>
               <button @click="toggleAllBuildingCategories()"
-                class="text-[10px] font-medium text-gray-500 hover:text-orange-300 transition-colors"
+                class="text-[10px] font-medium text-gray-500 hover:text-accent-300 transition-colors"
                 x-text="buildingCategoriesAllOn() ? 'None' : 'All'"></button>
             </div>
             <template x-for="c in buildingCategories" :key="c.category">
@@ -173,7 +173,7 @@
                       :class="categoryFilters[c.category] ? 'text-gray-300' : 'text-gray-600'" x-text="c.category"></span>
                 <span class="text-[10px] text-gray-600 tabular-nums" x-text="'(' + c.count + ')'"></span>
                 <div class="w-3 h-3 rounded-sm border flex-shrink-0 flex items-center justify-center transition-all"
-                     :class="categoryFilters[c.category] ? 'bg-orange-500/80 border-orange-500' : 'border-gray-600'">
+                     :class="categoryFilters[c.category] ? 'bg-accent-500/80 border-accent-500' : 'border-gray-600'">
                   <svg x-show="categoryFilters[c.category]" fill="none" stroke="white" viewBox="0 0 24 24" style="width:7px;height:7px">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M5 13l4 4L19 7"/>
                   </svg>
@@ -223,14 +223,14 @@
             <div class="flex items-center justify-between px-2 pt-1 pb-0.5">
               <span class="text-[10px] text-gray-500">Type</span>
               <button @click="toggleAllNodeTypes()"
-                class="text-[10px] font-medium text-gray-500 hover:text-orange-300 transition-colors"
+                class="text-[10px] font-medium text-gray-500 hover:text-accent-300 transition-colors"
                 x-text="nodeTypesAllOn() ? 'None' : 'All'"></button>
             </div>
             <div class="grid grid-cols-4 gap-1 px-1 pb-1">
               <template x-for="t in nodeTypeList()" :key="t.key">
                 <button @click="toggleNodeType(t.key)" :title="t.label + ' (' + t.count + ')'"
                   class="aspect-square rounded-md border flex items-center justify-center p-1 transition-all"
-                  :class="nodeTypeFilters[t.key] ? 'bg-orange-500/15 border-orange-500/50' : 'bg-gray-800/40 border-gray-700/50 hover:border-gray-600'">
+                  :class="nodeTypeFilters[t.key] ? 'bg-accent-500/15 border-accent-500/50' : 'bg-gray-800/40 border-gray-700/50 hover:border-gray-600'">
                   <img :src="'/assets/resources/' + t.icon"
                        class="w-full h-full object-contain transition-all"
                        :class="nodeTypeFilters[t.key] ? '' : 'grayscale opacity-40'">
@@ -249,16 +249,16 @@
 
         <!-- Home / reset view -->
         <button @click="mapResetView()" title="Reset view"
-          class="group w-10 h-10 bg-gray-900/95 hover:bg-orange-500/20 hover:border-orange-400/40 text-white rounded-xl shadow-xl transition-all hover:scale-110 backdrop-blur-md flex items-center justify-center border border-gray-700/50">
-          <svg class="text-gray-300 group-hover:text-orange-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:17px;height:17px">
+          class="group w-10 h-10 bg-gray-900/95 hover:bg-accent-500/20 hover:border-accent-400/40 text-white rounded-xl shadow-xl transition-all hover:scale-110 backdrop-blur-md flex items-center justify-center border border-gray-700/50">
+          <svg class="text-gray-300 group-hover:text-accent-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:17px;height:17px">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
           </svg>
         </button>
 
         <!-- Refresh markers -->
         <button @click="mapRefresh()" title="Refresh markers" :disabled="mapRefreshing"
-          class="group w-10 h-10 bg-gray-900/95 hover:bg-orange-500/20 hover:border-orange-400/40 text-white rounded-xl shadow-xl transition-all hover:scale-110 backdrop-blur-md flex items-center justify-center border border-gray-700/50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100">
-          <svg :class="['text-gray-300 group-hover:text-orange-300 transition-all', mapRefreshing ? 'animate-spin text-orange-300' : 'group-hover:rotate-180 duration-500']"
+          class="group w-10 h-10 bg-gray-900/95 hover:bg-accent-500/20 hover:border-accent-400/40 text-white rounded-xl shadow-xl transition-all hover:scale-110 backdrop-blur-md flex items-center justify-center border border-gray-700/50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100">
+          <svg :class="['text-gray-300 group-hover:text-accent-300 transition-all', mapRefreshing ? 'animate-spin text-accent-300' : 'group-hover:rotate-180 duration-500']"
                fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:17px;height:17px">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
           </svg>
@@ -269,16 +269,16 @@
 
         <!-- Zoom in -->
         <button @click="mapZoomIn()" title="Zoom in"
-          class="group w-10 h-10 bg-gray-900/95 hover:bg-orange-500/20 hover:border-orange-400/40 text-white rounded-xl shadow-xl transition-all hover:scale-110 backdrop-blur-md flex items-center justify-center border border-gray-700/50">
-          <svg class="text-gray-300 group-hover:text-orange-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:17px;height:17px">
+          class="group w-10 h-10 bg-gray-900/95 hover:bg-accent-500/20 hover:border-accent-400/40 text-white rounded-xl shadow-xl transition-all hover:scale-110 backdrop-blur-md flex items-center justify-center border border-gray-700/50">
+          <svg class="text-gray-300 group-hover:text-accent-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:17px;height:17px">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
           </svg>
         </button>
 
         <!-- Zoom out -->
         <button @click="mapZoomOut()" title="Zoom out"
-          class="group w-10 h-10 bg-gray-900/95 hover:bg-orange-500/20 hover:border-orange-400/40 text-white rounded-xl shadow-xl transition-all hover:scale-110 backdrop-blur-md flex items-center justify-center border border-gray-700/50">
-          <svg class="text-gray-300 group-hover:text-orange-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:17px;height:17px">
+          class="group w-10 h-10 bg-gray-900/95 hover:bg-accent-500/20 hover:border-accent-400/40 text-white rounded-xl shadow-xl transition-all hover:scale-110 backdrop-blur-md flex items-center justify-center border border-gray-700/50">
+          <svg class="text-gray-300 group-hover:text-accent-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:17px;height:17px">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"/>
           </svg>
         </button>

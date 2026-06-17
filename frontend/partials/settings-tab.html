@@ -33,12 +33,12 @@
     <div x-show="sfStatus.connected" class="flex items-center gap-1 px-4 pt-3 flex-shrink-0">
       <button @click="settingsTab = 'overview'"
               class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors"
-              :class="settingsTab === 'overview' ? 'bg-gray-700 text-orange-400' : 'text-gray-400 hover:text-gray-200'">Overview</button>
+              :class="settingsTab === 'overview' ? 'bg-gray-700 text-accent-400' : 'text-gray-400 hover:text-gray-200'">Overview</button>
       <button @click="settingsTab = 'config'"
               class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5"
-              :class="settingsTab === 'config' ? 'bg-gray-700 text-orange-400' : 'text-gray-400 hover:text-gray-200'">
+              :class="settingsTab === 'config' ? 'bg-gray-700 text-accent-400' : 'text-gray-400 hover:text-gray-200'">
         Configuration
-        <span x-show="settingsDirtyCount() > 0" class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-orange-500/20 text-orange-300"
+        <span x-show="settingsDirtyCount() > 0" class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-accent-500/20 text-accent-300"
               x-text="settingsDirtyCount()"></span>
       </button>
     </div>
@@ -51,7 +51,7 @@
         <p class="text-gray-500 text-sm">Connect to your server to view its status and settings.</p>
         <button
           @click="showSettings = false; showConnectModal = true"
-          class="mt-4 px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors font-medium"
+          class="mt-4 px-4 py-2 text-sm bg-accent-500 hover:bg-accent-600 text-white rounded-lg transition-colors font-medium"
         >Connect Now</button>
       </div>
 
@@ -61,7 +61,7 @@
         <div x-show="settingsTab === 'overview'" class="space-y-4">
           <!-- Connection + latency -->
           <div class="grid grid-cols-2 gap-3">
-            <div class="bg-gray-750 rounded-xl p-4 border border-gray-700">
+            <div class="bg-gray-750 rounded-xl p-4 border border-gray-700 transition-all duration-150 hover:border-accent-500/40 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20">
               <div class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-1">Latency</div>
               <div class="flex items-baseline gap-1">
                 <span class="text-2xl font-bold tabular-nums" :class="latencyTone(serverHealth?.latencyMs)"
@@ -71,7 +71,7 @@
               <div class="text-[11px] mt-0.5" :class="serverHealth ? 'text-green-400' : 'text-red-400'"
                    x-text="serverHealth ? '● Reachable' : '○ Unreachable'"></div>
             </div>
-            <div class="bg-gray-750 rounded-xl p-4 border border-gray-700">
+            <div class="bg-gray-750 rounded-xl p-4 border border-gray-700 transition-all duration-150 hover:border-accent-500/40 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20">
               <div class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-1">Tick Rate</div>
               <div class="flex items-baseline gap-1">
                 <span class="text-2xl font-bold tabular-nums" :class="tickRateTone(serverState?.serverGameState?.averageTickRate)"
@@ -129,11 +129,11 @@
               <p class="text-[11px] text-gray-500" x-text="settingsEditMode ? 'Editing — changes are staged until you Apply.' : 'Read-only. Switch to Edit to make changes.'"></p>
               <div class="flex items-center rounded-lg border border-gray-700 overflow-hidden text-xs font-medium flex-shrink-0">
                 <button @click="settingsEditMode = false" class="px-3 py-1 transition-colors"
-                        :class="!settingsEditMode ? 'bg-gray-700 text-orange-400' : 'text-gray-400 hover:text-gray-200'">View</button>
+                        :class="!settingsEditMode ? 'bg-gray-700 text-accent-400' : 'text-gray-400 hover:text-gray-200'">View</button>
                 <button @click="settingsEditMode = true" class="px-3 py-1 transition-colors flex items-center gap-1.5"
-                        :class="settingsEditMode ? 'bg-gray-700 text-orange-400' : 'text-gray-400 hover:text-gray-200'">
+                        :class="settingsEditMode ? 'bg-gray-700 text-accent-400' : 'text-gray-400 hover:text-gray-200'">
                   Edit
-                  <span x-show="settingsDirtyCount() > 0" class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-orange-500/20 text-orange-300" x-text="settingsDirtyCount()"></span>
+                  <span x-show="settingsDirtyCount() > 0" class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-accent-500/20 text-accent-300" x-text="settingsDirtyCount()"></span>
                 </button>
               </div>
             </div>
@@ -149,7 +149,7 @@
                       <p class="text-[10px] font-mono text-gray-600 truncate" x-text="row.key"></p>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
-                      <span x-show="row.edited" class="w-1.5 h-1.5 rounded-full bg-orange-400" title="edited"></span>
+                      <span x-show="row.edited" class="w-1.5 h-1.5 rounded-full bg-accent-400" title="edited"></span>
 
                       <!-- VIEW (read-only) -->
                       <template x-if="!settingsEditMode">
@@ -166,18 +166,18 @@
                         <span class="flex items-center gap-2">
                           <button x-show="row.type === 'bool'" @click="toggleSetting('server', row.key)"
                                   class="relative w-9 h-5 rounded-full transition-colors"
-                                  :class="settingIsBool(row.value) ? 'bg-orange-500' : 'bg-gray-600'">
+                                  :class="settingIsBool(row.value) ? 'bg-accent-500' : 'bg-gray-600'">
                             <span class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform"
                                   :class="settingIsBool(row.value) ? 'translate-x-4' : ''"></span>
                           </button>
                           <input x-show="row.type === 'number'" type="number"
                                  :value="row.value" @change="setSetting('server', row.key, $event.target.value)"
-                                 class="w-24 px-2 py-1 rounded-md bg-gray-900/60 border text-xs font-mono text-gray-200 focus:outline-none focus:border-orange-500/60"
-                                 :class="row.edited ? 'border-orange-500/40' : 'border-gray-700/60'">
+                                 class="w-24 px-2 py-1 rounded-md bg-gray-900/60 border text-xs font-mono text-gray-200 focus:outline-none focus:border-accent-500/60"
+                                 :class="row.edited ? 'border-accent-500/40' : 'border-gray-700/60'">
                           <input x-show="row.type === 'text'" type="text"
                                  :value="row.value" @change="setSetting('server', row.key, $event.target.value)"
-                                 class="w-36 px-2 py-1 rounded-md bg-gray-900/60 border text-xs font-mono text-gray-200 focus:outline-none focus:border-orange-500/60"
-                                 :class="row.edited ? 'border-orange-500/40' : 'border-gray-700/60'">
+                                 class="w-36 px-2 py-1 rounded-md bg-gray-900/60 border text-xs font-mono text-gray-200 focus:outline-none focus:border-accent-500/60"
+                                 :class="row.edited ? 'border-accent-500/40' : 'border-gray-700/60'">
                         </span>
                       </template>
                     </div>
@@ -201,7 +201,7 @@
                       <p class="text-[10px] font-mono text-gray-600 truncate" x-text="row.key"></p>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
-                      <span x-show="row.edited" class="w-1.5 h-1.5 rounded-full bg-orange-400" title="edited"></span>
+                      <span x-show="row.edited" class="w-1.5 h-1.5 rounded-full bg-accent-400" title="edited"></span>
 
                       <!-- VIEW (read-only) -->
                       <template x-if="!settingsEditMode">
@@ -218,18 +218,18 @@
                         <span class="flex items-center gap-2">
                           <button x-show="row.type === 'bool'" @click="toggleSetting('advanced', row.key)"
                                   class="relative w-9 h-5 rounded-full transition-colors"
-                                  :class="settingIsBool(row.value) ? 'bg-orange-500' : 'bg-gray-600'">
+                                  :class="settingIsBool(row.value) ? 'bg-accent-500' : 'bg-gray-600'">
                             <span class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform"
                                   :class="settingIsBool(row.value) ? 'translate-x-4' : ''"></span>
                           </button>
                           <input x-show="row.type === 'number'" type="number"
                                  :value="row.value" @change="setSetting('advanced', row.key, $event.target.value)"
-                                 class="w-24 px-2 py-1 rounded-md bg-gray-900/60 border text-xs font-mono text-gray-200 focus:outline-none focus:border-orange-500/60"
-                                 :class="row.edited ? 'border-orange-500/40' : 'border-gray-700/60'">
+                                 class="w-24 px-2 py-1 rounded-md bg-gray-900/60 border text-xs font-mono text-gray-200 focus:outline-none focus:border-accent-500/60"
+                                 :class="row.edited ? 'border-accent-500/40' : 'border-gray-700/60'">
                           <input x-show="row.type === 'text'" type="text"
                                  :value="row.value" @change="setSetting('advanced', row.key, $event.target.value)"
-                                 class="w-36 px-2 py-1 rounded-md bg-gray-900/60 border text-xs font-mono text-gray-200 focus:outline-none focus:border-orange-500/60"
-                                 :class="row.edited ? 'border-orange-500/40' : 'border-gray-700/60'">
+                                 class="w-36 px-2 py-1 rounded-md bg-gray-900/60 border text-xs font-mono text-gray-200 focus:outline-none focus:border-accent-500/60"
+                                 :class="row.edited ? 'border-accent-500/40' : 'border-gray-700/60'">
                         </span>
                       </template>
                     </div>
@@ -248,14 +248,14 @@
     <div x-show="sfStatus.connected && settingsTab === 'config' && settingsDirtyCount() > 0"
          class="flex items-center justify-between gap-3 px-6 py-3 border-t border-gray-700 flex-shrink-0 bg-gray-800/80">
       <span class="text-xs text-gray-400">
-        <span class="text-orange-300 font-semibold" x-text="settingsDirtyCount()"></span>
+        <span class="text-accent-300 font-semibold" x-text="settingsDirtyCount()"></span>
         pending change<span x-show="settingsDirtyCount() !== 1">s</span>
       </span>
       <div class="flex items-center gap-2">
         <button @click="resetSettingDraft()" :disabled="settingsSaving"
                 class="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-700 text-gray-400 hover:text-gray-200 hover:border-gray-600 transition-colors disabled:opacity-50">Discard</button>
         <button @click="applySettings()" :disabled="settingsSaving"
-                class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-orange-500 hover:bg-orange-600 text-white transition-colors disabled:opacity-50">
+                class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-accent-500 hover:bg-accent-600 text-white transition-colors disabled:opacity-50">
           <span x-text="settingsSaving ? 'Applying…' : 'Apply'"></span>
         </button>
       </div>

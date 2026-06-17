@@ -35,12 +35,12 @@
             x-model="newSaveName"
             placeholder="Save name…"
             @keydown.enter="triggerSave()"
-            class="w-44 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:border-orange-400 transition-colors placeholder-gray-600"
+            class="w-44 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:border-accent-400 transition-colors placeholder-gray-600"
           />
           <button
             @click="triggerSave()"
             :disabled="actionLoading || !newSaveName.trim()"
-            class="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
+            class="px-3 py-1.5 bg-accent-500 hover:bg-accent-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
           >
             <span x-show="!actionLoading">Save Now</span>
             <span x-show="actionLoading">Saving…</span>
@@ -89,7 +89,7 @@
             prettyName(name) { return name.charAt(0).toUpperCase() + name.slice(1); },
           }"
           class="bg-gray-900 border rounded-xl overflow-hidden transition-colors"
-          :class="isActive ? 'border-orange-500/40' : 'border-gray-700'"
+          :class="isActive ? 'border-accent-500/40' : 'border-gray-700'"
         >
 
           <!-- Session header -->
@@ -111,9 +111,9 @@
               <span class="font-semibold text-white text-sm" x-text="prettyName(session.sessionName)"></span>
               <span
                 x-show="isActive"
-                class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30"
+                class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-accent-500/20 text-accent-400 border border-accent-500/30"
               >
-                <span class="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-accent-400 animate-pulse"></span>
                 Active
               </span>
             </div>
@@ -146,14 +146,14 @@
                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group"
                       :class="saveStatus?.sourceName === save.saveName
                         ? 'bg-sky-500/5 hover:bg-sky-500/10 border border-sky-500/10'
-                        : (save.saveName === globalLatestSaveName() ? 'bg-orange-500/5 hover:bg-orange-500/10 border border-orange-500/10' : 'hover:bg-gray-800/60')"
+                        : (save.saveName === globalLatestSaveName() ? 'bg-accent-500/5 hover:bg-accent-500/10 border border-accent-500/10' : 'hover:bg-gray-800/60')"
                     >
                       <div class="min-w-0 flex-1">
                         <div class="flex items-center gap-2">
                           <span class="text-sm text-white font-medium truncate" x-text="save.saveName"></span>
                           <span
                             x-show="save.saveName === globalLatestSaveName()"
-                            class="text-xs px-1.5 py-0.5 rounded bg-orange-900/40 text-orange-400 border border-orange-500/30 shrink-0"
+                            class="text-xs px-1.5 py-0.5 rounded bg-accent-900/40 text-accent-400 border border-accent-500/30 shrink-0"
                           >latest</span>
                           <span
                             x-show="saveStatus?.sourceName === save.saveName"
@@ -222,14 +222,14 @@
                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group"
                       :class="saveStatus?.sourceName === save.saveName
                         ? 'bg-sky-500/5 hover:bg-sky-500/10 border border-sky-500/10'
-                        : (save.saveName === globalLatestSaveName() ? 'bg-orange-500/5 hover:bg-orange-500/10 border border-orange-500/10' : 'hover:bg-gray-800/60')"
+                        : (save.saveName === globalLatestSaveName() ? 'bg-accent-500/5 hover:bg-accent-500/10 border border-accent-500/10' : 'hover:bg-gray-800/60')"
                     >
                       <div class="min-w-0 flex-1">
                         <div class="flex items-center gap-2">
                           <span class="text-sm text-white font-medium truncate" x-text="save.saveName"></span>
                           <span
                             x-show="save.saveName === globalLatestSaveName()"
-                            class="text-xs px-1.5 py-0.5 rounded bg-orange-900/40 text-orange-400 border border-orange-500/30 shrink-0"
+                            class="text-xs px-1.5 py-0.5 rounded bg-accent-900/40 text-accent-400 border border-accent-500/30 shrink-0"
                           >latest</span>
                           <span
                             x-show="saveStatus?.sourceName === save.saveName"
