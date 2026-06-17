@@ -55,9 +55,6 @@ COPY --from=builder /app/frontend/dist /usr/share/nginx/html
 # Copy generated map tiles
 COPY --from=builder /app/frontend/public/tiles /usr/share/nginx/html/tiles
 
-# Copy data directory (Phase 2: Docs.json etc.)
-COPY data/ ./data/
-
 # nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
 

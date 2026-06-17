@@ -4,6 +4,15 @@
 
 [x-cloak] { display: none !important; }
 
+/* Two-line truncation (schematic card names) — explicit in case the Tailwind
+   build doesn't emit the core utility. */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 /* ── App scrollbars ───────────────────────────────────────────────────────
    Themed, subtle scrollbars that match the dark UI instead of the OS default.
    Applied app-wide; `.app-scroll` is also available to force the style onto a

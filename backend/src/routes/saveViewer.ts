@@ -18,6 +18,11 @@ import { extractResourceNodes } from '../save/extractors/resourceNodes';
 import { extractMapPins } from '../save/extractors/mapPins';
 import { extractStorage } from '../save/extractors/storage';
 import { extractBuildingFootprints } from '../save/extractors/buildingFootprints';
+import { persistEdits, type SaveEdit } from '../save/editor';
+import { groundZ } from '../save/worldHeight';
+import { extractPurchasedSchematics } from '../save/extractors/schematics';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 const router = Router();
 
@@ -180,6 +185,84 @@ router.get('/api/save/building-footprints', (_req, res) => {
   try {
     res.json(extractBuildingFootprints(save));
   } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+// GET /api/world/ground-height?x=&y= — terrain surface Z (cm) at a world point,
+// for the teleport "snap to ground" helper. Static (not save-dependent).
+router.get('/api/world/ground-height', (req, res) => {
+  const x = Number(req.query.x);
+  const y = Number(req.query.y);
+  if (!Number.isFinite(x) || !Number.isFinite(y)) {
+    res.status(400).json({ error: 'x and y are required' });
+    return;
+  }
+  const z = groundZ(x, y);
+  if (z === null) { res.status(404).json({ error: 'Outside world bounds' }); return; }
+  res.json({ z: Math.round(z) });
+});
+
+// GET /api/items — static item catalog (class → { path, name, stack }) for the
+// inventory editor's item picker. Loaded once and cached for the process.
+let _itemCatalog: unknown = null;
+router.get('/api/items', (_req, res) => {
+  if (!_itemCatalog) {
+    try {
+      _itemCatalog = JSON.parse(readFileSync(join(__dirname, '../../data/items.json'), 'utf-8'));
+    } catch {
+      _itemCatalog = {};
+    }
+  }
+  res.json(_itemCatalog);
+});
+
+// GET /api/schematics — static schematic catalog (progression tree) for the editor.
+let _schematicCatalog: unknown = null;
+router.get('/api/schematics', (_req, res) => {
+  if (!_schematicCatalog) {
+    try {
+      _schematicCatalog = JSON.parse(readFileSync(join(__dirname, '../../data/schematics.json'), 'utf-8'));
+    } catch {
+      _schematicCatalog = [];
+    }
+  }
+  res.json(_schematicCatalog);
+});
+
+// GET /api/save/schematics — which schematics are purchased (unlocked) in the loaded save.
+router.get('/api/save/schematics', (_req, res) => {
+  const save = getSave();
+  if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
+  try {
+    res.json({ purchased: extractPurchasedSchematics(save) });
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+// POST /api/save/edit/persist — apply staged edits to the in-memory save and
+// persist (upload to the server, optionally loading live; or write to the mount).
+router.post('/api/save/edit/persist', async (req, res) => {
+  const { saveName, mode, edits } = req.body as {
+    saveName?: string;
+    mode?: string;
+    edits?: SaveEdit[];
+  };
+  if (!saveName) { res.status(400).json({ error: 'saveName is required' }); return; }
+  if (mode !== 'copy' && mode !== 'load') { res.status(400).json({ error: 'mode must be "copy" or "load"' }); return; }
+  if (!Array.isArray(edits) || edits.length === 0) { res.status(400).json({ error: 'No edits provided' }); return; }
+
+  try {
+    const result = await persistEdits({ saveName, mode, edits });
+    // If we loaded the edited save live (or overwrote the loaded one), the
+    // viewer's active save changed — let other clients refresh too.
+    if (mode === 'load') {
+      broadcastSaveReloaded({ sourceName: getSaveStatus().sourceName });
+    }
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    // persistEdits never mutates the loaded save in place, so nothing to roll back.
     res.status(500).json({ error: (err as Error).message });
   }
 });

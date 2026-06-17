@@ -62,5 +62,12 @@ export const api = {
     mapPins: () => apiFetch('/api/save/map-pins'),
     storage: () => apiFetch('/api/save/storage'),
     buildingFootprints: () => apiFetch('/api/save/building-footprints'),
+    schematics: () => apiFetch('/api/save/schematics'),
+    persistEdits: ({ saveName, mode, edits }) =>
+      apiFetch('/api/save/edit/persist', { method: 'POST', body: { saveName, mode, edits } }),
   },
+
+  items: () => apiFetch('/api/items'),
+  schematicCatalog: () => apiFetch('/api/schematics'),
+  groundHeight: (x, y) => apiFetch(`/api/world/ground-height?x=${Math.round(x)}&y=${Math.round(y)}`),
 };

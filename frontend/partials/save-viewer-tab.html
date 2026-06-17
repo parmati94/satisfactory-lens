@@ -1,5 +1,41 @@
 <div x-show="activeTab === 'saveviewer'" class="container mx-auto px-4 py-6 max-w-6xl">
 
+  <!-- Edit-mode banner — shown once any change is staged -->
+  <div x-show="editCount > 0" x-transition
+       class="sticky top-2 z-30 mb-4 flex items-center gap-3 px-4 py-2.5 rounded-xl border border-orange-500/40 bg-orange-500/15 backdrop-blur-md shadow-lg">
+    <svg class="text-orange-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:16px;height:16px">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+    </svg>
+    <span class="text-sm font-medium text-orange-100 flex-1">
+      Editing — <span x-text="editCount"></span> unsaved change<span x-show="editCount !== 1">s</span>
+    </span>
+    <button @click="cancelEdits()"
+      class="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-600/60 text-gray-300 hover:bg-gray-700/50 transition-colors">
+      Cancel
+    </button>
+    <button @click="changesModal.show = true"
+      class="text-xs font-medium px-3 py-1.5 rounded-lg border border-orange-500/40 text-orange-200 hover:bg-orange-500/20 transition-colors">
+      Show changes
+    </button>
+    <button @click="openPersistModal()"
+      class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-400 text-white transition-colors">
+      Save changes
+    </button>
+  </div>
+
+  <!-- Action result banner (save/persist outcomes) -->
+  <div x-show="actionResult" x-transition
+       :class="actionResult?.ok ? 'bg-green-900/30 border-green-800 text-green-300' : 'bg-red-900/30 border-red-800 text-red-300'"
+       class="flex items-start justify-between gap-3 p-3 border rounded-lg text-sm mb-5">
+    <div class="flex items-start gap-2">
+      <svg x-show="actionResult?.ok" class="flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:16px;height:16px">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span x-text="actionResult?.message"></span>
+    </div>
+    <button @click="actionResult = null" class="text-current opacity-60 hover:opacity-100 flex-shrink-0">✕</button>
+  </div>
+
   <!-- Status bar -->
   <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
     <div class="flex items-center gap-3">
@@ -73,6 +109,11 @@
         class="px-4 py-2.5 text-sm font-medium transition-colors -mb-px"
       >Players</button>
       <button
+        @click="switchSaveTab('progression')"
+        :class="saveTab === 'progression' ? 'border-b-2 border-orange-400 text-orange-400' : 'text-gray-500 hover:text-gray-300'"
+        class="px-4 py-2.5 text-sm font-medium transition-colors -mb-px"
+      >Progression</button>
+      <button
         @click="switchSaveTab('storage')"
         :class="saveTab === 'storage' ? 'border-b-2 border-orange-400 text-orange-400' : 'text-gray-500 hover:text-gray-300'"
         class="px-4 py-2.5 text-sm font-medium transition-colors -mb-px"
@@ -129,11 +170,13 @@
                       :class="player.health > 50 ? 'bg-green-900/40 text-green-400' : player.health > 20 ? 'bg-yellow-900/40 text-yellow-400' : 'bg-red-900/40 text-red-400'"
                       x-text="Math.round(player.health) + ' HP'"></span>
               </div>
-              <!-- Position -->
-              <div class="hidden sm:flex items-center gap-3 text-xs font-mono text-gray-400">
-                <span x-text="'X ' + formatCoord(player.position.x)"></span>
-                <span x-text="'Y ' + formatCoord(player.position.y)"></span>
-                <span class="text-gray-500" x-text="'Z ' + formatCoord(player.position.z)"></span>
+              <!-- Position (reflects staged edits; orange when edited) -->
+              <div class="hidden sm:flex items-center gap-3 text-xs font-mono"
+                   :class="isPositionEdited(player) ? 'text-orange-300' : 'text-gray-400'">
+                <span x-text="'X ' + formatCoord(effectivePosition(player).x)"></span>
+                <span x-text="'Y ' + formatCoord(effectivePosition(player).y)"></span>
+                <span :class="isPositionEdited(player) ? 'text-orange-300/70' : 'text-gray-500'"
+                      x-text="'Z ' + formatCoord(effectivePosition(player).z)"></span>
               </div>
               <!-- Item count badge -->
               <span class="text-xs text-gray-500 flex-shrink-0"
@@ -153,18 +196,56 @@
                  x-transition:enter-end="opacity-100 translate-y-0"
                  class="border-t border-gray-700/60">
 
-              <!-- Main inventory -->
+              <!-- Teleport / position editor -->
               <div class="px-4 pt-3 pb-1">
-                <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Inventory</p>
+                <div class="flex items-center gap-2 mb-2">
+                  <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500">Position (m)</p>
+                  <span x-show="isPositionEdited(player)" class="text-[10px] font-medium text-orange-300">• edited</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <template x-for="axis in ['x','y','z']" :key="axis">
+                    <label class="flex items-center gap-1.5 text-xs text-gray-400">
+                      <span class="uppercase font-mono w-3 text-gray-500" x-text="axis"></span>
+                      <input type="number" step="1"
+                             :value="(effectivePosition(player)[axis] / 100).toFixed(0)"
+                             @change="setPlayerPositionAxis(player, axis, $event.target.value)"
+                             class="w-24 px-2 py-1 rounded-md bg-gray-900/60 border text-xs font-mono text-gray-200 focus:outline-none focus:border-orange-500/60 transition-colors"
+                             :class="isPositionEdited(player) ? 'border-orange-500/40' : 'border-gray-700/60'">
+                    </label>
+                  </template>
+                  <button @click="snapToGround(player)"
+                          title="Set Z to terrain height (+3 m) at this X/Y — avoids teleporting into the ground or midair"
+                          class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md border border-gray-600/60 text-gray-300 hover:text-orange-200 hover:border-orange-500/50 hover:bg-orange-500/10 transition-colors">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v10m0 0l-3.5-3.5M12 14l3.5-3.5M5 20h14"/>
+                    </svg>
+                    Snap to ground
+                  </button>
+                  <button x-show="isPositionEdited(player)"
+                          @click="setPlayerPositionAxis(player, 'x', player.position.x / 100); setPlayerPositionAxis(player, 'y', player.position.y / 100); setPlayerPositionAxis(player, 'z', player.position.z / 100)"
+                          class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md border border-gray-700/50 text-gray-500 hover:text-gray-300 hover:border-gray-600 transition-colors">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M4 9a9 9 0 11-1 4"/>
+                    </svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <!-- Main inventory (click a slot to edit) -->
+              <div class="px-4 pt-3 pb-1">
+                <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Inventory <span class="text-gray-600 normal-case tracking-normal">· click a slot to edit</span></p>
                 <div x-show="!player.inventorySlots" class="text-xs text-gray-600 pb-2">Empty</div>
                 <div class="flex flex-wrap gap-1.5 pb-3">
-                  <template x-for="(slot, idx) in slotGrid(player.inventory, player.inventorySlots)" :key="idx">
-                    <div x-data="{ imgErr: false }" class="relative cursor-pointer"
+                  <template x-for="(slot, idx) in effectiveSlotGrid(player.inventoryName, player.inventory, player.inventorySlots)" :key="idx">
+                    <button type="button" x-data="{ imgErr: false }" class="relative"
+                         @click="openSlotEditor(player.inventoryName, idx, player.playerName + ' · Inventory', slotGrid(player.inventory, player.inventorySlots)[idx])"
                          @mouseenter="slot && showItemTooltip($event, slot)"
                          @mouseleave="hideTooltip()">
                       <template x-if="slot !== null">
                         <div>
-                          <div class="w-12 h-12 bg-gray-700/50 rounded-lg border border-gray-600/40 overflow-hidden flex items-center justify-center hover:border-gray-500/60 transition-colors">
+                          <div class="w-12 h-12 bg-gray-700/50 rounded-lg border overflow-hidden flex items-center justify-center transition-colors"
+                               :class="isSlotEdited(player.inventoryName, idx) ? 'border-orange-500/70' : 'border-gray-600/40 hover:border-gray-500/60'">
                             <img x-show="!imgErr"
                                  :src="'/assets/items/' + slot.itemClass + '.png'"
                                  :alt="slot.displayName"
@@ -178,9 +259,10 @@
                         </div>
                       </template>
                       <template x-if="slot === null">
-                        <div class="w-12 h-12 rounded-lg border border-dashed border-gray-700/50 hover:border-gray-600/60 transition-colors"></div>
+                        <div class="w-12 h-12 rounded-lg border border-dashed transition-colors"
+                             :class="isSlotEdited(player.inventoryName, idx) ? 'border-orange-500/60' : 'border-gray-700/50 hover:border-gray-600/60'"></div>
                       </template>
-                    </div>
+                    </button>
                   </template>
                 </div>
               </div>
@@ -286,14 +368,17 @@
                  x-transition:enter-end="opacity-100 translate-y-0"
                  class="border-t border-gray-700/60 px-4 py-3">
               <div x-show="!c.totalSlots" class="text-xs text-gray-600">Nothing stored here.</div>
+              <p x-show="c.totalSlots" class="text-[10px] text-gray-600 mb-2">Click a slot to edit</p>
               <div class="flex flex-wrap gap-1.5">
-                <template x-for="(slot, idx) in slotGrid(c.contents, c.totalSlots)" :key="idx">
-                  <div x-data="{ imgErr: false }" class="relative cursor-pointer"
+                <template x-for="(slot, idx) in effectiveSlotGrid(c.inventoryName, c.contents, c.totalSlots)" :key="idx">
+                  <button type="button" x-data="{ imgErr: false }" class="relative"
+                       @click="openSlotEditor(c.inventoryName, idx, c.label, slotGrid(c.contents, c.totalSlots)[idx])"
                        @mouseenter="slot && showItemTooltip($event, slot)"
                        @mouseleave="hideTooltip()">
                     <template x-if="slot !== null">
                       <div>
-                        <div class="w-12 h-12 bg-gray-700/50 rounded-lg border border-gray-600/40 overflow-hidden flex items-center justify-center hover:border-gray-500/60 transition-colors">
+                        <div class="w-12 h-12 bg-gray-700/50 rounded-lg border overflow-hidden flex items-center justify-center transition-colors"
+                             :class="isSlotEdited(c.inventoryName, idx) ? 'border-orange-500/70' : 'border-gray-600/40 hover:border-gray-500/60'">
                           <img x-show="!imgErr"
                                :src="'/assets/items/' + slot.itemClass + '.png'"
                                :alt="slot.displayName"
@@ -307,9 +392,10 @@
                       </div>
                     </template>
                     <template x-if="slot === null">
-                      <div class="w-12 h-12 rounded-lg border border-dashed border-gray-700/50 hover:border-gray-600/60 transition-colors"></div>
+                      <div class="w-12 h-12 rounded-lg border border-dashed transition-colors"
+                           :class="isSlotEdited(c.inventoryName, idx) ? 'border-orange-500/60' : 'border-gray-700/50 hover:border-gray-600/60'"></div>
                     </template>
-                  </div>
+                  </button>
                 </template>
               </div>
             </div>
@@ -548,5 +634,255 @@
       </div>
     </div>
 
+    <!-- ── Progression (MAM / milestones / unlocks) ─────────────────────── -->
+    <div x-show="saveTab === 'progression' && !saveDataLoading">
+      <input type="text" x-model="schematicsSearch" placeholder="Search schematics…"
+             class="w-full px-3 py-2 mb-4 rounded-lg bg-gray-800 border border-gray-700 text-sm text-gray-200 focus:outline-none focus:border-orange-500/60 transition-colors">
+
+      <template x-for="cat in groupedSchematics()" :key="cat.category">
+        <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden mb-3">
+          <button @click="toggleProg(cat.category)"
+            class="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-700/40 transition-colors text-left">
+            <span class="font-semibold text-white text-sm" x-text="cat.category"></span>
+            <span class="flex items-center gap-3">
+              <span class="text-xs text-gray-500 tabular-nums"
+                    x-text="schematicCategoryUnlocked(cat).on + ' / ' + cat.count + ' unlocked'"></span>
+              <svg class="w-4 h-4 text-gray-500 transition-transform" :class="(progOpen[cat.category] || schematicsSearch) ? 'rotate-180' : ''"
+                   fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </span>
+          </button>
+
+          <template x-if="progOpen[cat.category] || !!schematicsSearch">
+            <div class="border-t border-gray-700/60 px-4 py-3 space-y-4">
+              <template x-for="g in cat.groups" :key="g.group">
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500" x-text="g.group || cat.category"></p>
+                    <div class="flex gap-3 text-[10px] font-medium">
+                      <button @click="setGroupPurchased(g.items, true)" class="text-gray-500 hover:text-green-300 transition-colors">unlock all</button>
+                      <button @click="setGroupPurchased(g.items, false)" class="text-gray-500 hover:text-red-300 transition-colors">lock all</button>
+                    </div>
+                  </div>
+                  <div class="grid gap-2" style="grid-template-columns:repeat(auto-fill,minmax(86px,1fr))">
+                    <template x-for="s in g.items" :key="s.class">
+                      <button @click="toggleSchematic(s)" :title="(effectivePurchased(s.path) ? 'Unlocked — ' : 'Locked — ') + s.name"
+                        class="relative flex flex-col items-center gap-1 p-2 rounded-lg border transition-all"
+                        :class="effectivePurchased(s.path) ? 'bg-gray-800/70 border-gray-600/60' : 'bg-gray-900/40 border-gray-800 hover:border-gray-700'">
+                        <!-- icon -->
+                        <div class="w-11 h-11 flex items-center justify-center">
+                          <template x-if="s.icon">
+                            <img :src="'/assets/items/' + s.icon + '.png'"
+                                 class="w-full h-full object-contain transition-all"
+                                 :class="effectivePurchased(s.path) ? '' : 'grayscale opacity-40'"
+                                 @error="$el.style.visibility='hidden'">
+                          </template>
+                          <template x-if="!s.icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-7 h-7"
+                                 :class="effectivePurchased(s.path) ? 'text-gray-400' : 'text-gray-700'">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 7h10v10H7z"/>
+                            </svg>
+                          </template>
+                        </div>
+                        <!-- name -->
+                        <span class="text-[10px] leading-tight text-center line-clamp-2"
+                              :class="effectivePurchased(s.path) ? 'text-gray-200' : 'text-gray-500'"
+                              x-text="s.name"></span>
+                        <!-- state badge -->
+                        <span x-show="effectivePurchased(s.path)"
+                              class="absolute top-1 right-1 w-4 h-4 rounded-full bg-green-500 flex items-center justify-center shadow">
+                          <svg viewBox="0 0 24 24" class="w-2.5 h-2.5" fill="none" stroke="white" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        </span>
+                        <svg x-show="!effectivePurchased(s.path)" class="absolute top-1 right-1 w-3 h-3 text-gray-600" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 1a5 5 0 00-5 5v3H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-1V6a5 5 0 00-5-5zm3 8H9V6a3 3 0 016 0v3z"/>
+                        </svg>
+                        <!-- staged-edit ring -->
+                        <span x-show="isSchematicEdited(s.path)" class="absolute inset-0 rounded-lg ring-2 ring-orange-400/70 pointer-events-none"></span>
+                      </button>
+                    </template>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+      </template>
+
+      <div x-show="schematicCatalog && groupedSchematics().length === 0" class="text-center py-10 text-gray-500 text-sm">No schematics match your search.</div>
+    </div>
+
+  </div>
+
+  <!-- ── Persist (save changes) modal ──────────────────────────────────────── -->
+  <div x-show="persistModal.show" x-transition.opacity
+       class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+       @click.self="!persistModal.loading && (persistModal.show = false)" style="display:none">
+    <div class="w-full max-w-md mx-4 bg-gray-900 border border-gray-700/60 rounded-2xl shadow-2xl p-5">
+      <h3 class="text-base font-semibold text-gray-100 mb-1">Save changes</h3>
+      <p class="text-xs text-gray-500 mb-4">
+        Writing <span class="text-gray-300 font-medium" x-text="editCount"></span>
+        change<span x-show="editCount !== 1">s</span> to a new save — your loaded save isn't overwritten.
+        <span x-show="saveStatus?.sourceName && persistModal.saveName.trim().toLowerCase() === saveStatus.sourceName.replace(/\.sav$/i,'').toLowerCase()"
+              class="text-orange-300">Using the original name will overwrite it (a backup is taken first).</span>
+      </p>
+
+      <!-- Change summary -->
+      <div class="mb-4 max-h-40 overflow-y-auto rounded-lg border border-gray-700/50 bg-gray-800/40 divide-y divide-gray-700/40">
+        <template x-for="[key, e] in Object.entries(editBuffer)" :key="key">
+          <div class="flex items-center gap-2 px-3 py-2 text-xs">
+            <svg class="text-orange-300/80 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:12px;height:12px">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="text-gray-300 font-medium truncate" x-text="e.label"></span>
+            <span class="text-gray-400 truncate" x-text="e.changeText"></span>
+          </div>
+        </template>
+      </div>
+
+      <label class="block text-xs font-medium text-gray-400 mb-1">Save name</label>
+      <input type="text" x-model="persistModal.saveName" :disabled="persistModal.loading || persistModal.overwrite"
+             class="w-full px-3 py-2 mb-2 rounded-lg bg-gray-800 border border-gray-700 text-sm text-gray-200 focus:outline-none focus:border-orange-500/60 transition-colors disabled:opacity-60">
+
+      <!-- Overwrite original toggle -->
+      <div class="flex items-center justify-between gap-3 mb-4 px-3 py-2.5 rounded-lg bg-gray-800/50 border border-gray-700/50">
+        <div class="min-w-0">
+          <p class="text-xs font-medium text-gray-200">Overwrite original</p>
+          <p class="text-[11px] mt-0.5 truncate">
+            <span x-show="!persistModal.overwrite" class="text-gray-500">Saves a new copy — original untouched</span>
+            <span x-show="persistModal.overwrite" class="text-orange-300/90">Replaces <span class="font-mono" x-text="originalSaveBase()"></span> (backed up first)</span>
+          </p>
+        </div>
+        <button type="button" role="switch" :aria-checked="persistModal.overwrite"
+          @click="setOverwrite(!persistModal.overwrite)" :disabled="persistModal.loading"
+          class="relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-50"
+          :class="persistModal.overwrite ? 'bg-orange-500' : 'bg-gray-600'">
+          <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
+                :class="persistModal.overwrite ? 'translate-x-4' : 'translate-x-0.5'"></span>
+        </button>
+      </div>
+
+      <div x-show="persistModal.error" class="mb-3 text-xs text-red-400 bg-red-900/30 border border-red-800 rounded-lg px-3 py-2"
+           x-text="persistModal.error"></div>
+
+      <div class="flex items-center justify-end gap-2">
+        <button @click="persistModal.show = false" :disabled="persistModal.loading"
+          class="text-sm px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 transition-colors disabled:opacity-50">Cancel</button>
+        <button @click="persistEdits('copy')" :disabled="persistModal.loading"
+          title="Write the save only — does NOT load it on the server"
+          class="text-sm font-medium px-3 py-2 rounded-lg border border-gray-600/60 text-gray-200 hover:bg-gray-800 transition-colors disabled:opacity-50">
+          <span x-text="persistModal.overwrite ? 'Overwrite (don\'t load)' : 'Save only (don\'t load)'"></span>
+        </button>
+        <button @click="persistEdits('load')" :disabled="persistModal.loading || !sfStatus.connected"
+          :title="sfStatus.connected ? 'Write the save and load it live on the server' : 'Connect to the server to load live'"
+          class="text-sm font-semibold px-3 py-2 rounded-lg bg-orange-500 hover:bg-orange-400 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+          <span x-show="!persistModal.loading" x-text="(persistModal.overwrite ? 'Overwrite' : 'Save') + ' &amp; load to server'"></span>
+          <span x-show="persistModal.loading">Saving…</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Review changes modal ──────────────────────────────────────────────── -->
+  <div x-show="changesModal.show" x-transition.opacity
+       class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+       @click.self="changesModal.show = false" style="display:none">
+    <div class="w-full max-w-md mx-4 bg-gray-900 border border-gray-700/60 rounded-2xl shadow-2xl p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-base font-semibold text-gray-100">Staged changes (<span x-text="editCount"></span>)</h3>
+        <button @click="changesModal.show = false" class="text-gray-500 hover:text-gray-300 transition-colors">✕</button>
+      </div>
+
+      <div x-show="editCount === 0" class="text-sm text-gray-500 py-6 text-center">No changes staged.</div>
+
+      <div x-show="editCount > 0" class="max-h-72 overflow-y-auto rounded-lg border border-gray-700/50 bg-gray-800/40 divide-y divide-gray-700/40 mb-4">
+        <template x-for="[key, e] in Object.entries(editBuffer)" :key="key">
+          <div class="flex items-center gap-2 px-3 py-2.5 text-xs">
+            <svg class="text-orange-300/80 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:13px;height:13px">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div class="flex-1 min-w-0">
+              <p class="text-gray-300 font-medium truncate" x-text="e.label"></p>
+              <p class="text-[11px] mt-0.5 text-orange-300 truncate" x-text="e.changeText"></p>
+            </div>
+            <button @click="revertEdit(key)" title="Revert this change"
+              class="flex-shrink-0 text-[11px] font-medium px-2 py-1 rounded-md text-gray-400 hover:text-red-300 hover:bg-red-900/20 transition-colors">
+              Revert
+            </button>
+          </div>
+        </template>
+      </div>
+
+      <div class="flex items-center justify-end gap-2">
+        <button @click="changesModal.show = false"
+          class="text-sm px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 transition-colors">Close</button>
+        <button @click="openPersistModal()" :disabled="editCount === 0"
+          class="text-sm font-semibold px-3 py-2 rounded-lg bg-orange-500 hover:bg-orange-400 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+          Save changes…
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Inventory slot editor modal ───────────────────────────────────────── -->
+  <div x-show="slotEditor.show" x-transition.opacity
+       class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+       @click.self="slotEditor.show = false" style="display:none">
+    <div class="w-full max-w-lg mx-4 bg-gray-900 border border-gray-700/60 rounded-2xl shadow-2xl p-5 flex flex-col" style="max-height:85vh">
+      <div class="flex items-center justify-between mb-1">
+        <h3 class="text-base font-semibold text-gray-100">Edit slot <span x-text="slotEditor.slot"></span></h3>
+        <button @click="slotEditor.show = false" class="text-gray-500 hover:text-gray-300 transition-colors">✕</button>
+      </div>
+      <p class="text-xs text-gray-500 mb-4" x-text="slotEditor.contextLabel"></p>
+
+      <!-- Selected item + quantity -->
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-14 h-14 rounded-lg border border-gray-700 bg-gray-800/60 flex items-center justify-center flex-shrink-0 overflow-hidden">
+          <template x-if="slotEditor.selClass">
+            <img :src="'/assets/items/' + slotEditor.selClass + '.png'" class="w-full h-full object-contain" @error="$el.style.display='none'">
+          </template>
+          <template x-if="!slotEditor.selClass">
+            <span class="text-[10px] text-gray-600">Empty</span>
+          </template>
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-medium text-gray-200 truncate"
+             x-text="slotEditor.selClass ? (itemCatalog?.[slotEditor.selClass]?.name ?? slotEditor.selClass) : 'No item selected'"></p>
+          <div class="flex items-center gap-2 mt-1.5">
+            <label class="text-xs text-gray-500">Qty</label>
+            <input type="number" min="0" x-model.number="slotEditor.count"
+                   class="w-24 px-2 py-1 rounded-md bg-gray-800 border border-gray-700 text-sm text-gray-200 focus:outline-none focus:border-orange-500/60">
+            <button x-show="slotEditor.selClass" @click="slotEditor.count = (itemCatalog?.[slotEditor.selClass]?.stack ?? 1)"
+                    class="text-[11px] text-gray-500 hover:text-orange-300 transition-colors">
+              max <span x-text="'(' + (itemCatalog?.[slotEditor.selClass]?.stack ?? '') + ')'"></span>
+            </button>
+            <button @click="slotEditor.selClass = ''; slotEditor.count = 0"
+                    class="text-[11px] text-gray-500 hover:text-red-300 transition-colors ml-auto">Clear slot</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item picker -->
+      <input type="text" x-model="slotEditor.search" placeholder="Search items…"
+             class="w-full px-3 py-2 mb-2 rounded-lg bg-gray-800 border border-gray-700 text-sm text-gray-200 focus:outline-none focus:border-orange-500/60">
+      <div class="flex-1 overflow-y-auto rounded-lg border border-gray-700/50 bg-gray-800/30 p-2 grid grid-cols-6 gap-1.5" style="min-height:140px">
+        <template x-for="it in slotEditorItems()" :key="it.cls">
+          <button @click="selectSlotItem(it.cls)" :title="it.name"
+            class="aspect-square rounded-md border flex items-center justify-center p-1 transition-all"
+            :class="slotEditor.selClass === it.cls ? 'bg-orange-500/20 border-orange-500/60' : 'bg-gray-800/40 border-gray-700/40 hover:border-gray-600'">
+            <img :src="'/assets/items/' + it.cls + '.png'" class="w-full h-full object-contain" @error="$el.style.visibility='hidden'">
+          </button>
+        </template>
+        <p x-show="slotEditorItems().length === 0" class="col-span-6 text-center text-xs text-gray-600 py-6">No matching items</p>
+      </div>
+      <p class="text-[10px] text-gray-600 mt-1">Showing up to 120 results — refine with search.</p>
+
+      <div class="flex items-center justify-end gap-2 mt-4">
+        <button @click="slotEditor.show = false"
+          class="text-sm px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 transition-colors">Cancel</button>
+        <button @click="applySlotEdit()"
+          class="text-sm font-semibold px-3 py-2 rounded-lg bg-orange-500 hover:bg-orange-400 text-white transition-colors">Apply</button>
+      </div>
+    </div>
   </div>
 </div>
