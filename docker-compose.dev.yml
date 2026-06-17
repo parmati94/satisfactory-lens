@@ -19,6 +19,8 @@ services:
       - ./supervisor/supervisord.dev.conf:/etc/supervisor/conf.d/supervisord.conf:ro
     environment:
       - TZ=America/New_York
+      # App auth — disabled in dev. If you set ENABLE_LOGIN=true, also set a strong
+      # SESSION_SECRET (openssl rand -hex 32); the backend refuses the placeholder.
       - ENABLE_LOGIN=false
       - USERNAME=admin
       - PASSWORD=changeme
@@ -26,8 +28,8 @@ services:
       - SF_HOST=
       - SF_PORT=7777
       - SF_PASSWORD=
-      - SF_ALLOW_SELF_SIGNED=true
-      - SAVE_POLL_INTERVAL_SECONDS=30
+      - ENABLE_AUTO_WATCH=true # flag (never auto-reload) when a newer save appears — watches the mount dir, or polls the API if not mounted
+      - SAVE_POLL_INTERVAL_SECONDS=30 # how often to poll the API for a newer save when not mounted
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]

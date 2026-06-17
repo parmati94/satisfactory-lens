@@ -1,6 +1,10 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+// The placeholder shipped in the example compose files. Booting with this value
+// while login is enabled means tokens are forgeable — guarded against in index.ts.
+export const DEFAULT_SESSION_SECRET = 'change-me-in-production';
+
 export const config = {
   port: parseInt(process.env.PORT ?? '3000', 10),
 
@@ -8,7 +12,7 @@ export const config = {
   enableLogin: (process.env.ENABLE_LOGIN ?? 'false').toLowerCase() === 'true',
   username: process.env.USERNAME ?? 'admin',
   password: process.env.PASSWORD ?? 'admin',
-  sessionSecret: process.env.SESSION_SECRET ?? 'change-me-in-production',
+  sessionSecret: process.env.SESSION_SECRET ?? DEFAULT_SESSION_SECRET,
 
   // Satisfactory dedicated server
   sfHost: process.env.SF_HOST ?? '',

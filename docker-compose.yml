@@ -1,31 +1,29 @@
 name: satisfactory-lens
 services:
   satisfactory-lens:
-    build: .
-    image: satisfactory-lens:latest
+    # Prebuilt image from CI (push to main). Build from source via docker-compose.dev.yml.
+    image: parmati/satisfactory-lens:latest
     container_name: satisfactory-lens
     ports:
       - "5180:80"
+    # Optional: mount a save folder for local-disk access (otherwise loaded via the SF API).
     # volumes:
     #   - /path/to/satisfactory/saves:/app/saves:ro
     environment:
       - TZ=America/New_York
-      # App auth (set ENABLE_LOGIN=true to require username/password to access the UI)
+      # Auth is off by default. To enable, set ENABLE_LOGIN=true with a real PASSWORD and a
+      # strong SESSION_SECRET (openssl rand -hex 32) — the backend won't start on the default.
       - ENABLE_LOGIN=false
       - USERNAME=admin
       - PASSWORD=changeme
       - SESSION_SECRET=change-me-in-production
-      # Satisfactory dedicated server
-      # Set SF_HOST to auto-connect on startup, or leave blank to connect via the UI
+      # SF server. Set SF_HOST to auto-connect on startup, or leave blank to connect via the UI.
       - SF_HOST=
       - SF_PORT=7777
       - SF_PASSWORD=
-      - SF_ALLOW_SELF_SIGNED=true
-      # Save viewer — defaults to loading the latest save via the SF API once connected
-      # (no volume needed). Uncomment the volume above (host path → /app/saves) to read
-      # from disk instead; a mounted save always takes precedence over the API when present.
-      - ENABLE_AUTO_WATCH=true # flag (never auto-reload) when a newer save appears — watches the mount dir, or polls the API if not mounted
-      - SAVE_POLL_INTERVAL_SECONDS=30 # how often to poll the API for a newer save when not mounted
+      # Flag (don't auto-reload) when a newer save appears; poll interval for API mode.
+      - ENABLE_AUTO_WATCH=true
+      - SAVE_POLL_INTERVAL_SECONDS=30
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]

@@ -13,36 +13,73 @@
   <link rel="stylesheet" href="/css/main.css" />
   <script type="module" src="/js/login.js"></script>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen flex items-center justify-center">
-  <div class="w-full max-w-sm px-4">
-    <div class="bg-gray-800 rounded-2xl p-8 border border-gray-700 shadow-2xl" x-data="loginForm" x-cloak>
-      <div class="text-center mb-6">
-        <div class="h-14 w-14 mx-auto mb-3 flex items-center justify-center bg-gray-900 rounded-xl border border-accent-500/40 p-1.5">
-          <img src="/img/favicon/apple-touch-icon.png" alt="Satisfactory Lens logo" class="w-full h-full object-contain rounded-lg">
+<body class="bg-gray-950 text-gray-100 min-h-screen relative overflow-hidden flex items-center justify-center px-4">
+  <!-- Layered backdrop: accent bloom + blueprint grid + vignette (CSS only) -->
+  <div
+    class="pointer-events-none absolute inset-0"
+    style="background:
+      radial-gradient(48rem 48rem at 50% -8%, rgb(var(--accent-500) / 0.22), transparent 60%),
+      radial-gradient(36rem 36rem at 50% 116%, rgb(var(--accent-700) / 0.10), transparent 60%);"
+  ></div>
+  <div
+    class="pointer-events-none absolute inset-0 opacity-[0.06]"
+    style="background-image:
+      linear-gradient(rgb(255 255 255) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255) 1px, transparent 1px);
+      background-size: 44px 44px;
+      -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000, transparent 80%);
+      mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000, transparent 80%);"
+  ></div>
+
+  <div class="w-full max-w-sm relative">
+    <div
+      class="bg-gray-900/60 backdrop-blur-xl rounded-2xl p-8 border border-white/10 ring-1 ring-black/20 shadow-2xl"
+      x-data="loginForm"
+      x-cloak
+    >
+      <div class="text-center mb-7">
+        <div class="relative h-16 w-16 mx-auto mb-4">
+          <div class="absolute inset-0 rounded-2xl blur-lg" style="background: rgb(var(--accent-500) / 0.35);"></div>
+          <div class="relative h-16 w-16 flex items-center justify-center bg-gray-950 rounded-2xl border border-accent-500/50 p-2">
+            <img src="/img/favicon/apple-touch-icon.png" alt="Satisfactory Lens logo" class="w-full h-full object-contain rounded-lg">
+          </div>
         </div>
-        <h1 class="text-2xl font-bold text-accent-400">Satisfactory Lens</h1>
-        <p class="text-sm text-gray-400 mt-1">Sign in to continue</p>
+        <h1 class="text-2xl font-extrabold tracking-tight leading-none">
+          <span class="text-gray-100">Satisfactory</span><span class="text-accent-400"> Lens</span>
+        </h1>
+        <p class="text-sm text-gray-400 mt-2">Sign in to continue</p>
       </div>
+
       <form @submit.prevent="login()">
         <div class="mb-4">
           <label class="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Username</label>
-          <input
-            type="text"
-            x-model="username"
-            autocomplete="username"
-            class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-accent-400 transition-colors"
-            required
-          />
+          <div class="relative">
+            <svg class="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <input
+              type="text"
+              x-model="username"
+              autocomplete="username"
+              class="w-full bg-gray-800/70 border border-gray-700 rounded-lg pl-9 pr-3 py-2.5 text-white text-sm focus:outline-none focus:border-accent-400 focus:ring-2 focus:ring-accent-500/30 transition-colors"
+              required
+            />
+          </div>
         </div>
         <div class="mb-5">
           <label class="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Password</label>
-          <input
-            type="password"
-            x-model="password"
-            autocomplete="current-password"
-            class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-accent-400 transition-colors"
-            required
-          />
+          <div class="relative">
+            <svg class="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v3m-6 5h12a2 2 0 002-2v-5a2 2 0 00-2-2H6a2 2 0 00-2 2v5a2 2 0 002 2zm9-9V7a4 4 0 00-8 0v3h8z" />
+            </svg>
+            <input
+              type="password"
+              x-model="password"
+              autocomplete="current-password"
+              class="w-full bg-gray-800/70 border border-gray-700 rounded-lg pl-9 pr-3 py-2.5 text-white text-sm focus:outline-none focus:border-accent-400 focus:ring-2 focus:ring-accent-500/30 transition-colors"
+              required
+            />
+          </div>
         </div>
         <div
           x-show="error"
@@ -53,13 +90,15 @@
         <button
           type="submit"
           :disabled="loading"
-          class="w-full bg-accent-500 hover:bg-accent-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm"
+          class="w-full bg-accent-500 hover:bg-accent-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2.5 px-4 rounded-lg transition-all shadow-lg shadow-accent-500/20 hover:shadow-accent-500/30 text-sm"
         >
           <span x-show="!loading">Sign In</span>
           <span x-show="loading">Signing in…</span>
         </button>
       </form>
     </div>
+
+    <p class="text-center text-xs text-gray-600 mt-5">Satisfactory Lens · self-hosted</p>
   </div>
 </body>
 </html>
