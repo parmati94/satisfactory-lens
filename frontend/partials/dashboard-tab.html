@@ -48,12 +48,17 @@
 
       <!-- Status strip -->
       <div class="bg-gray-800 rounded-xl border border-gray-700 p-5 mb-4 transition-colors duration-150 hover:border-gray-600">
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center justify-between pb-3.5 mb-4 border-b border-gray-700/60">
           <div class="flex items-center gap-2.5 min-w-0">
-            <svg class="w-4 h-4 text-accent-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-            </svg>
-            <h3 class="text-sm font-semibold text-white truncate" x-text="serverState?.serverGameState?.activeSessionName || 'Active session'"></h3>
+            <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-accent-500/10 text-accent-400 shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+              </svg>
+            </span>
+            <div class="min-w-0">
+              <div class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 leading-none mb-1">Active session</div>
+              <h3 class="text-sm font-semibold text-white truncate leading-none" x-text="serverState?.serverGameState?.activeSessionName || '—'"></h3>
+            </div>
           </div>
           <div class="text-sm font-semibold shrink-0">
             <span x-show="serverState?.serverGameState?.isGameRunning && !serverState?.serverGameState?.isGamePaused" class="text-green-400">● Running</span>
@@ -61,26 +66,26 @@
             <span x-show="!serverState?.serverGameState?.isGameRunning" class="text-gray-500">○ Idle</span>
           </div>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div>
-            <div class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-0.5">Players</div>
-            <div class="text-lg font-bold text-accent-400 tabular-nums">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-y-4">
+          <div class="text-center md:border-l md:border-gray-700/50 md:first:border-l-0">
+            <div class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-1">Players</div>
+            <div class="text-lg font-bold text-accent-400 tabular-nums leading-none">
               <span x-text="serverState?.serverGameState?.numConnectedPlayers ?? '—'"></span>
               <span class="text-xs text-gray-500"> / </span>
               <span class="text-sm text-gray-400" x-text="serverState?.serverGameState?.playerLimit ?? '—'"></span>
             </div>
           </div>
-          <div>
-            <div class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-0.5">Tech Tier</div>
-            <div class="text-lg font-bold text-accent-400 tabular-nums" x-text="serverState?.serverGameState?.techTier ?? '—'"></div>
+          <div class="text-center md:border-l md:border-gray-700/50">
+            <div class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-1">Tech Tier</div>
+            <div class="text-lg font-bold text-accent-400 tabular-nums leading-none" x-text="serverState?.serverGameState?.techTier ?? '—'"></div>
           </div>
-          <div>
-            <div class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-0.5">Game Phase</div>
-            <div class="text-sm font-medium text-gray-200 truncate" x-text="formatUEPath(serverState?.serverGameState?.gamePhase) || '—'"></div>
+          <div class="text-center md:border-l md:border-gray-700/50">
+            <div class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-1">Game Phase</div>
+            <div class="text-sm font-medium text-gray-200 truncate leading-none" x-text="formatUEPath(serverState?.serverGameState?.gamePhase) || '—'"></div>
           </div>
-          <div>
-            <div class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-0.5">Playtime</div>
-            <div class="text-sm font-medium text-gray-200" x-text="formatDuration(serverState?.serverGameState?.totalGameDuration)"></div>
+          <div class="text-center md:border-l md:border-gray-700/50">
+            <div class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-1">Playtime</div>
+            <div class="text-sm font-medium text-gray-200 leading-none" x-text="formatDuration(serverState?.serverGameState?.totalGameDuration)"></div>
           </div>
         </div>
       </div>
