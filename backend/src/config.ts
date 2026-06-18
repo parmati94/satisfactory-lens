@@ -19,6 +19,10 @@ export const config = {
   sfPort: parseInt(process.env.SF_PORT ?? '7777', 10),
   sfPassword: process.env.SF_PASSWORD ?? '',
   sfAllowSelfSigned: (process.env.SF_ALLOW_SELF_SIGNED ?? 'true').toLowerCase() !== 'false',
+  // Verbose request/response logging for every Satisfactory dedicated-server API
+  // call (function name, payload, status, response body). Secrets are redacted.
+  // Off by default; set SF_DEBUG=true to diagnose settings/mutator behavior.
+  sfDebug: (process.env.SF_DEBUG ?? 'false').toLowerCase() === 'true',
 
   // Save file (Phase 2). Fixed mount point inside the container — point a docker-compose
   // volume at it if you want local-disk access; not env-configurable, nothing to set here.

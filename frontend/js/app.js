@@ -426,10 +426,26 @@ document.addEventListener('alpine:init', () => {
       this.settingsSaving = true;
       try {
         if (Object.keys(serverPayload).length) await api.settings.setServer(serverPayload);
-        if (Object.keys(advancedPayload).length) await api.settings.setAdvanced(advancedPayload);
-        this.actionResult = { ok: true, message: 'Server settings applied.' };
+        let refused = [];
+        if (Object.keys(advancedPayload).length) {
+          const result = await api.settings.setAdvanced(advancedPayload);
+          refused = result?.refused ?? [];
+        }
         this.settingsEditMode = false; // back to read-only after a successful apply
         await this.loadSettings(); // re-baseline from the server (clears edits)
+        if (refused.length) {
+          // The server accepted the call but kept these as-is — advanced game
+          // settings can only be enabled via the API, never disabled. Be honest
+          // about it rather than pretending the change stuck.
+          const names = refused.map((k) => this.humanizeSettingKey(k)).join(', ');
+          this.actionResult = {
+            ok: false,
+            message: `Applied, but the server kept ${refused.length} setting${refused.length > 1 ? 's' : ''} unchanged: ${names}. ` +
+              `Advanced game settings can only be enabled here — to turn one off, use the in-game Esc → Advanced Game Settings menu.`,
+          };
+        } else {
+          this.actionResult = { ok: true, message: 'Server settings applied.' };
+        }
       } catch (e) {
         this.actionResult = { ok: false, message: e.message };
       } finally {

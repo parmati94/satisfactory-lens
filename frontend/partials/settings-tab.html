@@ -192,7 +192,8 @@
               <div class="flex items-center justify-between mb-1">
                 <h3 class="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Advanced Game Settings</h3>
               </div>
-              <p class="text-[11px] text-amber-400/80 mb-3">Enabling these turns on creative mode and may disable achievements for the save.</p>
+              <p class="text-[11px] text-amber-400/80 mb-1">Enabling these turns on creative mode and may disable achievements for the save.</p>
+              <p class="text-[11px] text-gray-500 mb-3">Enable-only: the server applies these but ignores attempts to switch one back off. To disable one, use the in-game Esc → Advanced Game Settings menu.</p>
               <div class="space-y-1">
                 <template x-for="row in settingEntries('advanced')" :key="row.key">
                   <div class="flex items-center justify-between gap-3 py-2 border-b border-gray-700/50 last:border-0">
