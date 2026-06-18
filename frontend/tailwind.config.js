@@ -7,6 +7,11 @@ export default {
   ],
   theme: {
     extend: {
+      // `font-display` utility → the self-hosted wordmark face, falling back to
+      // the default sans stack until the woff2 loads (see @font-face in main.css).
+      fontFamily: {
+        display: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
       // Accent palette resolves to CSS variables (R G B triplets) defined in
       // css/main.css per `[data-theme]`. Swapping the theme attribute on <html>
       // re-tints every `accent-*` utility app-wide. `<alpha-value>` keeps

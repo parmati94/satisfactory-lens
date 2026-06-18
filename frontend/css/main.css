@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Self-hosted display face for the wordmark (one weight). `font-display: swap`
+   so the title paints immediately in the fallback and swaps when the woff2
+   lands. Exposed as the Tailwind `font-display` utility (see tailwind.config.js). */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-700.woff2') format('woff2');
+}
+
 /* ── Accent theme palettes ────────────────────────────────────────────────
    Each `accent-*` Tailwind utility resolves to these CSS vars (see
    tailwind.config.js). Values are space-separated `R G B` triplets so Tailwind
