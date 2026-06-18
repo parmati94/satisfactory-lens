@@ -61,6 +61,9 @@ export const api = {
     power: () => apiFetch('/api/save/power'),
     resourceNodes: () => apiFetch('/api/save/resource-nodes'),
     mapPins: () => apiFetch('/api/save/map-pins'),
+    // Fog-of-war overlay image URL (loaded directly by Leaflet, not fetched as
+    // JSON). `v` cache-busts it per loaded save so a reload re-fetches.
+    fogUrl: (v) => '/api/save/fog.png?v=' + encodeURIComponent(v ?? ''),
     storage: () => apiFetch('/api/save/storage'),
     buildingFootprints: () => apiFetch('/api/save/building-footprints'),
     machineInstances: (cls) => apiFetch('/api/save/machine-instances?class=' + encodeURIComponent(cls)),

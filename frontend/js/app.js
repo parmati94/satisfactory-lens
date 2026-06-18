@@ -102,6 +102,9 @@ document.addEventListener('alpine:init', () => {
       this.applyTheme(localStorage.getItem('sl-theme') || 'orange');
       // Restore any saved per-category map color overrides.
       this._loadCategoryColors();
+      // Restore the saved map filter toggles (fog, players, nodes…) before the
+      // map first renders so it opens the way the user last left it.
+      this._loadMapFilters();
       // Apply device prefs: reduced motion (seeded from the OS) and landing tab.
       this.applyReduceMotion(this._initialReduceMotion());
       this.loadDefaultTab();
@@ -175,13 +178,14 @@ document.addEventListener('alpine:init', () => {
     async resetPreferences() {
       const ok = await this.showConfirm({
         title: 'Reset preferences?',
-        message: 'Restores the default accent, clears custom map colors, and resets the landing tab and motion settings on this device. Your save data is untouched.',
+        message: 'Restores the default accent, clears custom map colors, and resets the landing tab, motion settings, and map filters on this device. Your save data is untouched.',
         confirmLabel: 'Reset',
       });
       if (!ok) return;
-      ['sl-theme', 'sl-map-colors', 'sl-default-tab', 'sl-reduce-motion'].forEach((k) => localStorage.removeItem(k));
+      ['sl-theme', 'sl-map-colors', 'sl-default-tab', 'sl-reduce-motion', 'sl-map-filters'].forEach((k) => localStorage.removeItem(k));
       this.applyTheme('orange');
       this.resetAllCategoryColors?.();
+      this._resetMapFilters?.();
       this.applyReduceMotion(this._initialReduceMotion());
       this.setDefaultTab('dashboard');
     },
