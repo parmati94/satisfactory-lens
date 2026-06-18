@@ -18,6 +18,7 @@ import { extractMapPins } from '../save/extractors/mapPins';
 import { extractStorage } from '../save/extractors/storage';
 import { extractBuildingFootprints } from '../save/extractors/buildingFootprints';
 import { extractMachineInstances } from '../save/extractors/machines';
+import { getFogPng } from '../save/extractors/fogOfWar';
 import { persistEdits, type SaveEdit } from '../save/editor';
 import { groundZ } from '../save/worldHeight';
 import { extractPurchasedSchematics } from '../save/extractors/schematics';
@@ -174,6 +175,24 @@ router.get('/api/save/map-pins', (_req, res) => {
   if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
   try {
     res.json(extractMapPins(save));
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+// GET /api/save/fog.png — the player's discovered-area mask as a transparent
+// PNG (opaque black where never explored). 512×512; Leaflet scales it up over
+// the map bounds. 404 when the save carries no fog-of-war data. Cache-busted by
+// the caller via a ?v= query param, so it's fine to mark immutable.
+router.get('/api/save/fog.png', (_req, res) => {
+  const save = getSave();
+  if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
+  try {
+    const png = getFogPng(save);
+    if (!png) { res.status(404).json({ error: 'No fog-of-war data in save' }); return; }
+    res.type('png');
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.send(png);
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }

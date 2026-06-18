@@ -13,6 +13,7 @@ let _leafletMap = null;
 let _playerLayer = null;
 let _resourceNodeLayer = null;
 let _mapPinLayer = null;
+let _fogOverlay = null;
 let _buildingOverlay = null;
 let _buildingOverlayContainer = null;
 let _buildingHitList = [];
@@ -198,6 +199,7 @@ export function mapController() {
       players:       true,
       hub:           true,
       stamps:        true,
+      fog:           true,
       buildings:     true,
       purityImpure:  true,
       purityNormal:  true,
@@ -573,6 +575,17 @@ export function mapController() {
         tileSize: TILE_SIZE,
       }).addTo(_leafletMap);
 
+      // Pane stack around the fog overlay (Leaflet defaults: tilePane 200,
+      // overlayPane 400 = building WebGL, markerPane 600):
+      //   resourceNodes (450) → fog (500) → markerPane (600)
+      // so the fog blacks out terrain, buildings AND undiscovered resource
+      // nodes, while live player/HUB/stamp markers stay visible on top.
+      _leafletMap.createPane('resourceNodes');
+      _leafletMap.getPane('resourceNodes').style.zIndex = 450;
+      _leafletMap.createPane('fog');
+      _leafletMap.getPane('fog').style.zIndex = 500;
+      _leafletMap.getPane('fog').style.pointerEvents = 'none';
+
       // Layer z-order: buildings (WebGL, overlayPane) → nodes → pins → players
       this.ensureBuildingOverlay();
       _resourceNodeLayer = L.layerGroup().addTo(_leafletMap);
@@ -675,6 +688,38 @@ export function mapController() {
       this._updatePlayerMarkers();
       this._updateMapPinMarkers();
       this._updateResourceNodeMarkers();
+      this.updateFogOverlay();
+    },
+
+    // Show/hide the discovered-area fog overlay. Driven by the `fog` map filter
+    // (default on) and the loaded save; the overlay image is cache-busted per
+    // save so a reload re-fetches it.
+    updateFogOverlay() {
+      if (!_leafletMap) return;
+      const show = this.mapFilters.fog && this.saveStatus?.loaded;
+      if (!show) {
+        if (_fogOverlay) { _leafletMap.removeLayer(_fogOverlay); _fogOverlay = null; }
+        return;
+      }
+      const bounds = L.latLngBounds(
+        gameToLatLng(MAP_WEST, MAP_NORTH),
+        gameToLatLng(MAP_EAST, MAP_SOUTH),
+      );
+      const url = api.save.fogUrl(this.saveStatus?.loadedAt ?? '');
+      if (!_fogOverlay) {
+        _fogOverlay = L.imageOverlay(url, bounds, {
+          pane: 'fog',
+          interactive: false,
+          className: 'sf-fog-overlay',
+        });
+        // Saves without fog data 404 the image — drop the overlay quietly.
+        _fogOverlay.on('error', () => {
+          if (_fogOverlay) { _leafletMap.removeLayer(_fogOverlay); _fogOverlay = null; }
+        });
+        _fogOverlay.addTo(_leafletMap);
+      } else if (_fogOverlay._url !== url) {
+        _fogOverlay.setUrl(url);
+      }
     },
 
     // Lazy-loads Pixi and creates the WebGL building-footprint overlay (once per
@@ -1392,7 +1437,7 @@ export function mapController() {
 
         const xM = (node.position.x / 100).toFixed(0);
         const yM = (node.position.y / 100).toFixed(0);
-        L.marker(latlng, { icon })
+        L.marker(latlng, { icon, pane: 'resourceNodes' })
           .bindPopup(`<strong>${node.label}</strong><br><span style="color:${ring};font-size:11px">${node.purity}</span><br><span style="font-family:monospace;font-size:11px">${xM} m, ${yM} m</span>`)
           .addTo(_resourceNodeLayer);
       }
