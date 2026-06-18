@@ -16,6 +16,12 @@ let _mapPinLayer = null;
 let _fogOverlay = null;
 let _buildingOverlay = null;
 let _buildingOverlayContainer = null;
+
+// Map-filter toggles persisted across reloads (localStorage 'sl-map-filters').
+// Only the genuinely independent toggles — `buildings` is derived from the
+// per-save categoryFilters, and the dynamic node/category filters are rebuilt
+// from each loaded save, so neither is safe to persist by key.
+const PERSISTED_FILTER_KEYS = ['players', 'hub', 'stamps', 'fog', 'purityImpure', 'purityNormal', 'purityPure'];
 let _buildingHitList = [];
 let _splineHitList = [];
 let _lastHoverMs = 0;
@@ -241,6 +247,31 @@ export function mapController() {
 
     toggleMapFilter(key) {
       this.mapFilters[key] = !this.mapFilters[key];
+      this._persistMapFilters();
+      this.updateMapMarkers();
+    },
+
+    // Persist/restore the independent filter toggles so the map remembers how
+    // the user left it (e.g. fog off) across reloads. See PERSISTED_FILTER_KEYS.
+    _loadMapFilters() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('sl-map-filters') || '{}');
+        for (const k of PERSISTED_FILTER_KEYS) {
+          if (typeof saved[k] === 'boolean') this.mapFilters[k] = saved[k];
+        }
+      } catch { /* ignore corrupt prefs */ }
+    },
+
+    _persistMapFilters() {
+      const out = {};
+      for (const k of PERSISTED_FILTER_KEYS) out[k] = this.mapFilters[k];
+      localStorage.setItem('sl-map-filters', JSON.stringify(out));
+    },
+
+    // Restore persisted filters to their defaults (all on) and clear storage.
+    _resetMapFilters() {
+      for (const k of PERSISTED_FILTER_KEYS) this.mapFilters[k] = true;
+      localStorage.removeItem('sl-map-filters');
       this.updateMapMarkers();
     },
 
@@ -253,6 +284,7 @@ export function mapController() {
       this.mapFilters.purityImpure = !anyOn;
       this.mapFilters.purityNormal = !anyOn;
       this.mapFilters.purityPure   = !anyOn;
+      this._persistMapFilters();
       this.updateMapMarkers();
     },
 
