@@ -4,6 +4,9 @@ import { Parser } from '@etothepii/satisfactory-file-parser';
 import { config } from '../config';
 import { setSave, setSaveError, setSaveLoading } from './saveState';
 import { downloadSavegame, enumerateSessions, queryServerState, isConnected } from '../api/sfClient';
+import { childLogger } from '../log';
+
+const log = childLogger('save');
 
 export type SaveSourceMode = 'mount' | 'api' | 'none';
 
@@ -85,10 +88,10 @@ function parseAndStore(
   sourceMtimeMs: number | null = null,
   sourceSaveDateTime: string | null = null,
 ): void {
-  console.log(`[save] Parsing "${name}" (${(buf.byteLength / 1024 / 1024).toFixed(1)} MB)…`);
+  log.info(`Parsing "${name}" (${(buf.byteLength / 1024 / 1024).toFixed(1)} MB)…`);
   const save = Parser.ParseSave(name, buf.buffer as ArrayBuffer);
   setSave(save, name, sourceMtimeMs, sourceSaveDateTime);
-  console.log(`[save] Parsed "${name}" successfully.`);
+  log.info(`Parsed "${name}" successfully.`);
 }
 
 /** Load the save from the mounted disk path. */
@@ -116,7 +119,7 @@ export async function loadFromDisk(): Promise<void> {
 export async function loadFromApi(saveName: string, saveDateTime: string | null = null): Promise<void> {
   setSaveLoading(true);
   try {
-    console.log(`[save] Downloading "${saveName}" from server…`);
+    log.info(`Downloading "${saveName}" from server…`);
     const buf = await downloadSavegame(saveName);
     parseAndStore(buf, saveName, null, saveDateTime);
   } catch (err) {
@@ -133,7 +136,7 @@ export async function loadLatestFromApi(): Promise<void> {
       setSaveError('No save found via the Satisfactory API (no active session, or it has no saves yet).');
       return;
     }
-    console.log(`[save] Downloading "${found.saveName}" (active session "${found.sessionName}") from server…`);
+    log.info(`Downloading "${found.saveName}" (active session "${found.sessionName}") from server…`);
     const buf = await downloadSavegame(found.saveName);
     parseAndStore(buf, found.saveName, null, found.saveDateTime);
   } catch (err) {

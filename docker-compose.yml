@@ -24,6 +24,8 @@ services:
       # Flag (don't auto-reload) when a newer save appears; poll interval for API mode.
       - ENABLE_AUTO_WATCH=true
       - SAVE_POLL_INTERVAL_SECONDS=30
+      # Logging. LOG_LEVEL: trace|debug|info|warn|error (trace = full SF API bodies).
+      - LOG_LEVEL=info
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]

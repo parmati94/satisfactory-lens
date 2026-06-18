@@ -1,5 +1,8 @@
 import { Agent, fetch as undiciFetch, FormData } from 'undici';
 import { config } from '../config';
+import { childLogger } from '../log';
+
+const log = childLogger('sf-api');
 
 // Runtime connection state (overrides env vars when set via the connect UI)
 let runtimeHost = '';
@@ -53,8 +56,9 @@ async function call<T = unknown>(fn: string, data: Record<string, unknown> = {})
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (bearerToken) headers['Authorization'] = `Bearer ${bearerToken}`;
 
-  if (config.sfDebug) {
-    console.log(`[sf-api] → ${fn} ${JSON.stringify(redactForLog(data))}`);
+  // `isLevelEnabled` guard avoids the redact/stringify cost when trace is off.
+  if (log.isLevelEnabled('trace')) {
+    log.trace({ fn, data: redactForLog(data) }, `→ ${fn}`);
   }
 
   const startedAt = Date.now();
@@ -68,9 +72,9 @@ async function call<T = unknown>(fn: string, data: Record<string, unknown> = {})
 
   const text = await res.text();
 
-  if (config.sfDebug) {
+  if (log.isLevelEnabled('trace')) {
     const ms = Date.now() - startedAt;
-    console.log(`[sf-api] ← ${fn} ${res.status} (${ms}ms) ${truncateForLog(text || '«empty body»')}`);
+    log.trace({ fn, status: res.status, ms, body: truncateForLog(text || '«empty body»') }, `← ${fn} ${res.status} (${ms}ms)`);
   }
 
   const json = (text.trim() ? JSON.parse(text) : {}) as Record<string, unknown>;

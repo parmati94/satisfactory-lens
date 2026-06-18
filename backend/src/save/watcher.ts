@@ -4,6 +4,9 @@ import { Response } from 'express';
 import { config } from '../config';
 import { findMountedSaveWithMtime, findLatestApiSave, getSaveSourceMode } from './loader';
 import { getLoadedSourceMtimeMs, getLoadedSourceSaveDateTime } from './saveState';
+import { childLogger } from '../log';
+
+const log = childLogger('save-watch');
 
 // SSE clients waiting for save events
 const sseClients = new Set<Response>();
@@ -60,7 +63,7 @@ async function notifyIfChanged(): Promise<void> {
   }
   lastBroadcastInfo = info;
   if (info.newerSaveAvailable) {
-    console.log(`[save-watch] Newer save detected: "${info.newerSaveName}"`);
+    log.info(`Newer save detected: "${info.newerSaveName}"`);
   }
   broadcastSaveAvailable(info);
 }
@@ -115,11 +118,11 @@ export function startWatching(): void {
   if (mode === 'mount') {
     const dir = config.saveMountPath;
     if (!fs.existsSync(dir)) {
-      console.log(`[save-watch] Save directory "${dir}" does not exist; not watching.`);
+      log.warn(`Save directory "${dir}" does not exist; not watching.`);
       return;
     }
 
-    console.log(`[save-watch] Watching directory "${dir}" for newer saves…`);
+    log.info(`Watching directory "${dir}" for newer saves…`);
     watchedDir = dir;
 
     fsWatcher = fs.watch(dir, () => {
@@ -129,20 +132,20 @@ export function startWatching(): void {
     });
 
     fsWatcher.on('error', (err) => {
-      console.error('[save-watch] Watcher error:', err.message);
+      log.error(`Watcher error: ${err.message}`);
     });
     return;
   }
 
   if (mode === 'api') {
     const intervalMs = config.savePollIntervalSeconds * 1000;
-    console.log(`[save-watch] Polling the Satisfactory API every ${config.savePollIntervalSeconds}s for newer saves…`);
+    log.info(`Polling the Satisfactory API every ${config.savePollIntervalSeconds}s for newer saves…`);
 
     const tick = async () => {
       try {
         await notifyIfChanged();
       } catch (err) {
-        console.error('[save-watch] Poll error:', (err as Error).message);
+        log.error(`Poll error: ${(err as Error).message}`);
       }
     };
 
@@ -151,7 +154,7 @@ export function startWatching(): void {
     return;
   }
 
-  console.log('[save-watch] No save source available (no mount, not connected); not watching.');
+  log.info('No save source available (no mount, not connected); not watching.');
 }
 
 export function stopWatching(): void {

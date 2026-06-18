@@ -1,7 +1,10 @@
 import { config } from '../config';
+import { childLogger } from '../log';
 import { loadLatest, getSaveSourceMode } from './loader';
 import { getSaveStatus } from './saveState';
 import { broadcastSaveReloaded, startWatching } from './watcher';
+
+const log = childLogger('save');
 
 /**
  * Load the active save source if nothing is loaded yet, and (re)start the newer-save
@@ -18,10 +21,10 @@ export async function autoLoadSaveIfNeeded(): Promise<void> {
   await loadLatest();
   const status = getSaveStatus();
   if (status.loaded) {
-    console.log(`[save] Auto-loaded "${status.sourceName}" via ${mode}`);
+    log.info(`Auto-loaded "${status.sourceName}" via ${mode}`);
     broadcastSaveReloaded({ sourceName: status.sourceName });
     if (config.enableAutoWatch) startWatching();
   } else {
-    console.warn(`[save] Auto-load failed: ${status.error}`);
+    log.warn(`Auto-load failed: ${status.error}`);
   }
 }

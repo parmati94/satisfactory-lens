@@ -1,6 +1,8 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import { pinoHttp } from 'pino-http';
 import { config, DEFAULT_SESSION_SECRET } from './config';
+import { logger, childLogger } from './log';
 import { requireAuth } from './auth';
 import { appAuthRouter } from './routes/appAuth';
 import { sfConnectRouter } from './routes/sfConnect';
@@ -16,11 +18,10 @@ import { autoLoadSaveIfNeeded } from './save/autoLoad';
 // still unset/the shipped placeholder means JWTs are forgeable. Only fires when
 // ENABLE_LOGIN=true, so default local/dev runs (login off) are unaffected.
 if (config.enableLogin && (!config.sessionSecret || config.sessionSecret === DEFAULT_SESSION_SECRET)) {
-  console.error(
-    '[auth] ENABLE_LOGIN=true but SESSION_SECRET is unset or the default placeholder.\n' +
-    '       Session tokens would be forgeable. Set a strong, random secret, e.g.:\n' +
-    '         SESSION_SECRET=$(openssl rand -hex 32)\n' +
-    '       Refusing to start.',
+  childLogger('auth').fatal(
+    'ENABLE_LOGIN=true but SESSION_SECRET is unset or the default placeholder. ' +
+    'Session tokens would be forgeable. Set a strong, random secret ' +
+    '(SESSION_SECRET=$(openssl rand -hex 32)). Refusing to start.',
   );
   process.exit(1);
 }
@@ -30,6 +31,25 @@ const app = express();
 // Behind a reverse proxy (nginx/Caddy/Cloudflare) — honour X-Forwarded-* so
 // req.ip (login rate limiting) reflects the real client. Harmless for local/dev.
 app.set('trust proxy', 1);
+
+// HTTP access logging. Successful GETs (mostly UI polling) log at debug to keep
+// the default `info` stream quiet; mutations log at info, client errors at warn,
+// failures at error. Auth header/cookie are redacted; req/res are trimmed to the
+// essentials. Health probe is excluded entirely.
+app.use(pinoHttp({
+  logger: childLogger('http'),
+  autoLogging: { ignore: (req) => req.url === '/api/health' },
+  customLogLevel: (_req, res, err) => {
+    if (err || res.statusCode >= 500) return 'error';
+    if (res.statusCode >= 400) return 'warn';
+    return _req.method === 'GET' ? 'debug' : 'info';
+  },
+  redact: { paths: ['req.headers.authorization', 'req.headers.cookie'], remove: true },
+  serializers: {
+    req: (req) => ({ method: req.method, url: req.url }),
+    res: (res) => ({ statusCode: res.statusCode }),
+  },
+}));
 
 app.use(express.json());
 app.use(cookieParser());
@@ -53,19 +73,20 @@ app.use(saveViewerRouter);
 app.use(mapTilesRouter);
 
 // Auto-connect to SF server if SF_HOST is pre-configured via env
+const sfLog = childLogger('sf');
 if (config.sfHost) {
   autoConnect()
     .then(async () => {
-      console.log(`[sf] Connected to ${config.sfHost}:${config.sfPort}`);
+      sfLog.info(`Connected to ${config.sfHost}:${config.sfPort}`);
       // Covers the no-mount case: nothing to load at listen-time below since the
       // connection hadn't resolved yet, so this is our first chance to auto-load via the API.
       await autoLoadSaveIfNeeded();
     })
-    .catch((err: Error) => console.error('[sf] Auto-connect failed:', err.message));
+    .catch((err: Error) => sfLog.error(`Auto-connect failed: ${err.message}`));
 }
 
 app.listen(config.port, '127.0.0.1', async () => {
-  console.log(`Satisfactory Lens backend listening on port ${config.port}`);
+  logger.info(`Satisfactory Lens backend listening on port ${config.port}`);
   // Auto-load from the mount if present; otherwise via the API if already connected.
   await autoLoadSaveIfNeeded();
 });
