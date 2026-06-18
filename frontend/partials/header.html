@@ -5,13 +5,13 @@
       <button
         @click="switchTab('dashboard')"
         title="Go to Dashboard"
-        class="flex items-center gap-2.5 group rounded-lg -ml-1 px-1 hover:bg-gray-800/60 transition-colors shrink-0"
+        class="flex items-center gap-2.5 group rounded-lg -ml-1 px-1 transition-colors shrink-0"
       >
         <div class="h-8 w-8 flex items-center justify-center bg-gray-800 rounded-lg border border-accent-500/40 flex-shrink-0 p-1 group-hover:border-accent-500/70 transition-colors">
           <img src="/img/favicon/apple-touch-icon.png" alt="Satisfactory Lens logo" class="w-full h-full object-contain rounded-md">
         </div>
-        <h1 class="text-lg font-extrabold tracking-tight leading-none whitespace-nowrap">
-          <span class="text-gray-200">Satisfactory</span><span class="text-accent-400 group-hover:text-accent-300 transition-colors"> Lens</span>
+        <h1 class="text-lg font-display font-bold tracking-tight leading-none whitespace-nowrap">
+          <span class="text-gray-200 group-hover:text-white transition-colors">Satisfactory</span><span class="bg-gradient-to-r from-accent-300 to-accent-500 bg-clip-text text-transparent drop-shadow-[0_0_8px_rgb(var(--accent-500)_/_0.35)] group-hover:drop-shadow-[0_0_17px_rgb(var(--accent-400)_/_0.8)] transition-all duration-300"> Lens</span>
         </h1>
       </button>
 
@@ -33,7 +33,7 @@
           Save Tools
           <span
             x-show="saveStatus?.loaded && sseConnected"
-            class="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-green-400"
+            class="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-ok-400"
           ></span>
         </button>
         <button
@@ -61,9 +61,9 @@
         @click="openServerPanel()"
         @mouseenter="showTooltip($event, sfStatus.host + (serverState?.serverGameState?.activeSessionName ? '   ·   ' + serverState.serverGameState.activeSessionName : ''), null, 'bottom')"
         @mouseleave="hideTooltip()"
-        class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-green-900/40 text-green-400 border border-green-800/70 hover:bg-green-900/60 transition-colors shrink-0"
+        class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-ok-900/40 text-ok-400 border border-ok-800/70 hover:bg-ok-900/60 transition-colors shrink-0"
       >
-        <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-ok-400 animate-pulse"></span>
         <span class="hidden sm:inline">Connected</span>
       </button>
       <button
@@ -90,7 +90,7 @@
         </svg>
         <span
           x-show="newerSaveAvailable"
-          class="absolute top-1 right-1 w-2 h-2 rounded-full bg-amber-400 ring-2 ring-gray-900 animate-pulse"
+          class="absolute top-1 right-1 w-2 h-2 rounded-full bg-warn-400 ring-2 ring-gray-900 animate-pulse"
         ></span>
       </button>
       <!-- Server panel (live state + config) -->
@@ -123,7 +123,7 @@
         title="Disconnect from server"
         class="p-1.5 hover:bg-gray-700/60 rounded-lg transition-colors group shrink-0"
       >
-        <svg class="w-5 h-5 text-gray-400 group-hover:text-red-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-5 h-5 text-gray-400 group-hover:text-danger-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" />
         </svg>
       </button>
@@ -133,7 +133,7 @@
         title="Log out"
         class="p-1.5 hover:bg-gray-700/60 rounded-lg transition-colors group shrink-0"
       >
-        <svg class="w-5 h-5 text-gray-400 group-hover:text-red-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-5 h-5 text-gray-400 group-hover:text-danger-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
         </svg>
       </button>

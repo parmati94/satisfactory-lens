@@ -1,5 +1,8 @@
 import { Agent, fetch as undiciFetch, FormData } from 'undici';
 import { config } from '../config';
+import { childLogger } from '../log';
+
+const log = childLogger('sf-api');
 
 // Runtime connection state (overrides env vars when set via the connect UI)
 let runtimeHost = '';
@@ -29,6 +32,23 @@ function baseUrl(): string {
   return `https://${effectiveHost()}:${effectivePort()}/api/v1`;
 }
 
+// Redact secret-bearing fields before logging a request payload. Shallow is
+// enough — passwords/tokens live at the top level of the SF API `data` object.
+function redactForLog(data: Record<string, unknown>): Record<string, unknown> {
+  const SECRET_KEYS = ['password', 'authenticationToken', 'token'];
+  let out = data;
+  for (const k of SECRET_KEYS) {
+    if (k in out) out = { ...out, [k]: '«redacted»' };
+  }
+  return out;
+}
+
+// Truncate a response body for logging so a giant save/enumerate dump doesn't
+// flood the console; full bodies are rarely needed to diagnose a call.
+function truncateForLog(text: string, max = 2000): string {
+  return text.length > max ? `${text.slice(0, max)}… (+${text.length - max} bytes)` : text;
+}
+
 async function call<T = unknown>(fn: string, data: Record<string, unknown> = {}): Promise<T> {
   const host = effectiveHost();
   if (!host) throw new Error('Satisfactory server host not configured. Use the Connect button.');
@@ -36,6 +56,12 @@ async function call<T = unknown>(fn: string, data: Record<string, unknown> = {})
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (bearerToken) headers['Authorization'] = `Bearer ${bearerToken}`;
 
+  // `isLevelEnabled` guard avoids the redact/stringify cost when trace is off.
+  if (log.isLevelEnabled('trace')) {
+    log.trace({ fn, data: redactForLog(data) }, `→ ${fn}`);
+  }
+
+  const startedAt = Date.now();
   const res = await undiciFetch(baseUrl(), {
     method: 'POST',
     headers,
@@ -45,6 +71,12 @@ async function call<T = unknown>(fn: string, data: Record<string, unknown> = {})
   });
 
   const text = await res.text();
+
+  if (log.isLevelEnabled('trace')) {
+    const ms = Date.now() - startedAt;
+    log.trace({ fn, status: res.status, ms, body: truncateForLog(text || '«empty body»') }, `← ${fn} ${res.status} (${ms}ms)`);
+  }
+
   const json = (text.trim() ? JSON.parse(text) : {}) as Record<string, unknown>;
 
   if (!res.ok) {

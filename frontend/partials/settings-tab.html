@@ -68,7 +68,7 @@
                       x-text="healthLoading ? '…' : (serverHealth?.latencyMs != null ? serverHealth.latencyMs : '—')"></span>
                 <span class="text-xs text-gray-500" x-show="serverHealth?.latencyMs != null">ms</span>
               </div>
-              <div class="text-[11px] mt-0.5" :class="serverHealth ? 'text-green-400' : 'text-red-400'"
+              <div class="text-[11px] mt-0.5" :class="serverHealth ? 'text-ok-400' : 'text-danger-400'"
                    x-text="serverHealth ? '● Reachable' : '○ Unreachable'"></div>
             </div>
             <div class="bg-gray-750 rounded-xl p-4 border border-gray-700 transition-all duration-150 hover:border-accent-500/40 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20">
@@ -101,8 +101,8 @@
               <div class="flex justify-between border-b border-gray-700/50 pb-2">
                 <span class="text-gray-400">Status</span>
                 <span>
-                  <span x-show="serverState?.serverGameState?.isGameRunning && !serverState?.serverGameState?.isGamePaused" class="text-green-400">● Running</span>
-                  <span x-show="serverState?.serverGameState?.isGamePaused" class="text-yellow-400">⏸ Paused</span>
+                  <span x-show="serverState?.serverGameState?.isGameRunning && !serverState?.serverGameState?.isGamePaused" class="text-ok-400">● Running</span>
+                  <span x-show="serverState?.serverGameState?.isGamePaused" class="text-warn-400">⏸ Paused</span>
                   <span x-show="!serverState?.serverGameState?.isGameRunning" class="text-gray-500">○ Idle</span>
                 </span>
               </div>
@@ -119,7 +119,7 @@
           <div x-show="loading" class="text-center py-10 text-gray-500 text-sm animate-pulse">Loading settings…</div>
           <div
             x-show="error && !loading"
-            class="p-4 bg-red-900/30 border border-red-800 rounded-lg text-red-300 text-sm"
+            class="p-4 bg-danger-900/30 border border-danger-800 rounded-lg text-danger-300 text-sm"
             x-text="error"
           ></div>
 
@@ -155,7 +155,7 @@
                       <template x-if="!settingsEditMode">
                         <span>
                           <span x-show="row.type === 'bool'" class="text-xs font-medium px-2 py-0.5 rounded-full"
-                                :class="settingIsBool(row.value) ? 'bg-green-900/40 text-green-400' : 'bg-gray-700/60 text-gray-400'"
+                                :class="settingIsBool(row.value) ? 'bg-ok-900/40 text-ok-400' : 'bg-gray-700/60 text-gray-400'"
                                 x-text="settingIsBool(row.value) ? 'On' : 'Off'"></span>
                           <span x-show="row.type !== 'bool'" class="text-xs font-mono text-gray-300" x-text="row.value"></span>
                         </span>
@@ -192,7 +192,8 @@
               <div class="flex items-center justify-between mb-1">
                 <h3 class="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Advanced Game Settings</h3>
               </div>
-              <p class="text-[11px] text-amber-400/80 mb-3">Enabling these turns on creative mode and may disable achievements for the save.</p>
+              <p class="text-[11px] text-warn-400/80 mb-1">Enabling these turns on creative mode and may disable achievements for the save.</p>
+              <p class="text-[11px] text-gray-500 mb-3">Enable-only: the server applies these but ignores attempts to switch one back off. To disable one, use the in-game Esc → Advanced Game Settings menu.</p>
               <div class="space-y-1">
                 <template x-for="row in settingEntries('advanced')" :key="row.key">
                   <div class="flex items-center justify-between gap-3 py-2 border-b border-gray-700/50 last:border-0">
@@ -207,7 +208,7 @@
                       <template x-if="!settingsEditMode">
                         <span>
                           <span x-show="row.type === 'bool'" class="text-xs font-medium px-2 py-0.5 rounded-full"
-                                :class="settingIsBool(row.value) ? 'bg-green-900/40 text-green-400' : 'bg-gray-700/60 text-gray-400'"
+                                :class="settingIsBool(row.value) ? 'bg-ok-900/40 text-ok-400' : 'bg-gray-700/60 text-gray-400'"
                                 x-text="settingIsBool(row.value) ? 'On' : 'Off'"></span>
                           <span x-show="row.type !== 'bool'" class="text-xs font-mono text-gray-300" x-text="row.value"></span>
                         </span>

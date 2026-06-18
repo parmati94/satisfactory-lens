@@ -20,6 +20,13 @@ export const config = {
   sfPassword: process.env.SF_PASSWORD ?? '',
   sfAllowSelfSigned: (process.env.SF_ALLOW_SELF_SIGNED ?? 'true').toLowerCase() !== 'false',
 
+  // Logging. LOG_LEVEL is the single verbosity knob (trace|debug|info|warn|error|
+  // fatal|silent); per-SF-API request/response tracing lives at `trace`. LOG_PRETTY
+  // is a hidden opt-out — output is human-readable colorized lines by default; set
+  // LOG_PRETTY=false for newline-delimited JSON (e.g. when shipping logs elsewhere).
+  logLevel: (process.env.LOG_LEVEL ?? 'info').toLowerCase(),
+  logPretty: (process.env.LOG_PRETTY ?? 'true').toLowerCase() !== 'false',
+
   // Save file (Phase 2). Fixed mount point inside the container — point a docker-compose
   // volume at it if you want local-disk access; not env-configurable, nothing to set here.
   saveMountPath: '/app/saves',

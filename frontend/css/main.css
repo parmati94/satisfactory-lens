@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Self-hosted display face for the wordmark (one weight). `font-display: swap`
+   so the title paints immediately in the fallback and swaps when the woff2
+   lands. Exposed as the Tailwind `font-display` utility (see tailwind.config.js). */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-700.woff2') format('woff2');
+}
+
 /* ── Accent theme palettes ────────────────────────────────────────────────
    Each `accent-*` Tailwind utility resolves to these CSS vars (see
    tailwind.config.js). Values are space-separated `R G B` triplets so Tailwind
@@ -39,7 +50,52 @@
   --accent-900: 136 19 55;
 }
 
+/* ── Semantic feedback palette ─────────────────────────────────────────────
+   FIXED, theme-independent meaning colors — deliberately NOT in the theme
+   picker. `ok` = positive/active/healthy, `warn` = attention/needs-fuel,
+   `danger` = error/offline. Surfaced as Tailwind `ok-*`/`warn-*`/`danger-*`
+   (see tailwind.config.js). Values mirror Tailwind green/amber/red so the
+   meaning stays universal and distinct from the (themeable) accent. Tune a
+   meaning globally by editing one ramp here — e.g. a colorblind-safe set. */
+:root {
+  --ok-50: 240 253 244;  --ok-100: 220 252 231; --ok-200: 187 247 208;
+  --ok-300: 134 239 172; --ok-400: 74 222 128;  --ok-500: 34 197 94;
+  --ok-600: 22 163 74;   --ok-700: 21 128 61;   --ok-800: 22 101 52;
+  --ok-900: 20 83 45;
+
+  --warn-50: 255 251 235;  --warn-100: 254 243 199; --warn-200: 253 230 138;
+  --warn-300: 252 211 77;  --warn-400: 251 191 36;  --warn-500: 245 158 11;
+  --warn-600: 217 119 6;   --warn-700: 180 83 9;    --warn-800: 146 64 14;
+  --warn-900: 120 53 15;
+
+  --danger-50: 254 242 242;  --danger-100: 254 226 226; --danger-200: 254 202 202;
+  --danger-300: 252 165 165; --danger-400: 248 113 113; --danger-500: 239 68 68;
+  --danger-600: 220 38 38;   --danger-700: 185 28 28;   --danger-800: 153 27 27;
+  --danger-900: 127 29 29;
+}
+
 [x-cloak] { display: none !important; }
+
+/* Reduced motion — toggled in App Settings (seeded from prefers-reduced-motion).
+   Neutralizes animations/transitions app-wide without removing final states. */
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* …but never clamp Leaflet's functional zoom/pan motion — snapping the map reads
+   as broken, not "reduced". Restore the map's own transitions inside the map. */
+html.reduce-motion .leaflet-zoom-anim .leaflet-zoom-animated {
+  transition: transform 0.25s cubic-bezier(0, 0, 0.25, 1) !important;
+}
+html.reduce-motion .leaflet-pan-anim .leaflet-map-pane,
+html.reduce-motion .leaflet-pan-anim .leaflet-proxy {
+  transition-duration: 0.25s !important;
+}
 
 /* Two-line truncation (schematic card names) — explicit in case the Tailwind
    build doesn't emit the core utility. */

@@ -1,13 +1,15 @@
 import { Router } from 'express';
 import * as sf from '../api/sfClient';
+import { childLogger } from '../log';
 
 const router = Router();
+const log = childLogger('saves');
 
 router.get('/api/saves', async (_req, res) => {
   try {
     res.json(await sf.enumerateSessions());
   } catch (err) {
-    console.error('[saves] enumerateSessions failed:', (err as Error).message);
+    log.error(`enumerateSessions failed: ${(err as Error).message}`);
     res.status(502).json({ error: (err as Error).message });
   }
 });
@@ -24,10 +26,10 @@ router.post('/api/saves/load', async (req, res) => {
   }
   try {
     const result = await sf.loadGame(sessionName, saveName, enableAdvancedGameSettings ?? false);
-    console.log(`[saves] LoadGame "${saveName}" accepted`);
+    log.info(`LoadGame "${saveName}" accepted`);
     res.json(result);
   } catch (err) {
-    console.error('[saves] LoadGame failed:', (err as Error).message);
+    log.error(`LoadGame failed: ${(err as Error).message}`);
     res.status(502).json({ error: (err as Error).message });
   }
 });
@@ -40,10 +42,10 @@ router.post('/api/saves/save', async (req, res) => {
   }
   try {
     const result = await sf.saveGame(saveName);
-    console.log(`[saves] SaveGame "${saveName}" accepted`);
+    log.info(`SaveGame "${saveName}" accepted`);
     res.json(result);
   } catch (err) {
-    console.error('[saves] SaveGame failed:', (err as Error).message);
+    log.error(`SaveGame failed: ${(err as Error).message}`);
     res.status(502).json({ error: (err as Error).message });
   }
 });
@@ -52,10 +54,10 @@ router.delete('/api/saves/:saveName', async (req, res) => {
   const { saveName } = req.params;
   try {
     const result = await sf.deleteSavegame(saveName);
-    console.log(`[saves] DeleteSavegame "${saveName}" accepted`);
+    log.info(`DeleteSavegame "${saveName}" accepted`);
     res.json(result);
   } catch (err) {
-    console.error('[saves] DeleteSavegame failed:', (err as Error).message);
+    log.error(`DeleteSavegame failed: ${(err as Error).message}`);
     res.status(502).json({ error: (err as Error).message });
   }
 });

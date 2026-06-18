@@ -77,6 +77,8 @@ All settings are environment variables in `docker-compose.yml`:
 | `TZ` | `America/New_York` | Timezone for log timestamps |
 | `ENABLE_AUTO_WATCH` | `true` | Flag (never auto-reload) when a newer save appears, in the UI (header reload button). Watches `/app/saves` if mounted, otherwise polls the SF API. Never reloads automatically — you choose when to reload, so it won't clobber in-progress edits. |
 | `SAVE_POLL_INTERVAL_SECONDS` | `30` | How often to poll the SF API for a newer save when no mount is present. Ignored in mount mode (which watches the directory directly). |
+| `LOG_LEVEL` | `info` | Log verbosity: `trace`, `debug`, `info`, `warn`, `error`, `fatal`, or `silent`. Successful UI-polling requests log at `debug`; `trace` adds full Satisfactory API request/response bodies (secrets redacted). |
+| `LOG_PRETTY` | `true` | Human-readable colorized log lines. Set to `false` for newline-delimited JSON (e.g. when shipping logs to a collector). Rarely needed — left out of the compose files on purpose. |
 
 Mounting a save folder is **fully optional**. By default the Save Viewer loads the latest save via the SF API once connected — no volume needed. For local-disk access instead, uncomment the volume in `docker-compose.yml` and point it at your save folder (read-only):
 
