@@ -182,11 +182,11 @@ export function saveEditing() {
     // Tailwind tones for the health bar fill / numeric readout (green→yellow→red).
     healthBarClass(player) {
       const h = this.effectiveHealth(player) ?? 0;
-      return h > 50 ? 'bg-green-500' : h > 20 ? 'bg-yellow-500' : 'bg-red-500';
+      return h > 50 ? 'bg-ok-500' : h > 20 ? 'bg-warn-500' : 'bg-danger-500';
     },
     healthTextClass(player) {
       const h = this.effectiveHealth(player) ?? 0;
-      return h > 50 ? 'text-green-400' : h > 20 ? 'text-yellow-400' : 'text-red-400';
+      return h > 50 ? 'text-ok-400' : h > 20 ? 'text-warn-400' : 'text-danger-400';
     },
     setPlayerHealthValue(player, hp) {
       const v = Math.max(0, Math.min(100, Math.round(Number(hp) || 0)));

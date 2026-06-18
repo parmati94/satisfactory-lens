@@ -478,6 +478,14 @@ export function mapController() {
       this._persistCategoryColors();
       this._recolorCategorySprites(cat);
     },
+    // Clear every per-category map color override at once (App Settings / reset).
+    resetAllCategoryColors() {
+      const cats = Object.keys(this.categoryColorOverrides);
+      if (!cats.length) return;
+      this.categoryColorOverrides = {};
+      this._persistCategoryColors();
+      cats.forEach((cat) => this._recolorCategorySprites(cat));
+    },
     // Live in-place recolor: retint a category's sprites without rebuilding the
     // overlay. Each category's display objects include the sprite layer Container
     // (its children are the sprites) and any spline Graphics (childless — skipped).

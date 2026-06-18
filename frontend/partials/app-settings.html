@@ -57,6 +57,69 @@
           </template>
         </div>
       </div>
+
+      <div class="border-t border-gray-700/60"></div>
+
+      <!-- Reduce motion -->
+      <div class="flex items-center justify-between gap-4">
+        <div class="min-w-0">
+          <h3 class="text-sm font-semibold text-gray-200">Reduce motion</h3>
+          <p class="text-xs text-gray-500 mt-0.5">Dampens animations and transitions (glow, pulses, hovers).</p>
+        </div>
+        <button
+          @click="toggleReduceMotion()"
+          role="switch"
+          :aria-checked="reduceMotion"
+          class="relative w-9 h-5 rounded-full transition-colors flex-shrink-0"
+          :class="reduceMotion ? 'bg-accent-500' : 'bg-gray-600'"
+        >
+          <span class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform"
+                :class="reduceMotion ? 'translate-x-4' : ''"></span>
+        </button>
+      </div>
+
+      <!-- Default landing tab -->
+      <div>
+        <h3 class="text-sm font-semibold text-gray-200 mb-1">Landing tab</h3>
+        <p class="text-xs text-gray-500 mb-3">Which tab opens when the app loads.</p>
+        <div class="grid grid-cols-2 gap-2">
+          <template x-for="t in landingTabs" :key="t.id">
+            <button
+              @click="setDefaultTab(t.id)"
+              class="px-3 py-1.5 text-sm font-medium rounded-lg border transition-colors"
+              :class="defaultTab === t.id
+                ? 'bg-accent-500/15 border-accent-500/50 text-accent-300'
+                : 'bg-gray-900/40 border-gray-700 text-gray-400 hover:text-gray-200 hover:border-gray-600'"
+              x-text="t.label"
+            ></button>
+          </template>
+        </div>
+      </div>
+
+      <!-- Map colors -->
+      <div class="flex items-center justify-between gap-4">
+        <div class="min-w-0">
+          <h3 class="text-sm font-semibold text-gray-200">Map colors</h3>
+          <p class="text-xs text-gray-500 mt-0.5">
+            <span x-show="mapColorOverrideCount() > 0"><span x-text="mapColorOverrideCount()"></span> category override<span x-show="mapColorOverrideCount() !== 1">s</span> · set per-category on the Map</span>
+            <span x-show="mapColorOverrideCount() === 0">Using default palette · customize per-category on the Map</span>
+          </p>
+        </div>
+        <button
+          @click="resetAllCategoryColors()"
+          :disabled="mapColorOverrideCount() === 0"
+          class="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-700 text-gray-400 hover:text-gray-200 hover:border-gray-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+        >Reset</button>
+      </div>
+    </div>
+
+    <!-- Footer: wipe all device-local prefs -->
+    <div class="px-6 py-3 border-t border-gray-700/70 flex items-center justify-between gap-3">
+      <span class="text-xs text-gray-500">Preferences are saved on this device.</span>
+      <button
+        @click="resetPreferences()"
+        class="px-3 py-1.5 text-xs font-medium rounded-lg border border-danger-800/70 text-danger-400 hover:bg-danger-900/30 hover:border-danger-700 transition-colors flex-shrink-0"
+      >Reset all</button>
     </div>
   </div>
 </div>

@@ -21,6 +21,8 @@ document.addEventListener('alpine:init', () => {
     // from the Server panel, which lives behind its own header icon now.
     showAppSettings: false,
     theme: 'orange',
+    reduceMotion: false,        // App Settings: dampen animations/transitions
+    defaultTab: 'dashboard',    // App Settings: tab opened on load
     themes: [
       { id: 'orange', label: 'Orange', swatch: '#f97316' },
       { id: 'blue', label: 'Blue', swatch: '#3b82f6' },
@@ -100,6 +102,9 @@ document.addEventListener('alpine:init', () => {
       this.applyTheme(localStorage.getItem('sl-theme') || 'orange');
       // Restore any saved per-category map color overrides.
       this._loadCategoryColors();
+      // Apply device prefs: reduced motion (seeded from the OS) and landing tab.
+      this.applyReduceMotion(this._initialReduceMotion());
+      this.loadDefaultTab();
 
       try {
         const authStatus = await api.auth.status();
@@ -118,9 +123,8 @@ document.addEventListener('alpine:init', () => {
       await this.loadSaveStatus();
       this.connectSaveSSE();
 
-      if (this.sfStatus.connected) {
-        await this.loadDashboard();
-      }
+      // Open the user's chosen landing tab and trigger its data load.
+      await this.switchTab(this.activeTab);
     },
 
     // Sets the accent theme: flips `data-theme` on <html> (re-tints every
@@ -131,6 +135,57 @@ document.addEventListener('alpine:init', () => {
       this.theme = id;
       document.documentElement.setAttribute('data-theme', id);
       localStorage.setItem('sl-theme', id);
+    },
+
+    // ── App Settings: device-local preferences ────────────────────────────
+    // Valid landing tabs (must match the header nav + switchTab keys).
+    landingTabs: [
+      { id: 'dashboard', label: 'Dashboard' },
+      { id: 'saveviewer', label: 'Save Tools' },
+      { id: 'map', label: 'Map' },
+      { id: 'saves', label: 'Saves' },
+    ],
+    loadDefaultTab() {
+      const saved = localStorage.getItem('sl-default-tab');
+      this.defaultTab = this.landingTabs.some((t) => t.id === saved) ? saved : 'dashboard';
+      this.activeTab = this.defaultTab;
+    },
+    setDefaultTab(id) {
+      if (!this.landingTabs.some((t) => t.id === id)) return;
+      this.defaultTab = id;
+      localStorage.setItem('sl-default-tab', id);
+    },
+
+    // Reduced motion: explicit pref wins; otherwise seed from the OS setting.
+    _initialReduceMotion() {
+      const saved = localStorage.getItem('sl-reduce-motion');
+      if (saved !== null) return saved === 'true';
+      return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    },
+    applyReduceMotion(on) {
+      this.reduceMotion = !!on;
+      document.documentElement.classList.toggle('reduce-motion', this.reduceMotion);
+      localStorage.setItem('sl-reduce-motion', String(this.reduceMotion));
+    },
+    toggleReduceMotion() { this.applyReduceMotion(!this.reduceMotion); },
+
+    // Count of categories with a custom map color (for the App Settings summary).
+    mapColorOverrideCount() { return Object.keys(this.categoryColorOverrides ?? {}).length; },
+
+    // Wipe all device-local prefs back to defaults (theme, map colors, landing
+    // tab, reduced motion). Confirmed first — it's a clear-everything action.
+    async resetPreferences() {
+      const ok = await this.showConfirm({
+        title: 'Reset preferences?',
+        message: 'Restores the default accent, clears custom map colors, and resets the landing tab and motion settings on this device. Your save data is untouched.',
+        confirmLabel: 'Reset',
+      });
+      if (!ok) return;
+      ['sl-theme', 'sl-map-colors', 'sl-default-tab', 'sl-reduce-motion'].forEach((k) => localStorage.removeItem(k));
+      this.applyTheme('orange');
+      this.resetAllCategoryColors?.();
+      this.applyReduceMotion(this._initialReduceMotion());
+      this.setDefaultTab('dashboard');
     },
 
     async checkSfStatus() {
@@ -247,8 +302,10 @@ document.addEventListener('alpine:init', () => {
       return p > 0 ? Math.round((d / p) * 100) : 0;
     },
     powerLoadTone() {
+      // Normal load uses the (themeable) accent like the progression bar; still
+      // escalates to warn/danger as the grid nears/exceeds capacity.
       const pct = this.powerLoadPct();
-      return pct > 100 ? 'bg-red-500' : pct > 85 ? 'bg-yellow-500' : 'bg-green-500';
+      return pct > 100 ? 'bg-danger-500' : pct > 85 ? 'bg-warn-500' : 'bg-accent-500';
     },
 
     // Crafting machines / generators / miners+extractors from the buildings census.
@@ -341,12 +398,12 @@ document.addEventListener('alpine:init', () => {
     // Color tone for the latency readout (green < 80ms, yellow < 200ms, else red).
     latencyTone(ms) {
       if (ms == null) return 'text-gray-500';
-      return ms < 80 ? 'text-green-400' : ms < 200 ? 'text-yellow-400' : 'text-red-400';
+      return ms < 80 ? 'text-ok-400' : ms < 200 ? 'text-warn-400' : 'text-danger-400';
     },
     // Color tone for tick rate against the 30/s target.
     tickRateTone(r) {
       if (r == null) return 'text-gray-500';
-      return r >= 28 ? 'text-green-400' : r >= 20 ? 'text-yellow-400' : 'text-red-400';
+      return r >= 28 ? 'text-ok-400' : r >= 20 ? 'text-warn-400' : 'text-danger-400';
     },
 
     // ── Editable settings (Configuration tab) ─────────────────────────────

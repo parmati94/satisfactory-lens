@@ -32,6 +32,29 @@ export default {
           800: 'rgb(var(--accent-800) / <alpha-value>)',
           900: 'rgb(var(--accent-900) / <alpha-value>)',
         },
+        // Fixed semantic feedback colors (vars defined in css/main.css :root).
+        // Not themeable — meaning stays constant across accent themes.
+        ok: {
+          50: 'rgb(var(--ok-50) / <alpha-value>)', 100: 'rgb(var(--ok-100) / <alpha-value>)',
+          200: 'rgb(var(--ok-200) / <alpha-value>)', 300: 'rgb(var(--ok-300) / <alpha-value>)',
+          400: 'rgb(var(--ok-400) / <alpha-value>)', 500: 'rgb(var(--ok-500) / <alpha-value>)',
+          600: 'rgb(var(--ok-600) / <alpha-value>)', 700: 'rgb(var(--ok-700) / <alpha-value>)',
+          800: 'rgb(var(--ok-800) / <alpha-value>)', 900: 'rgb(var(--ok-900) / <alpha-value>)',
+        },
+        warn: {
+          50: 'rgb(var(--warn-50) / <alpha-value>)', 100: 'rgb(var(--warn-100) / <alpha-value>)',
+          200: 'rgb(var(--warn-200) / <alpha-value>)', 300: 'rgb(var(--warn-300) / <alpha-value>)',
+          400: 'rgb(var(--warn-400) / <alpha-value>)', 500: 'rgb(var(--warn-500) / <alpha-value>)',
+          600: 'rgb(var(--warn-600) / <alpha-value>)', 700: 'rgb(var(--warn-700) / <alpha-value>)',
+          800: 'rgb(var(--warn-800) / <alpha-value>)', 900: 'rgb(var(--warn-900) / <alpha-value>)',
+        },
+        danger: {
+          50: 'rgb(var(--danger-50) / <alpha-value>)', 100: 'rgb(var(--danger-100) / <alpha-value>)',
+          200: 'rgb(var(--danger-200) / <alpha-value>)', 300: 'rgb(var(--danger-300) / <alpha-value>)',
+          400: 'rgb(var(--danger-400) / <alpha-value>)', 500: 'rgb(var(--danger-500) / <alpha-value>)',
+          600: 'rgb(var(--danger-600) / <alpha-value>)', 700: 'rgb(var(--danger-700) / <alpha-value>)',
+          800: 'rgb(var(--danger-800) / <alpha-value>)', 900: 'rgb(var(--danger-900) / <alpha-value>)',
+        },
       },
     },
   },

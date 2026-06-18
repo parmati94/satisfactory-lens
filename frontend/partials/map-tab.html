@@ -233,18 +233,18 @@
             <div class="flex gap-1 px-1 pb-1">
               <button @click="toggleMapFilter('purityImpure')" :title="'Impure (' + nodeCountByPurity('Impure') + ')'"
                 class="flex-1 flex items-center justify-center gap-1 px-1 py-1 rounded-md border text-[10px] font-medium transition-all"
-                :class="mapFilters.purityImpure ? 'bg-red-500/15 border-red-500/50 text-gray-200' : 'bg-gray-800/40 border-gray-700/50 text-gray-500'">
-                <span class="w-1.5 h-1.5 rounded-full" :class="mapFilters.purityImpure ? 'bg-red-500' : 'bg-gray-600'"></span>Impure
+                :class="mapFilters.purityImpure ? 'bg-danger-500/15 border-danger-500/50 text-gray-200' : 'bg-gray-800/40 border-gray-700/50 text-gray-500'">
+                <span class="w-1.5 h-1.5 rounded-full" :class="mapFilters.purityImpure ? 'bg-danger-500' : 'bg-gray-600'"></span>Impure
               </button>
               <button @click="toggleMapFilter('purityNormal')" :title="'Normal (' + nodeCountByPurity('Normal') + ')'"
                 class="flex-1 flex items-center justify-center gap-1 px-1 py-1 rounded-md border text-[10px] font-medium transition-all"
-                :class="mapFilters.purityNormal ? 'bg-yellow-500/15 border-yellow-500/50 text-gray-200' : 'bg-gray-800/40 border-gray-700/50 text-gray-500'">
-                <span class="w-1.5 h-1.5 rounded-full" :class="mapFilters.purityNormal ? 'bg-yellow-500' : 'bg-gray-600'"></span>Normal
+                :class="mapFilters.purityNormal ? 'bg-warn-500/15 border-warn-500/50 text-gray-200' : 'bg-gray-800/40 border-gray-700/50 text-gray-500'">
+                <span class="w-1.5 h-1.5 rounded-full" :class="mapFilters.purityNormal ? 'bg-warn-500' : 'bg-gray-600'"></span>Normal
               </button>
               <button @click="toggleMapFilter('purityPure')" :title="'Pure (' + nodeCountByPurity('Pure') + ')'"
                 class="flex-1 flex items-center justify-center gap-1 px-1 py-1 rounded-md border text-[10px] font-medium transition-all"
-                :class="mapFilters.purityPure ? 'bg-green-500/15 border-green-500/50 text-gray-200' : 'bg-gray-800/40 border-gray-700/50 text-gray-500'">
-                <span class="w-1.5 h-1.5 rounded-full" :class="mapFilters.purityPure ? 'bg-green-500' : 'bg-gray-600'"></span>Pure
+                :class="mapFilters.purityPure ? 'bg-ok-500/15 border-ok-500/50 text-gray-200' : 'bg-gray-800/40 border-gray-700/50 text-gray-500'">
+                <span class="w-1.5 h-1.5 rounded-full" :class="mapFilters.purityPure ? 'bg-ok-500' : 'bg-gray-600'"></span>Pure
               </button>
             </div>
 

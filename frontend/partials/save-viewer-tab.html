@@ -25,7 +25,7 @@
 
   <!-- Action result banner (save/persist outcomes) -->
   <div x-show="actionResult" x-transition
-       :class="actionResult?.ok ? 'bg-green-900/30 border-green-800 text-green-300' : 'bg-red-900/30 border-red-800 text-red-300'"
+       :class="actionResult?.ok ? 'bg-ok-900/30 border-ok-800 text-ok-300' : 'bg-danger-900/30 border-danger-800 text-danger-300'"
        class="flex items-start justify-between gap-3 p-3 border rounded-lg text-sm mb-5">
     <div class="flex items-start gap-2">
       <svg x-show="actionResult?.ok" class="flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:16px;height:16px">
@@ -42,9 +42,9 @@
       <h2 class="text-base font-semibold text-gray-200">Save Tools</h2>
       <span
         x-show="saveStatus?.loaded"
-        class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full bg-green-900/40 text-green-400 border border-green-800"
+        class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full bg-ok-900/40 text-ok-400 border border-ok-800"
       >
-        <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-ok-400"></span>
         <span x-text="saveStatus?.sourceName"></span>
       </span>
       <span
@@ -74,7 +74,7 @@
   <!-- Save status error -->
   <div
     x-show="saveStatus?.error"
-    class="p-3 bg-red-900/30 border border-red-800 rounded-lg text-red-300 text-sm mb-5"
+    class="p-3 bg-danger-900/30 border border-danger-800 rounded-lg text-danger-300 text-sm mb-5"
     x-text="saveStatus?.error"
   ></div>
 
@@ -144,7 +144,7 @@
     <!-- Data error -->
     <div
       x-show="saveDataError"
-      class="p-3 bg-red-900/30 border border-red-800 rounded-lg text-red-300 text-sm mb-4"
+      class="p-3 bg-danger-900/30 border border-danger-800 rounded-lg text-danger-300 text-sm mb-4"
       x-text="saveDataError"
     ></div>
 
@@ -300,7 +300,7 @@
                          :class="isHealthEdited(player) ? 'border-accent-500/40' : 'border-gray-700/60'">
                   <span class="text-xs text-gray-500">/ 100 HP</span>
                   <button @click="setPlayerHealthValue(player, 100)"
-                          class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md border border-gray-600/60 text-gray-300 hover:text-green-200 hover:border-green-500/50 hover:bg-green-500/10 transition-colors">
+                          class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md border border-gray-600/60 text-gray-300 hover:text-ok-200 hover:border-ok-500/50 hover:bg-ok-500/10 transition-colors">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                     Full
                   </button>
@@ -521,7 +521,7 @@
           <div x-show="svPower" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
             <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
               <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Produced</div>
-              <div class="text-xl font-bold text-green-400" x-text="svPower ? svPower.totalProducedMW.toFixed(1) + ' MW' : '—'"></div>
+              <div class="text-xl font-bold text-ok-400" x-text="svPower ? svPower.totalProducedMW.toFixed(1) + ' MW' : '—'"></div>
               <div x-show="svPower && svPower.totalCapacityMW > svPower.totalProducedMW" class="text-xs text-gray-500 mt-1"
                    x-text="svPower ? svPower.totalCapacityMW.toFixed(0) + ' MW capacity' : ''"></div>
             </div>
@@ -530,18 +530,18 @@
               <div class="text-xl font-bold text-accent-400" x-text="svPower ? svPower.totalMaxDrawMW.toFixed(1) + ' MW' : '—'"></div>
             </div>
             <div class="bg-gray-800 rounded-xl p-4 border"
-              :class="svPower && (svPower.totalCapacityMW - svPower.totalMaxDrawMW) < 0 ? 'border-red-700 bg-red-900/10' : 'border-gray-700'">
+              :class="svPower && (svPower.totalCapacityMW - svPower.totalMaxDrawMW) < 0 ? 'border-danger-700 bg-danger-900/10' : 'border-gray-700'">
               <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Headroom</div>
               <div class="text-xl font-bold"
-                :class="svPower && (svPower.totalCapacityMW - svPower.totalMaxDrawMW) >= 0 ? 'text-green-400' : 'text-red-400'"
+                :class="svPower && (svPower.totalCapacityMW - svPower.totalMaxDrawMW) >= 0 ? 'text-ok-400' : 'text-danger-400'"
                 x-text="svPower ? (svPower.totalCapacityMW - svPower.totalMaxDrawMW).toFixed(1) + ' MW' : '—'"
               ></div>
             </div>
             <div class="bg-gray-800 rounded-xl p-4 border"
-              :class="svPower?.fuseCount > 0 ? 'border-red-700 bg-red-900/20' : 'border-gray-700'">
+              :class="svPower?.fuseCount > 0 ? 'border-danger-700 bg-danger-900/20' : 'border-gray-700'">
               <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Circuits</div>
               <div class="text-xl font-bold"
-                :class="svPower?.fuseCount > 0 ? 'text-red-400' : 'text-gray-200'"
+                :class="svPower?.fuseCount > 0 ? 'text-danger-400' : 'text-gray-200'"
                 x-text="svPower ? svPower.circuits.length + (svPower.fuseCount > 0 ? ' (' + svPower.fuseCount + ' fused)' : '') : '—'"
               ></div>
             </div>
@@ -562,13 +562,13 @@
                 <template x-for="(c, i) in svPower?.circuits ?? []" :key="c.circuitId">
                   <tr class="border-b border-gray-700/50 last:border-0 hover:bg-gray-700/30 transition-colors">
                     <td class="px-4 py-2.5 text-gray-300" x-text="'Circuit ' + (i + 1)"></td>
-                    <td class="px-4 py-2.5 text-right font-mono text-green-400" x-text="c.producedMW.toFixed(1) + ' MW'"></td>
+                    <td class="px-4 py-2.5 text-right font-mono text-ok-400" x-text="c.producedMW.toFixed(1) + ' MW'"></td>
                     <td class="px-4 py-2.5 text-right font-mono text-gray-400" x-text="c.capacityMW.toFixed(1) + ' MW'"></td>
                     <td class="px-4 py-2.5 text-right font-mono text-accent-400" x-text="c.maxDrawMW.toFixed(1) + ' MW'"></td>
                     <td class="px-4 py-2.5 text-center">
-                      <span x-show="c.isFused" class="text-xs font-medium px-2 py-0.5 rounded-full bg-red-900/50 text-red-400 border border-red-800">Fused</span>
-                      <span x-show="!c.isFused && c.capacityMW > 0 && c.producedMW === 0" class="text-xs font-medium px-2 py-0.5 rounded-full bg-yellow-900/40 text-yellow-400 border border-yellow-800">No Fuel</span>
-                      <span x-show="!c.isFused && c.producedMW > 0" class="text-xs font-medium px-2 py-0.5 rounded-full bg-green-900/30 text-green-400 border border-green-800">Active</span>
+                      <span x-show="c.isFused" class="text-xs font-medium px-2 py-0.5 rounded-full bg-danger-900/50 text-danger-400 border border-danger-800">Fused</span>
+                      <span x-show="!c.isFused && c.capacityMW > 0 && c.producedMW === 0" class="text-xs font-medium px-2 py-0.5 rounded-full bg-warn-900/40 text-warn-400 border border-warn-800">No Fuel</span>
+                      <span x-show="!c.isFused && c.producedMW > 0" class="text-xs font-medium px-2 py-0.5 rounded-full bg-ok-900/30 text-ok-400 border border-ok-800">Active</span>
                       <span x-show="!c.isFused && c.capacityMW === 0" class="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-700 text-gray-400 border border-gray-600">Consumers</span>
                     </td>
                   </tr>
@@ -735,11 +735,11 @@
 
                                 <!-- Right-side stats -->
                                 <div class="flex items-center gap-1.5 flex-shrink-0">
-                                  <span x-show="inst.kind === 'production' && inst.outputs && inst.outputs.length" class="text-[11px] font-mono text-emerald-300" x-text="fmtRate(inst.outputs[0])"></span>
-                                  <span x-show="inst.clockPct !== undefined && inst.clockPct !== 100" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300" x-text="inst.clockPct + '%'"></span>
+                                  <span x-show="inst.kind === 'production' && inst.outputs && inst.outputs.length" class="text-[11px] font-mono text-ok-300" x-text="fmtRate(inst.outputs[0])"></span>
+                                  <span x-show="inst.clockPct !== undefined && inst.clockPct !== 100" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-warn-500/15 text-warn-300" x-text="inst.clockPct + '%'"></span>
                                   <span x-show="inst.kind === 'production' && inst.boostPct > 100" title="Somersloop boost" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-fuchsia-500/15 text-fuchsia-300" x-text="'×' + (inst.boostPct / 100)"></span>
-                                  <span x-show="inst.kind === 'generator' && inst.powerMW" class="text-[11px] font-mono text-yellow-300" x-text="inst.powerMW + ' MW'"></span>
-                                  <span x-show="inst.isProducing" class="w-1.5 h-1.5 rounded-full bg-green-400" title="Producing"></span>
+                                  <span x-show="inst.kind === 'generator' && inst.powerMW" class="text-[11px] font-mono text-warn-300" x-text="inst.powerMW + ' MW'"></span>
+                                  <span x-show="inst.isProducing" class="w-1.5 h-1.5 rounded-full bg-ok-400" title="Producing"></span>
                                   <button
                                     @click.stop="showBuildingOnMap(b.buildClass, inst.pos.x, inst.pos.y)"
                                     title="Show on map"
@@ -791,8 +791,8 @@
                                                 <p x-show="inst.recipeDurationSec" class="text-[10px] text-gray-500" x-text="inst.recipeDurationSec + 's / cycle'"></p>
                                               </div>
                                             </div>
-                                            <span class="flex items-center gap-1 text-[11px] flex-shrink-0" :class="inst.isProducing ? 'text-green-400' : 'text-gray-500'">
-                                              <span class="w-1.5 h-1.5 rounded-full" :class="inst.isProducing ? 'bg-green-400' : 'bg-gray-600'"></span>
+                                            <span class="flex items-center gap-1 text-[11px] flex-shrink-0" :class="inst.isProducing ? 'text-ok-400' : 'text-gray-500'">
+                                              <span class="w-1.5 h-1.5 rounded-full" :class="inst.isProducing ? 'bg-ok-400' : 'bg-gray-600'"></span>
                                               <span x-text="inst.isProducing ? 'Producing' : 'Idle'"></span>
                                             </span>
                                           </div>
@@ -802,14 +802,14 @@
                                             <div class="flex-1 min-w-0">
                                               <div class="flex justify-between items-center text-[10px] mb-0.5">
                                                 <span class="text-gray-500 uppercase tracking-wide">Clock</span>
-                                                <span class="font-mono font-semibold" :class="inst.clockPct > 100 ? 'text-amber-300' : (inst.clockPct < 100 ? 'text-sky-300' : 'text-green-300')" x-text="inst.clockPct + '%'"></span>
+                                                <span class="font-mono font-semibold" :class="inst.clockPct > 100 ? 'text-warn-300' : (inst.clockPct < 100 ? 'text-sky-300' : 'text-ok-300')" x-text="inst.clockPct + '%'"></span>
                                               </div>
                                               <div class="h-2 rounded-full bg-gray-700/70 overflow-hidden">
-                                                <div class="h-full rounded-full" :class="inst.clockPct > 100 ? 'bg-amber-400' : (inst.clockPct < 100 ? 'bg-sky-400' : 'bg-green-400')" :style="'width:' + Math.min(inst.clockPct / 250 * 100, 100) + '%'"></div>
+                                                <div class="h-full rounded-full" :class="inst.clockPct > 100 ? 'bg-warn-400' : (inst.clockPct < 100 ? 'bg-sky-400' : 'bg-ok-400')" :style="'width:' + Math.min(inst.clockPct / 250 * 100, 100) + '%'"></div>
                                               </div>
                                             </div>
                                             <span x-show="inst.boostPct > 100" title="Somersloop production boost" class="text-[11px] font-semibold px-2 py-0.5 rounded bg-fuchsia-500/15 text-fuchsia-300 flex-shrink-0" x-text="'Boost ×' + (inst.boostPct / 100)"></span>
-                                            <span x-show="inst.powerMW != null" title="Estimated power draw" class="text-[11px] font-semibold px-2 py-0.5 rounded bg-yellow-500/15 text-yellow-300 flex-shrink-0" x-text="'≈ ' + inst.powerMW + ' MW'"></span>
+                                            <span x-show="inst.powerMW != null" title="Estimated power draw" class="text-[11px] font-semibold px-2 py-0.5 rounded bg-warn-500/15 text-warn-300 flex-shrink-0" x-text="'≈ ' + inst.powerMW + ' MW'"></span>
                                           </div>
 
                                           <!-- Live craft-cycle progress -->
@@ -819,7 +819,7 @@
                                               <span class="font-mono text-gray-400" x-text="inst.progressPct + '%'"></span>
                                             </div>
                                             <div class="h-2 rounded-full bg-gray-700/70 overflow-hidden">
-                                              <div class="h-full rounded-full bg-emerald-400/80 transition-all" :style="'width:' + inst.progressPct + '%'"></div>
+                                              <div class="h-full rounded-full bg-ok-400/80 transition-all" :style="'width:' + inst.progressPct + '%'"></div>
                                             </div>
                                           </div>
                                         </div>
@@ -831,7 +831,7 @@
                                           <div class="flex items-center gap-1.5 text-[11px] text-gray-400">
                                             <img :src="'/assets/items/' + pr.item + '.png'" class="w-4 h-4 object-contain" onerror="this.style.display='none'">
                                             <span x-text="pr.name"></span>
-                                            <span class="font-mono text-emerald-300" x-text="fmtRate(pr)"></span>
+                                            <span class="font-mono text-ok-300" x-text="fmtRate(pr)"></span>
                                           </div>
                                         </template>
                                       </div>
@@ -896,9 +896,9 @@
 
                                       <div class="flex-1 min-w-0 space-y-2">
                                         <div class="flex items-center gap-2 flex-wrap text-[11px]">
-                                          <span x-show="inst.powerMW" class="font-semibold px-2 py-0.5 rounded bg-yellow-500/15 text-yellow-300" x-text="inst.powerMW + ' MW'"></span>
-                                          <span class="flex items-center gap-1" :class="inst.isProducing ? 'text-green-400' : 'text-gray-500'">
-                                            <span class="w-1.5 h-1.5 rounded-full" :class="inst.isProducing ? 'bg-green-400' : 'bg-gray-600'"></span>
+                                          <span x-show="inst.powerMW" class="font-semibold px-2 py-0.5 rounded bg-warn-500/15 text-warn-300" x-text="inst.powerMW + ' MW'"></span>
+                                          <span class="flex items-center gap-1" :class="inst.isProducing ? 'text-ok-400' : 'text-gray-500'">
+                                            <span class="w-1.5 h-1.5 rounded-full" :class="inst.isProducing ? 'bg-ok-400' : 'bg-gray-600'"></span>
                                             <span x-text="inst.isProducing ? 'Producing' : 'Idle'"></span>
                                           </span>
                                         </div>
@@ -907,10 +907,10 @@
                                         <div x-show="inst.clockPct">
                                           <div class="flex justify-between items-center text-[10px] mb-0.5">
                                             <span class="text-gray-500 uppercase tracking-wide">Clock</span>
-                                            <span class="font-mono font-semibold" :class="inst.clockPct > 100 ? 'text-amber-300' : (inst.clockPct < 100 ? 'text-sky-300' : 'text-green-300')" x-text="inst.clockPct + '%'"></span>
+                                            <span class="font-mono font-semibold" :class="inst.clockPct > 100 ? 'text-warn-300' : (inst.clockPct < 100 ? 'text-sky-300' : 'text-ok-300')" x-text="inst.clockPct + '%'"></span>
                                           </div>
                                           <div class="h-2 rounded-full bg-gray-700/70 overflow-hidden">
-                                            <div class="h-full rounded-full" :class="inst.clockPct > 100 ? 'bg-amber-400' : (inst.clockPct < 100 ? 'bg-sky-400' : 'bg-green-400')" :style="'width:' + Math.min(inst.clockPct / 250 * 100, 100) + '%'"></div>
+                                            <div class="h-full rounded-full" :class="inst.clockPct > 100 ? 'bg-warn-400' : (inst.clockPct < 100 ? 'bg-sky-400' : 'bg-ok-400')" :style="'width:' + Math.min(inst.clockPct / 250 * 100, 100) + '%'"></div>
                                           </div>
                                         </div>
 
@@ -1016,8 +1016,8 @@
                   <div class="flex items-center justify-between mb-2">
                     <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500" x-text="g.group || cat.category"></p>
                     <div class="flex gap-3 text-[10px] font-medium">
-                      <button @click="setGroupPurchased(g.items, true)" class="text-gray-500 hover:text-green-300 transition-colors">unlock all</button>
-                      <button @click="setGroupPurchased(g.items, false)" class="text-gray-500 hover:text-red-300 transition-colors">lock all</button>
+                      <button @click="setGroupPurchased(g.items, true)" class="text-gray-500 hover:text-ok-300 transition-colors">unlock all</button>
+                      <button @click="setGroupPurchased(g.items, false)" class="text-gray-500 hover:text-danger-300 transition-colors">lock all</button>
                     </div>
                   </div>
                   <div class="grid gap-2" style="grid-template-columns:repeat(auto-fill,minmax(86px,1fr))">
@@ -1046,7 +1046,7 @@
                               x-text="s.name"></span>
                         <!-- state badge -->
                         <span x-show="effectivePurchased(s.path)"
-                              class="absolute top-1 right-1 w-4 h-4 rounded-full bg-green-500 flex items-center justify-center shadow">
+                              class="absolute top-1 right-1 w-4 h-4 rounded-full bg-ok-500 flex items-center justify-center shadow">
                           <svg viewBox="0 0 24 24" class="w-2.5 h-2.5" fill="none" stroke="white" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                         </span>
                         <svg x-show="!effectivePurchased(s.path)" class="absolute top-1 right-1 w-3 h-3 text-gray-600" viewBox="0 0 24 24" fill="currentColor">
@@ -1117,7 +1117,7 @@
         </button>
       </div>
 
-      <div x-show="persistModal.error" class="mb-3 text-xs text-red-400 bg-red-900/30 border border-red-800 rounded-lg px-3 py-2"
+      <div x-show="persistModal.error" class="mb-3 text-xs text-danger-400 bg-danger-900/30 border border-danger-800 rounded-lg px-3 py-2"
            x-text="persistModal.error"></div>
 
       <div class="flex items-center justify-end gap-2">
@@ -1161,7 +1161,7 @@
               <p class="text-[11px] mt-0.5 text-accent-300 truncate" x-text="e.changeText"></p>
             </div>
             <button @click="revertEdit(key)" title="Revert this change"
-              class="flex-shrink-0 text-[11px] font-medium px-2 py-1 rounded-md text-gray-400 hover:text-red-300 hover:bg-red-900/20 transition-colors">
+              class="flex-shrink-0 text-[11px] font-medium px-2 py-1 rounded-md text-gray-400 hover:text-danger-300 hover:bg-danger-900/20 transition-colors">
               Revert
             </button>
           </div>
@@ -1226,7 +1226,7 @@
              title="Quantity"
              class="w-16 px-2 py-1 rounded-md bg-gray-800 border border-gray-700 text-sm text-gray-200 focus:outline-none focus:border-accent-500/60">
       <button x-show="slotEditor.selClass" @click="slotEditor.selClass = ''; slotEditor.count = 0"
-              class="text-[11px] text-gray-500 hover:text-red-300 transition-colors">Clear</button>
+              class="text-[11px] text-gray-500 hover:text-danger-300 transition-colors">Clear</button>
       <button @click="applySlotEdit()"
         class="ml-auto text-sm font-semibold px-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-400 text-white transition-colors">Apply</button>
     </div>
