@@ -156,11 +156,9 @@ document.addEventListener('alpine:init', () => {
       localStorage.setItem('sl-default-tab', id);
     },
 
-    // Reduced motion: explicit pref wins; otherwise seed from the OS setting.
+    // Reduced motion: off by default; only on when the user explicitly enables it.
     _initialReduceMotion() {
-      const saved = localStorage.getItem('sl-reduce-motion');
-      if (saved !== null) return saved === 'true';
-      return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+      return localStorage.getItem('sl-reduce-motion') === 'true';
     },
     applyReduceMotion(on) {
       this.reduceMotion = !!on;
