@@ -20,6 +20,10 @@ frontend/public/tiles/
 # One-time tile download cache (used by build_map_tiles.py)
 scripts/_scim_tile_cache/
 
+# WIP experimental WebP/z7 tile builder — not yet wired into the build
+scripts/build_map_tiles_webp.py
+frontend/public/tiles_webp/
+
 # Env files
 .env
 .env.local
