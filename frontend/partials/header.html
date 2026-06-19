@@ -15,9 +15,9 @@
         </h1>
       </button>
 
-      <div class="w-px self-center h-6 bg-gray-800 mx-2 shrink-0"></div>
+      <div class="hidden md:block w-px self-center h-6 bg-gray-800 mx-2 shrink-0"></div>
 
-      <nav class="flex items-stretch gap-1">
+      <nav class="hidden md:flex items-stretch gap-1">
         <button
           @click="switchTab('dashboard')"
           :class="activeTab === 'dashboard' ? 'border-accent-400 text-accent-400' : 'border-transparent text-gray-400 hover:text-gray-200'"
@@ -53,8 +53,8 @@
       </nav>
     </div>
 
-    <!-- Right: connection status + actions -->
-    <div class="flex items-center gap-2 min-w-0">
+    <!-- Right: connection status + actions (desktop) -->
+    <div class="hidden md:flex items-center gap-2 min-w-0">
       <!-- Connection status: light indicator; hover reveals host + session, click opens the server panel -->
       <button
         x-show="sfStatus.connected"
@@ -64,7 +64,7 @@
         class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-ok-900/40 text-ok-400 border border-ok-800/70 hover:bg-ok-900/60 transition-colors shrink-0"
       >
         <span class="w-1.5 h-1.5 rounded-full bg-ok-400 animate-pulse"></span>
-        <span class="hidden sm:inline">Connected</span>
+        <span class="hidden lg:inline">Connected</span>
       </button>
       <button
         x-show="!sfStatus.connected"
@@ -136,6 +136,137 @@
         <svg class="w-5 h-5 text-gray-400 group-hover:text-danger-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
         </svg>
+      </button>
+    </div>
+
+    <!-- Mobile: status + quick actions + hamburger (<md) -->
+    <div class="md:hidden flex items-center gap-0.5 self-center -mr-1">
+      <!-- Connection status indicator (status only — Server/Connect live in the menu) -->
+      <span
+        x-show="sfStatus.connected"
+        title="Connected"
+        class="w-2 h-2 rounded-full bg-ok-400 animate-pulse mx-1.5 shrink-0"
+      ></span>
+      <!-- Reload latest save -->
+      <button
+        x-show="sfStatus.connected && saveStatus?.loaded"
+        @click="headerReloadSave()"
+        :disabled="headerReloading || editCount > 0"
+        aria-label="Reload save"
+        class="relative inline-flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-700/60 text-gray-400 hover:text-gray-200 transition-colors disabled:opacity-50 shrink-0"
+      >
+        <svg class="w-5 h-5" :class="headerReloading ? 'animate-spin' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span
+          x-show="newerSaveAvailable"
+          class="absolute top-1 right-1 w-2 h-2 rounded-full bg-warn-400 ring-2 ring-gray-900 animate-pulse"
+        ></span>
+      </button>
+      <!-- Menu toggle -->
+      <button
+        @click="mobileMenuOpen = !mobileMenuOpen"
+        :aria-expanded="mobileMenuOpen"
+        aria-label="Menu"
+        class="inline-flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-700/60 text-gray-300 hover:text-white transition-colors shrink-0"
+      >
+        <svg x-show="!mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        <svg x-show="mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile: dropdown panel (<md) -->
+  <div
+    x-show="mobileMenuOpen"
+    x-transition.origin.top
+    @click.outside="mobileMenuOpen = false"
+    @keydown.escape.window="mobileMenuOpen = false"
+    class="md:hidden border-t border-gray-800 bg-gray-900 shadow-lg"
+  >
+    <div class="container mx-auto px-4 max-w-6xl py-2 flex flex-col">
+      <!-- Primary tabs -->
+      <button
+        @click="switchTab('dashboard')"
+        :class="activeTab === 'dashboard' ? 'text-accent-400 bg-gray-800/60' : 'text-gray-300 hover:bg-gray-800/40'"
+        class="flex items-center w-full px-3 py-3 text-sm font-medium rounded-lg transition-colors"
+      >Dashboard</button>
+      <button
+        @click="switchTab('saveviewer')"
+        :class="activeTab === 'saveviewer' ? 'text-accent-400 bg-gray-800/60' : 'text-gray-300 hover:bg-gray-800/40'"
+        class="flex items-center w-full px-3 py-3 text-sm font-medium rounded-lg transition-colors"
+      >
+        Save Tools
+        <span
+          x-show="saveStatus?.loaded && sseConnected"
+          class="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-ok-400"
+        ></span>
+      </button>
+      <button
+        @click="switchTab('map')"
+        :class="activeTab === 'map' ? 'text-accent-400 bg-gray-800/60' : 'text-gray-300 hover:bg-gray-800/40'"
+        class="flex items-center w-full px-3 py-3 text-sm font-medium rounded-lg transition-colors"
+      >Map</button>
+      <button
+        @click="switchTab('saves')"
+        :class="activeTab === 'saves' ? 'text-accent-400 bg-gray-800/60' : 'text-gray-300 hover:bg-gray-800/40'"
+        class="flex items-center w-full px-3 py-3 text-sm font-medium rounded-lg transition-colors"
+      >Saves</button>
+
+      <div class="my-2 h-px bg-gray-800"></div>
+
+      <!-- Connection / server actions (live status shows as a dot in the bar) -->
+      <button
+        x-show="!sfStatus.connected"
+        @click="mobileMenuOpen = false; showConnectModal = true"
+        class="flex items-center w-full px-3 py-3 text-sm font-medium rounded-lg bg-accent-500 hover:bg-accent-600 text-white transition-colors"
+      >Connect</button>
+      <button
+        @click="mobileMenuOpen = false; openServerPanel()"
+        class="flex items-center gap-2 w-full px-3 py-3 text-sm font-medium rounded-lg text-gray-300 hover:bg-gray-800/40 transition-colors"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12V7a2 2 0 012-2h10a2 2 0 012 2v5M5 12h14M5 12a2 2 0 00-2 2v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 00-2-2M8 16h.01M12 16h.01M8 8h.01M12 8h.01" />
+        </svg>
+        Server
+      </button>
+      <button
+        @click="mobileMenuOpen = false; showAppSettings = true"
+        class="flex items-center gap-2 w-full px-3 py-3 text-sm font-medium rounded-lg text-gray-300 hover:bg-gray-800/40 transition-colors"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        App settings
+      </button>
+
+      <template x-if="sfStatus.connected || loginEnabled">
+        <div class="my-2 h-px bg-gray-800"></div>
+      </template>
+      <button
+        x-show="sfStatus.connected"
+        @click="mobileMenuOpen = false; disconnect()"
+        class="flex items-center gap-2 w-full px-3 py-3 text-sm font-medium rounded-lg text-gray-300 hover:text-danger-400 hover:bg-gray-800/40 transition-colors"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" />
+        </svg>
+        Disconnect from server
+      </button>
+      <button
+        x-show="loginEnabled"
+        @click="mobileMenuOpen = false; logout()"
+        class="flex items-center gap-2 w-full px-3 py-3 text-sm font-medium rounded-lg text-gray-300 hover:text-danger-400 hover:bg-gray-800/40 transition-colors"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+        Log out
       </button>
     </div>
   </div>

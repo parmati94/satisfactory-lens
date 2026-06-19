@@ -140,6 +140,11 @@ html.reduce-motion .leaflet-pan-anim .leaflet-proxy {
 }
 .app-scroll::-webkit-scrollbar-thumb:hover { background-color: rgba(100, 116, 139, 0.9); }
 
+/* Hide the scrollbar while keeping the element scrollable — used for mobile
+   overflow-x rows (e.g. the Save Tools sub-tab nav) so they swipe without a bar. */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
 /* Override Leaflet's default light gray container background */
 .leaflet-container {
   background: #030712 !important; /* gray-950, matches app body */

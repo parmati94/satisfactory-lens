@@ -20,6 +20,7 @@ document.addEventListener('alpine:init', () => {
     // App Settings (gear button) — client-side prefs (theme picker, …). Distinct
     // from the Server panel, which lives behind its own header icon now.
     showAppSettings: false,
+    mobileMenuOpen: false,      // mobile (<md) header dropdown panel toggle
     theme: 'orange',
     reduceMotion: false,        // App Settings: dampen animations/transitions
     defaultTab: 'dashboard',    // App Settings: tab opened on load
@@ -240,6 +241,7 @@ document.addEventListener('alpine:init', () => {
 
     async switchTab(tab) {
       this.activeTab = tab;
+      this.mobileMenuOpen = false;   // dismiss the mobile header panel on navigation
       this.error = null;
       this.actionResult = null;
       if (tab === 'dashboard' && !this.serverState && this.sfStatus.connected) await this.loadDashboard();

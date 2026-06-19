@@ -101,44 +101,63 @@
       </span>
     </div>
 
-    <!-- Sub-tab nav — grouped by intent: You · Factory · World -->
-    <div class="flex items-stretch gap-1 mb-5 border-b border-gray-800">
+    <!-- Sub-tab nav — grouped by intent: You · Factory · World.
+         On mobile the row scrolls horizontally; edge fades hint there's more
+         off-screen and retract once you reach an end. -->
+    <div class="relative mb-5"
+         x-data="{ atStart: true, atEnd: false, upd(e){ if (!e || !e.clientWidth) return; this.atStart = e.scrollLeft <= 1; this.atEnd = Math.ceil(e.scrollLeft + e.clientWidth) >= e.scrollWidth - 1; } }">
+    <div x-ref="subtabs" @scroll="upd($event.target)"
+         x-init="const o = new ResizeObserver(() => upd($refs.subtabs)); o.observe($refs.subtabs);"
+         class="flex items-stretch gap-1 border-b border-gray-800 overflow-x-auto no-scrollbar">
       <button
         @click="switchSaveTab('players')"
         :class="saveTab === 'players' ? 'border-b-2 border-accent-400 text-accent-400' : 'text-gray-500 hover:text-gray-300'"
-        class="px-4 py-2.5 text-sm font-medium transition-colors -mb-px"
+        class="px-4 py-2.5 text-sm font-medium transition-colors -mb-px shrink-0 whitespace-nowrap"
       >Players</button>
       <button
         @click="switchSaveTab('progression')"
         :class="saveTab === 'progression' ? 'border-b-2 border-accent-400 text-accent-400' : 'text-gray-500 hover:text-gray-300'"
-        class="px-4 py-2.5 text-sm font-medium transition-colors -mb-px"
+        class="px-4 py-2.5 text-sm font-medium transition-colors -mb-px shrink-0 whitespace-nowrap"
       >Progression</button>
 
-      <div class="w-px self-center h-5 bg-gray-700/70 mx-1.5" aria-hidden="true"></div>
+      <div class="w-px self-center h-5 bg-gray-700/70 mx-1.5 shrink-0" aria-hidden="true"></div>
 
       <button
         @click="switchSaveTab('production')"
         :class="saveTab === 'production' ? 'border-b-2 border-accent-400 text-accent-400' : 'text-gray-500 hover:text-gray-300'"
-        class="px-4 py-2.5 text-sm font-medium transition-colors -mb-px"
+        class="px-4 py-2.5 text-sm font-medium transition-colors -mb-px shrink-0 whitespace-nowrap"
       >Production</button>
       <button
         @click="switchSaveTab('power')"
         :class="saveTab === 'power' ? 'border-b-2 border-accent-400 text-accent-400' : 'text-gray-500 hover:text-gray-300'"
-        class="px-4 py-2.5 text-sm font-medium transition-colors -mb-px"
+        class="px-4 py-2.5 text-sm font-medium transition-colors -mb-px shrink-0 whitespace-nowrap"
       >Power</button>
       <button
         @click="switchSaveTab('storage')"
         :class="saveTab === 'storage' ? 'border-b-2 border-accent-400 text-accent-400' : 'text-gray-500 hover:text-gray-300'"
-        class="px-4 py-2.5 text-sm font-medium transition-colors -mb-px"
+        class="px-4 py-2.5 text-sm font-medium transition-colors -mb-px shrink-0 whitespace-nowrap"
       >Storage</button>
 
-      <div class="w-px self-center h-5 bg-gray-700/70 mx-1.5" aria-hidden="true"></div>
+      <div class="w-px self-center h-5 bg-gray-700/70 mx-1.5 shrink-0" aria-hidden="true"></div>
 
       <button
         @click="switchSaveTab('structures')"
         :class="saveTab === 'structures' ? 'border-b-2 border-accent-400 text-accent-400' : 'text-gray-500 hover:text-gray-300'"
-        class="px-4 py-2.5 text-sm font-medium transition-colors -mb-px"
+        class="px-4 py-2.5 text-sm font-medium transition-colors -mb-px shrink-0 whitespace-nowrap"
       >Structures</button>
+    </div>
+      <!-- Scroll affordances: shown only on mobile when there's more off either
+           edge; tap to nudge the row so it's obvious the bar is scrollable. -->
+      <button x-show="!atStart" @click="$refs.subtabs.scrollBy({ left: -140, behavior: 'smooth' })"
+              aria-label="Scroll tabs left"
+              class="md:hidden absolute left-0 top-0 bottom-px flex items-center pr-6 pl-0.5 bg-gradient-to-r from-gray-950 via-gray-950 to-transparent text-gray-400 hover:text-gray-200">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <button x-show="!atEnd" @click="$refs.subtabs.scrollBy({ left: 140, behavior: 'smooth' })"
+              aria-label="Scroll tabs right"
+              class="md:hidden absolute right-0 top-0 bottom-px flex items-center pl-6 pr-0.5 bg-gradient-to-l from-gray-950 via-gray-950 to-transparent text-gray-400 hover:text-gray-200">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+      </button>
     </div>
 
     <!-- Data error -->
@@ -548,7 +567,8 @@
           </div>
 
           <div x-show="svPower?.circuits?.length > 1" class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden mb-3">
-            <table class="w-full text-sm">
+            <div class="overflow-x-auto no-scrollbar">
+            <table class="w-full min-w-[480px] text-sm">
               <thead>
                 <tr class="border-b border-gray-700">
                   <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Circuit</th>
@@ -575,6 +595,7 @@
                 </template>
               </tbody>
             </table>
+            </div>
           </div>
 
           <p class="text-xs text-gray-600 mb-4">Circuit values are estimates — max rated capacity × overclock, not live readings. Generators offline or out of fuel still count toward capacity. Geothermal is approximated.</p>

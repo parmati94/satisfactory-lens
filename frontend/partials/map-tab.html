@@ -10,7 +10,7 @@
       <div id="leaflet-map" class="h-full w-full" style="background: #030712;"></div>
 
       <!-- Context pill — top-center: what save you're looking at + quick counts -->
-      <div class="absolute top-4 left-1/2 -translate-x-1/2 max-w-[calc(100%-7rem)] flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-gray-900/90 backdrop-blur-md border border-gray-700/50 shadow-xl text-xs pointer-events-none"
+      <div class="absolute top-4 left-1/2 -translate-x-1/2 max-w-[calc(100%-9rem)] md:max-w-[calc(100%-7rem)] flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-gray-900/90 backdrop-blur-md border border-gray-700/50 shadow-xl text-xs pointer-events-none"
            style="z-index:1000">
         <template x-if="saveStatus?.loaded">
           <div class="flex items-center gap-2.5 min-w-0">
@@ -18,8 +18,8 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8a2 2 0 012-2h10a2 2 0 012 2M5 8a2 2 0 00-2 2v6a2 2 0 002 2h14a2 2 0 002-2v-6a2 2 0 00-2-2M5 8h14M9 12h6" />
             </svg>
             <span class="text-gray-200 font-medium truncate" x-text="saveStatus?.sourceName"></span>
-            <span class="w-px h-3.5 bg-gray-700 shrink-0"></span>
-            <span class="flex items-center gap-1.5 shrink-0 tabular-nums">
+            <span class="hidden md:block w-px h-3.5 bg-gray-700 shrink-0"></span>
+            <span class="hidden md:flex items-center gap-1.5 shrink-0 tabular-nums">
               <span x-show="svPlayers?.length" class="text-accent-300">
                 <span x-text="svPlayers?.length"></span> player<span x-show="svPlayers?.length !== 1">s</span>
               </span>
@@ -74,7 +74,7 @@
              x-transition:leave="transition ease-in duration-100"
              x-transition:leave-start="opacity-100 scale-100 translate-y-0"
              x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
-             class="bg-gray-900/95 backdrop-blur-md rounded-xl border border-gray-700/50 shadow-2xl p-2 w-52 max-h-[calc(100vh-9rem)] overflow-y-auto">
+             class="bg-gray-900/95 backdrop-blur-md rounded-xl border border-gray-700/50 shadow-2xl p-2 w-52 max-w-[calc(100vw-5rem)] max-h-[calc(100vh-9rem)] overflow-y-auto">
 
           <!-- OVERLAYS section (collapsible) -->
           <button @click="toggleMapSection('overlays')"
@@ -349,7 +349,7 @@
        x-transition:leave-end="opacity-0 scale-95"
        @click.outside="closeColorPicker()"
        @keydown.escape.window="closeColorPicker()"
-       class="fixed w-60 bg-gray-800 rounded-xl border border-gray-700 shadow-2xl p-3"
+       class="fixed w-60 max-w-[calc(100vw-1rem)] bg-gray-800 rounded-xl border border-gray-700 shadow-2xl p-3"
        :style="`top:${colorPicker.top}px; left:${colorPicker.left}px; z-index:1100`"
        x-cloak>
     <div class="flex items-center justify-between mb-2.5">
