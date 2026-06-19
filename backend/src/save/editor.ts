@@ -3,7 +3,7 @@ import path from 'path';
 import { Parser } from '@etothepii/satisfactory-file-parser';
 import { getSave, getSaveStatus, setSave } from './saveState';
 import { findSchematicManager } from './extractors/schematics';
-import { getSaveSourceMode } from './loader';
+import { getSaveSourceMode, findLatestApiSave } from './loader';
 import { config } from '../config';
 import { uploadSavegame, isConnected } from '../api/sfClient';
 
@@ -196,22 +196,36 @@ export async function persistEdits(opts: PersistOptions): Promise<PersistResult>
     fs.writeFileSync(backupPath, preEditBytes);
   }
 
-  // 2) Persist by active mode.
+  // 2) Persist by active mode. Capture the written save's source metadata
+  //    (mount mtime / API saveDateTime) so the settle below can hand the
+  //    newer-save watcher a valid baseline — see step 3.
   let target: 'api' | 'mount';
+  let settledMtimeMs: number | null = null;
+  let settledSaveDateTime: string | null = null;
   if (isConnected()) {
     await uploadSavegame(saveName, editedBytes, opts.mode === 'load');
     target = 'api';
+    // The save we just uploaded is now the newest in the session, so the
+    // session-latest saveDateTime is its timestamp (or that of an autosave that
+    // landed in the meantime, which is an even safer baseline — still newer).
+    settledSaveDateTime = (await findLatestApiSave())?.saveDateTime ?? null;
   } else if (getSaveSourceMode() === 'mount') {
-    fs.writeFileSync(path.join(config.saveMountPath, `${saveName}.sav`), editedBytes);
+    const filePath = path.join(config.saveMountPath, `${saveName}.sav`);
+    fs.writeFileSync(filePath, editedBytes);
     target = 'mount';
+    settledMtimeMs = fs.statSync(filePath).mtimeMs;
   } else {
     throw new Error('No persist target: connect to the server to upload, or mount a save directory.');
   }
 
   // 3) Settle the viewed save. A plain new-name copy doesn't change what we're
-  //    viewing (keep the original); loading or overwriting does.
+  //    viewing (keep the original); loading or overwriting does. Carry the source
+  //    metadata through: without it setSave resets sourceMtimeMs/sourceSaveDateTime
+  //    to null, which makes the newer-save watcher's comparison gate (loaded != null
+  //    && found > loaded) fail closed — detection then goes silent until the next
+  //    full reload re-establishes a baseline.
   if (opts.mode === 'load' || overwriting) {
-    setSave(working, saveName);
+    setSave(working, saveName, settledMtimeMs, settledSaveDateTime);
   }
 
   return { saveName, mode: opts.mode, target, backupPath };
