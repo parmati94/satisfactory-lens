@@ -56,7 +56,8 @@ document.addEventListener('alpine:init', () => {
     settingEdits: {},          // override dict keyed 'server:<key>' / 'advanced:<key>' → new value
     settingsSaving: false,
     newSaveName: '',
-    actionLoading: false,
+    actionLoading: false,      // global mutex: an action is running, disable other action buttons
+    creatingSave: false,       // specifically the "Save Now" create flow (drives that button's label)
     actionResult: null,
 
     // ── Phase 2: Save Viewer ──────────────────────────────────────────────
@@ -244,7 +245,14 @@ document.addEventListener('alpine:init', () => {
       this.mobileMenuOpen = false;   // dismiss the mobile header panel on navigation
       this.error = null;
       this.actionResult = null;
-      if (tab === 'dashboard' && !this.serverState && this.sfStatus.connected) await this.loadDashboard();
+      if (tab === 'dashboard' && this.sfStatus.connected) {
+        if (!this.serverState) await this.loadDashboard();
+        // Save Tools navigation (inspecting a save, or visiting a sub-tab that doesn't
+        // touch power/buildings) can clear or never-populate the snapshot caches, so
+        // refresh them on every dashboard entry — otherwise the Factory Snapshot can
+        // silently vanish until a full reload. Cheap + self-guarding when already cached.
+        else this.loadFactorySnapshot();
+      }
       if (tab === 'saves' && !this.saves && this.sfStatus.connected) await this.loadSaves();
       if (tab === 'saveviewer') await this.loadSaveActiveSubTab();
       if (tab === 'map') {
@@ -518,6 +526,7 @@ document.addEventListener('alpine:init', () => {
       const name = this.newSaveName.trim();
       if (!name) return;
       this.actionLoading = true;
+      this.creatingSave = true;
       this.actionResult = null;
       try {
         await api.saves.save(name);
@@ -529,6 +538,7 @@ document.addEventListener('alpine:init', () => {
         this.actionResult = { ok: false, message: e.message };
       } finally {
         this.actionLoading = false;
+        this.creatingSave = false;
       }
     },
 
