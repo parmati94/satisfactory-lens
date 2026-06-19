@@ -580,7 +580,10 @@ export function mapController() {
       _leafletMap = L.map(container, {
         crs: L.CRS.Simple,
         minZoom: 1,
-        maxZoom: 12,
+        // Cap two levels past native (tiles top out at zoom 6) — beyond ~4× overzoom
+        // the stretched tiles get too blurry to be useful. Matches the tile layer's
+        // maxZoom so there's no zoom range where the base layer stops rendering (blackout).
+        maxZoom: 8,
         zoomSnap: 0.25,
         zoomDelta: 0.25,
         zoomControl: false,
@@ -603,7 +606,7 @@ export function mapController() {
         bounds,
         minNativeZoom: 3,
         maxNativeZoom: MAP_ZOOM_RATIO,
-        maxZoom: 10,
+        maxZoom: 8,
         tileSize: TILE_SIZE,
       }).addTo(_leafletMap);
 

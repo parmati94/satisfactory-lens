@@ -113,8 +113,10 @@ export function saveEditing() {
     // Fixed-position style for the anchored popover, clamped so it never leaves the
     // viewport (flips left/up near the right/bottom edges).
     slotEditorStyle() {
-      const W = 280, H = 360, M = 8;
+      const M = 8, H = 360;
       const vw = window.innerWidth, vh = window.innerHeight;
+      // Cap the width to the viewport so the popover never exceeds a narrow screen.
+      const W = Math.min(280, vw - 2 * M);
       let left = this.slotEditor.x + 12;
       let top = this.slotEditor.y + 12;
       if (left + W > vw - M) left = Math.max(M, this.slotEditor.x - W - 12);
