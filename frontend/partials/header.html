@@ -26,17 +26,6 @@
           Dashboard
         </button>
         <button
-          @click="switchTab('saveviewer')"
-          :class="activeTab === 'saveviewer' ? 'border-accent-400 text-accent-400' : 'border-transparent text-gray-400 hover:text-gray-200'"
-          class="flex items-center px-3 text-sm font-medium border-b-2 transition-colors"
-        >
-          Save Tools
-          <span
-            x-show="saveStatus?.loaded && sseConnected"
-            class="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-ok-400"
-          ></span>
-        </button>
-        <button
           @click="switchTab('map')"
           :class="activeTab === 'map' ? 'border-accent-400 text-accent-400' : 'border-transparent text-gray-400 hover:text-gray-200'"
           class="flex items-center px-3 text-sm font-medium border-b-2 transition-colors"
@@ -49,6 +38,10 @@
           class="flex items-center px-3 text-sm font-medium border-b-2 transition-colors"
         >
           Saves
+          <span
+            x-show="saveStatus?.loaded && sseConnected"
+            class="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-ok-400"
+          ></span>
         </button>
       </nav>
     </div>
@@ -196,17 +189,6 @@
         class="flex items-center w-full px-3 py-3 text-sm font-medium rounded-lg transition-colors"
       >Dashboard</button>
       <button
-        @click="switchTab('saveviewer')"
-        :class="activeTab === 'saveviewer' ? 'text-accent-400 bg-gray-800/60' : 'text-gray-300 hover:bg-gray-800/40'"
-        class="flex items-center w-full px-3 py-3 text-sm font-medium rounded-lg transition-colors"
-      >
-        Save Tools
-        <span
-          x-show="saveStatus?.loaded && sseConnected"
-          class="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-ok-400"
-        ></span>
-      </button>
-      <button
         @click="switchTab('map')"
         :class="activeTab === 'map' ? 'text-accent-400 bg-gray-800/60' : 'text-gray-300 hover:bg-gray-800/40'"
         class="flex items-center w-full px-3 py-3 text-sm font-medium rounded-lg transition-colors"
@@ -215,7 +197,13 @@
         @click="switchTab('saves')"
         :class="activeTab === 'saves' ? 'text-accent-400 bg-gray-800/60' : 'text-gray-300 hover:bg-gray-800/40'"
         class="flex items-center w-full px-3 py-3 text-sm font-medium rounded-lg transition-colors"
-      >Saves</button>
+      >
+        Saves
+        <span
+          x-show="saveStatus?.loaded && sseConnected"
+          class="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-ok-400"
+        ></span>
+      </button>
 
       <div class="my-2 h-px bg-gray-800"></div>
 

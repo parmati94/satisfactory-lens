@@ -187,7 +187,9 @@ export function saveViewer() {
         this.newerSaveAvailable = !!this.saveStatus?.newerSaveAvailable;
         this.newerSaveName = this.saveStatus?.newerSaveName ?? null;
         this.clearSvCaches();
-        await this.switchTab('saveviewer');
+        // Surface the Explorer pane: land on the Saves tab and close the mobile drawer.
+        this.savesDrawerOpen = false;
+        await this.switchTab('saves');
       } catch (e) {
         this.actionResult = { ok: false, message: `Failed to load "${saveName}" for inspection: ${e.message}` };
       } finally {
@@ -327,7 +329,7 @@ export function saveViewer() {
           if (msg.event === 'save_reloaded') {
             await this.loadSaveStatus();
             this.clearSvCaches();
-            if (this.activeTab === 'saveviewer') await this.loadSaveActiveSubTab();
+            if (this.activeTab === 'saves') await this.loadSaveActiveSubTab();
             if (this.activeTab === 'map') {
               await Promise.all([
                 this.loadSvPlayers(), this.loadSvResourceNodes(), this.loadSvMapPins(), this.loadSvBuildingFootprints(),

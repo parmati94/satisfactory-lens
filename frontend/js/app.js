@@ -63,6 +63,7 @@ document.addEventListener('alpine:init', () => {
     // ── Phase 2: Save Viewer ──────────────────────────────────────────────
     saveStatus: null,
     saveTab: 'players',       // sub-tab: 'players' | 'progression' | 'production' | 'power' | 'storage' | 'structures'
+    savesDrawerOpen: false,   // <lg only: the save-browser slide-out drawer (Explorer is the default view)
     saveDataLoading: false,
     saveDataError: null,
     svPlayers: null,
@@ -146,12 +147,13 @@ document.addEventListener('alpine:init', () => {
     // Valid landing tabs (must match the header nav + switchTab keys).
     landingTabs: [
       { id: 'dashboard', label: 'Dashboard' },
-      { id: 'saveviewer', label: 'Save Tools' },
       { id: 'map', label: 'Map' },
       { id: 'saves', label: 'Saves' },
     ],
     loadDefaultTab() {
-      const saved = localStorage.getItem('sl-default-tab');
+      let saved = localStorage.getItem('sl-default-tab');
+      // Migrate the retired 'saveviewer' tab — it's now the Explorer pane of 'saves'.
+      if (saved === 'saveviewer') { saved = 'saves'; localStorage.setItem('sl-default-tab', 'saves'); }
       this.defaultTab = this.landingTabs.some((t) => t.id === saved) ? saved : 'dashboard';
       this.activeTab = this.defaultTab;
     },
@@ -247,14 +249,20 @@ document.addEventListener('alpine:init', () => {
       this.actionResult = null;
       if (tab === 'dashboard' && this.sfStatus.connected) {
         if (!this.serverState) await this.loadDashboard();
-        // Save Tools navigation (inspecting a save, or visiting a sub-tab that doesn't
+        // Explorer navigation (inspecting a save, or visiting a sub-tab that doesn't
         // touch power/buildings) can clear or never-populate the snapshot caches, so
         // refresh them on every dashboard entry — otherwise the Factory Snapshot can
         // silently vanish until a full reload. Cheap + self-guarding when already cached.
         else this.loadFactorySnapshot();
       }
-      if (tab === 'saves' && !this.saves && this.sfStatus.connected) await this.loadSaves();
-      if (tab === 'saveviewer') await this.loadSaveActiveSubTab();
+      if (tab === 'saves') {
+        if (!this.saves && this.sfStatus.connected) await this.loadSaves();
+        // Populate the Explorer pane's active sub-tab when a save is already loaded.
+        if (this.saveStatus?.loaded) await this.loadSaveActiveSubTab();
+        // On mobile the Explorer is the default view; if nothing's loaded yet, pop the
+        // saves drawer so there's something to pick (no-op on lg+, where the rail is fixed).
+        else if (window.matchMedia('(max-width: 1023px)').matches) this.savesDrawerOpen = true;
+      }
       if (tab === 'map') {
         if (this.saveStatus?.loaded) {
           await Promise.all([
@@ -286,7 +294,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     // Pull the lightweight save-derived stats the dashboard's factory snapshot
-    // needs, reusing the Save Tools loaders + their cached state (power/buildings/
+    // needs, reusing the Explorer loaders + their cached state (power/buildings/
     // storage/schematics). Skipped entirely when no save is loaded. None of these
     // do per-instance machine fetches, so it stays cheap.
     async loadFactorySnapshot() {
