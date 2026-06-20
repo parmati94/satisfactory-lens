@@ -945,7 +945,7 @@ export function mapController() {
           _buildingHitList.push({
             cx: worldX, cy: worldY, hw, hh, cos, sin,
             // Raw (un-offset) instance position — the key for matching this map
-            // instance to its row in the Save Tools Buildings tab (and back).
+            // instance to its row in the Explorer's building list (and back).
             gx: data.x[i], gy: data.y[i],
             // Layer-point centre + yaw for drawing the outline in the overlay's
             // (rebuild-zoom) coordinate space, matching how the sprite is placed.
@@ -1150,7 +1150,7 @@ export function mapController() {
           ${machineHtml}
           <div class="sf-card-row"><span class="sf-card-k">${factLabel}</span><span class="sf-card-v">${factValue}</span></div>
         </div>
-        <button class="sf-card-action" type="button">Open in Save Tools
+        <button class="sf-card-action" type="button">Open in Explorer
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
         </button>
       </div>`;
@@ -1172,7 +1172,7 @@ export function mapController() {
       if (best) _detailPopup.setContent(this._buildingCardHtml(entry, false, best));
     },
 
-    // Jump to the Save Tools tab that owns this building's category and locate the
+    // Jump to the Explorer sub-tab that owns this building's category and locate the
     // *exact* clicked instance: filter to its type, expand the per-instance list, then
     // scroll to + highlight the instance whose position matches the map click.
     // Matching is by position (buildClass + nearest x/y) so the lean map footprints
@@ -1186,7 +1186,8 @@ export function mapController() {
       // (e.g. Dimensional Depot / lockers).
       if (entry.category === 'Storage') {
         this.saveTab = 'storage';
-        await this.switchTab('saveviewer');
+        this.savesDrawerOpen = false;
+        await this.switchTab('saves');
         if (!this.svStorage) await this.loadSvStorage();
         if (this._focusStorageInstance(entry.buildClass, entry.gx, entry.gy)) return;
       }
@@ -1198,7 +1199,8 @@ export function mapController() {
       // The search box only lives on Production/Structures; the Power tab's
       // generator group isn't filtered by it, so don't leak the label there.
       this.buildingsSearch = this.saveTab === 'power' ? '' : entry.label;
-      await this.switchTab('saveviewer');
+      this.savesDrawerOpen = false;
+      await this.switchTab('saves');
       if (!this.svBuildings) await this.loadSvBuildings();
       this._focusBuildingInstance(entry.buildClass, entry.gx, entry.gy);
     },

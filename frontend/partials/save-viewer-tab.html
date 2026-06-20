@@ -1,4 +1,4 @@
-<div x-show="activeTab === 'saveviewer'" class="container mx-auto px-4 py-6 max-w-6xl">
+<div>
 
   <!-- Edit-mode banner — shown once any change is staged -->
   <div x-show="editCount > 0" x-transition
@@ -39,7 +39,18 @@
   <!-- Status bar -->
   <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
     <div class="flex items-center gap-3">
-      <h2 class="text-base font-semibold text-gray-200">Save Tools</h2>
+      <!-- Reopen the collapsed save-browser rail (lg+ only; below lg the edge handle does this) -->
+      <button
+        x-show="savesRailCollapsed"
+        @click="toggleSavesRail()"
+        aria-label="Show save files"
+        title="Show save files"
+        class="hidden lg:inline-flex items-center gap-0.5 p-1.5 -ml-1 text-accent-400 hover:text-accent-300 rounded-lg transition-colors"
+      >
+        <svg class="w-4 h-4 drop-shadow-[0_0_5px_rgb(var(--accent-400)/0.7)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg>
+      </button>
+      <h2 class="text-base font-semibold text-gray-200">Explorer</h2>
       <span
         x-show="saveStatus?.loaded"
         class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full bg-ok-900/40 text-ok-400 border border-ok-800"
@@ -62,13 +73,6 @@
       >Parsing…</span>
     </div>
 
-    <div class="flex items-center gap-2">
-      <button
-        @click="switchTab('saves')"
-        x-show="sfStatus.connected"
-        class="px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
-      >Pick a Different Save →</button>
-    </div>
   </div>
 
   <!-- Save status error -->
@@ -82,7 +86,7 @@
   <div x-show="!saveStatus?.loaded && !saveStatus?.loading && !saveStatus?.error" class="flex flex-col items-center justify-center py-20 text-center">
     <div class="text-5xl mb-4">💾</div>
     <h3 class="text-lg font-semibold text-gray-300 mb-2">No Save Loaded</h3>
-    <p class="text-gray-500 text-sm mb-2 max-w-sm" x-show="sfStatus.connected">Click <strong class="text-gray-400">Reload</strong> above to load the latest save via the API, or pick a specific one to inspect from the <strong class="text-gray-400">Saves</strong> tab.</p>
+    <p class="text-gray-500 text-sm mb-2 max-w-sm" x-show="sfStatus.connected"><strong class="text-gray-400">Inspect</strong> a save from the list to explore it here, or click <strong class="text-gray-400">Reload</strong> in the header to load the latest via the API.</p>
     <p class="text-gray-500 text-sm mb-2 max-w-sm" x-show="!sfStatus.connected">Use the <strong class="text-gray-400">Connect</strong> button above to load the latest save via the API, or mount your save directory for local disk access instead.</p>
     <p class="text-xs text-gray-600" x-show="saveStatus?.watchedPath">Mount path: <span class="font-mono" x-text="saveStatus?.watchedPath"></span></p>
   </div>
