@@ -613,6 +613,10 @@ export function mapController() {
         maxNativeZoom: MAP_ZOOM_RATIO,
         maxZoom: 8,
         tileSize: TILE_SIZE,
+        // Keep more off-screen tiles mounted (default 2) so short pans don't drop
+        // and re-request them; and don't churn tile requests mid-zoom-animation.
+        keepBuffer: 4,
+        updateWhenZooming: false,
       }).addTo(_leafletMap);
 
       // Pane stack around the fog overlay (Leaflet defaults: tilePane 200,
