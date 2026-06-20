@@ -7,7 +7,7 @@
      Explorer is the full-screen default and the browser becomes a left slide-out
      drawer (savesDrawerOpen), opened by the edge handle and closed on selection. -->
 <div x-show="activeTab === 'saves'" class="container mx-auto px-4 py-6 max-w-6xl lg:max-w-[92rem]">
-  <div class="lg:flex lg:items-start lg:gap-6">
+  <div class="lg:flex lg:items-start">
 
     <!-- Drawer scrim (mobile only) -->
     <div
@@ -32,8 +32,13 @@
     <!-- Save browser: static rail on lg+, off-canvas slide-out drawer below that -->
     <div
       class="fixed top-14 bottom-0 left-0 z-40 w-[88%] max-w-sm overflow-y-auto bg-gray-950 border-r border-gray-800 px-4 py-4 transform transition-transform duration-200 ease-out
-             lg:sticky lg:top-16 lg:bottom-auto lg:z-auto lg:w-96 lg:max-w-none lg:shrink-0 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:bg-gray-900/30 lg:border lg:rounded-2xl lg:p-3 lg:transform-none lg:transition-none"
-      :class="savesDrawerOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+             lg:sticky lg:top-16 lg:bottom-auto lg:z-auto lg:max-w-none lg:shrink-0 lg:overflow-hidden lg:bg-gray-900/30 lg:rounded-2xl lg:transform-none lg:transition-all lg:duration-300 lg:ease-in-out"
+      :class="{
+        'translate-x-0': savesDrawerOpen,
+        '-translate-x-full lg:translate-x-0': !savesDrawerOpen,
+        'lg:w-96 lg:mr-6 lg:p-3 lg:border': !savesRailCollapsed,
+        'lg:w-0 lg:mr-0 lg:p-0 lg:border-0 lg:opacity-0 lg:pointer-events-none': savesRailCollapsed
+      }"
     >
       <!-- Drawer header (mobile only) -->
       <div class="flex items-center justify-between mb-3 lg:hidden">
@@ -42,7 +47,15 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
       </div>
-      {{> saves-tab }}
+      <!-- Fixed inner width on lg+ (= w-96 minus the lg:p-3 padding) so the content keeps
+           its layout while the rail's width animates to 0 — the rail just clips it (clean
+           wipe) instead of the content reflowing/squeezing narrower-and-taller mid-collapse.
+           The vertical scroll lives here (not the rail) so its scrollbar sits inside the
+           fixed width — otherwise it'd steal width from the rail's content box and force a
+           phantom horizontal scrollbar. -->
+      <div class="lg:w-[22.5rem] lg:max-h-[calc(100vh-8.5rem)] lg:overflow-y-auto lg:overflow-x-hidden">
+        {{> saves-tab }}
+      </div>
     </div>
 
     <!-- Explorer: full-width default on mobile; right pane on lg+ -->

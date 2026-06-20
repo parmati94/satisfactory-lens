@@ -64,6 +64,7 @@ document.addEventListener('alpine:init', () => {
     saveStatus: null,
     saveTab: 'players',       // sub-tab: 'players' | 'progression' | 'production' | 'power' | 'storage' | 'structures'
     savesDrawerOpen: false,   // <lg only: the save-browser slide-out drawer (Explorer is the default view)
+    savesRailCollapsed: false, // lg+ only: collapse the save-browser rail to give the Explorer full width (persisted)
     saveDataLoading: false,
     saveDataError: null,
     svPlayers: null,
@@ -156,11 +157,20 @@ document.addEventListener('alpine:init', () => {
       if (saved === 'saveviewer') { saved = 'saves'; localStorage.setItem('sl-default-tab', 'saves'); }
       this.defaultTab = this.landingTabs.some((t) => t.id === saved) ? saved : 'dashboard';
       this.activeTab = this.defaultTab;
+      this.savesRailCollapsed = localStorage.getItem('sl-saves-rail-collapsed') === 'true';
     },
     setDefaultTab(id) {
       if (!this.landingTabs.some((t) => t.id === id)) return;
       this.defaultTab = id;
       localStorage.setItem('sl-default-tab', id);
+    },
+
+    // lg+ save-browser rail collapse — defaults open (master-detail norm); once the
+    // user collapses it the choice sticks across reloads. No effect below lg, where the
+    // rail is the off-canvas drawer (savesDrawerOpen).
+    toggleSavesRail() {
+      this.savesRailCollapsed = !this.savesRailCollapsed;
+      localStorage.setItem('sl-saves-rail-collapsed', String(this.savesRailCollapsed));
     },
 
     // Reduced motion: off by default; only on when the user explicitly enables it.
@@ -186,11 +196,12 @@ document.addEventListener('alpine:init', () => {
         confirmLabel: 'Reset',
       });
       if (!ok) return;
-      ['sl-theme', 'sl-map-colors', 'sl-default-tab', 'sl-reduce-motion', 'sl-map-filters'].forEach((k) => localStorage.removeItem(k));
+      ['sl-theme', 'sl-map-colors', 'sl-default-tab', 'sl-reduce-motion', 'sl-map-filters', 'sl-saves-rail-collapsed'].forEach((k) => localStorage.removeItem(k));
       this.applyTheme('orange');
       this.resetAllCategoryColors?.();
       this._resetMapFilters?.();
       this.applyReduceMotion(this._initialReduceMotion());
+      this.savesRailCollapsed = false;
       this.setDefaultTab('dashboard');
     },
 
