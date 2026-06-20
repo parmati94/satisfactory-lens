@@ -7,7 +7,7 @@
      Explorer is the full-screen default and the browser becomes a left slide-out
      drawer (savesDrawerOpen), opened by the edge handle and closed on selection. -->
 <div x-show="activeTab === 'saves'" class="container mx-auto px-4 py-6 max-w-6xl lg:max-w-[92rem]">
-  <div class="lg:flex lg:items-stretch lg:gap-6">
+  <div class="lg:flex lg:items-start lg:gap-6">
 
     <!-- Drawer scrim (mobile only) -->
     <div
@@ -17,20 +17,22 @@
       class="fixed inset-0 z-30 bg-black/60 lg:hidden"
     ></div>
 
-    <!-- Edge handle: pull the saves drawer out (mobile only, when closed) -->
+    <!-- Edge handle: pull the saves drawer out (mobile only, when closed). The save
+         icon denotes what's behind it; the chevron hints it pulls out. -->
     <button
       x-show="!savesDrawerOpen"
       @click="savesDrawerOpen = true"
       aria-label="Show saves"
-      class="lg:hidden fixed left-0 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center h-16 w-6 rounded-r-xl bg-gray-800 border border-l-0 border-gray-700 text-gray-300 shadow-lg hover:bg-gray-700 hover:text-white transition-colors"
+      class="lg:hidden fixed left-0 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center justify-center gap-1.5 h-20 w-7 rounded-r-xl bg-gray-900/55 backdrop-blur-sm border border-l-0 border-gray-600/40 text-gray-300/90 shadow-lg hover:bg-gray-900/80 hover:text-white transition-colors"
     >
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+      <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg>
     </button>
 
     <!-- Save browser: static rail on lg+, off-canvas slide-out drawer below that -->
     <div
       class="fixed top-14 bottom-0 left-0 z-40 w-[88%] max-w-sm overflow-y-auto bg-gray-950 border-r border-gray-800 px-4 py-4 transform transition-transform duration-200 ease-out
-             lg:static lg:top-auto lg:bottom-auto lg:z-auto lg:w-96 lg:max-w-none lg:shrink-0 lg:overflow-visible lg:bg-gray-900/30 lg:border lg:rounded-2xl lg:p-3 lg:transform-none lg:transition-none"
+             lg:sticky lg:top-16 lg:bottom-auto lg:z-auto lg:w-96 lg:max-w-none lg:shrink-0 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:bg-gray-900/30 lg:border lg:rounded-2xl lg:p-3 lg:transform-none lg:transition-none"
       :class="savesDrawerOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
     >
       <!-- Drawer header (mobile only) -->

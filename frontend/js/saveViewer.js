@@ -165,6 +165,10 @@ export function saveViewer() {
           this.saves = data;
         }
         if (this.saveStatus?.loaded) await this.loadSaveActiveSubTab();
+        // loadSaveActiveSubTab only refills the Explorer's active sub-tab; if the reload
+        // was triggered from the dashboard, repopulate the Factory Snapshot too so it
+        // doesn't vanish (clearSvCaches above just nulled its svPower/svBuildings inputs).
+        if (this.activeTab === 'dashboard') this.loadFactorySnapshot();
       } catch (e) {
         this.saveDataError = e.message;
       } finally {
@@ -330,6 +334,10 @@ export function saveViewer() {
             await this.loadSaveStatus();
             this.clearSvCaches();
             if (this.activeTab === 'saves') await this.loadSaveActiveSubTab();
+            // clearSvCaches() just nulled the snapshot inputs (svPower/svBuildings);
+            // if we're sitting on the dashboard nothing else will refetch them, so the
+            // Factory Snapshot would silently vanish until a tab switch. Repopulate here.
+            if (this.activeTab === 'dashboard') this.loadFactorySnapshot();
             if (this.activeTab === 'map') {
               await Promise.all([
                 this.loadSvPlayers(), this.loadSvResourceNodes(), this.loadSvMapPins(), this.loadSvBuildingFootprints(),
