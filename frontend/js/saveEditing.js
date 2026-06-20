@@ -24,14 +24,13 @@ export function saveEditing() {
       return !!this.editBuffer[this._posKey(player)];
     },
 
-    // Set one axis from a meters input; stores cm (game units) to match the save.
-    setPlayerPositionAxis(player, axis, meters) {
-      const cm = Math.round((parseFloat(meters) || 0) * 100);
-      const next = { ...this.effectivePosition(player), [axis]: cm };
+    // Stage an absolute player position (cm). Net-zero vs the loaded baseline drops
+    // the override entirely. Shared by the Explorer's per-axis inputs and the map's
+    // click-to-teleport, so both write the identical SetPlayerPosition edit.
+    _stagePlayerPosition(player, next) {
       const base = player.position;
       const key = this._posKey(player);
       if (next.x === base.x && next.y === base.y && next.z === base.z) {
-        // Net-zero vs baseline → drop the override entirely.
         const { [key]: _, ...rest } = this.editBuffer;
         this.editBuffer = rest;
       } else {
@@ -44,6 +43,25 @@ export function saveEditing() {
           },
         };
       }
+    },
+
+    // Set one axis from a meters input; stores cm (game units) to match the save.
+    setPlayerPositionAxis(player, axis, meters) {
+      const cm = Math.round((parseFloat(meters) || 0) * 100);
+      this._stagePlayerPosition(player, { ...this.effectivePosition(player), [axis]: cm });
+    },
+
+    // Stage a teleport to a map-picked X/Y, snapping Z to terrain (+3 m) like
+    // snapToGround. Falls back to the player's current altitude if the spot is
+    // outside the mapped world (no heightmap there). Used by the map click menu.
+    async teleportPlayerToGround(player, gameX, gameY) {
+      const x = Math.round(gameX), y = Math.round(gameY);
+      let z = this.effectivePosition(player).z; // fallback: keep current altitude
+      try {
+        const r = await api.groundHeight(x, y);
+        if (r && typeof r.z === 'number') z = r.z + 300; // terrain + 3 m safety
+      } catch { /* outside the mapped world — keep current altitude */ }
+      this._stagePlayerPosition(player, { x, y, z });
     },
 
     editList() { return Object.values(this.editBuffer); },
@@ -270,6 +288,10 @@ export function saveEditing() {
     revertEdit(key) {
       const { [key]: _, ...rest } = this.editBuffer;
       this.editBuffer = rest;
+      // A reverted teleport must move its marker back; redraw if the map is live.
+      if (this.mapInitialized && key.startsWith('player:') && key.endsWith(':position')) {
+        this.updateMapMarkers();
+      }
     },
 
     async cancelEdits() {
@@ -282,6 +304,8 @@ export function saveEditing() {
       });
       if (!ok) return;
       this.editBuffer = {};
+      // Redraw map markers so any staged-teleport glow/positions revert to baseline.
+      if (this.mapInitialized) this.updateMapMarkers();
     },
 
     openPersistModal() {
@@ -311,6 +335,18 @@ export function saveEditing() {
         await this.loadSaveStatus();
         this.clearSvCaches();
         await this.loadSaveActiveSubTab();
+        // Persist clears EVERY sv* cache; the map draws players + buildings + nodes
+        // + pins, so reload them all (not just players) before redrawing — otherwise
+        // those layers redraw from null data and vanish, leaving only player icons.
+        if (this.mapInitialized) {
+          try {
+            await Promise.all([
+              this.loadSvPlayers(), this.loadSvResourceNodes(),
+              this.loadSvMapPins(), this.loadSvBuildingFootprints(),
+            ]);
+          } catch { /* ignore */ }
+          this.updateMapMarkers();
+        }
         if (this.sfStatus.connected) { try { await this.loadSaves(); } catch { /* ignore */ } }
         let message;
         if (result.target === 'mount') {
