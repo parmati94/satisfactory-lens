@@ -70,8 +70,12 @@
       x-text="error"
     ></div>
 
-    <!-- Session accordions -->
-    <div x-show="saves && !loading" class="space-y-3">
+    <!-- Session accordions — blurred behind a lockout while edits are staged, since
+         inspecting or loading another save would orphan the current save's edits
+         (their targets are instanceNames in the loaded save). -->
+    <div x-show="saves && !loading" class="relative">
+      <div class="space-y-3 transition-[filter,opacity] duration-200"
+           :class="editCount > 0 ? 'blur-[3px] opacity-50 pointer-events-none select-none' : ''">
       <template x-for="session in saves?.sessions ?? []" :key="session.sessionName">
         <div
           x-data="{
@@ -190,8 +194,8 @@
                       <div class="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         <button
                           @click.stop="loadSave(session.sessionName, save.saveName)"
-                          :disabled="actionLoading"
-                          title="Load to Server — switches the live server to this save"
+                          :disabled="actionLoading || editCount > 0"
+                          :title="editCount > 0 ? 'Finish editing first — save or discard staged changes before loading' : 'Load to Server — switches the live server to this save'"
                           class="p-1.5 rounded-md bg-gray-800/80 hover:bg-gray-700 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                         >
                           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12V7a2 2 0 012-2h10a2 2 0 012 2v5M5 12h14M5 12a2 2 0 00-2 2v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 00-2-2M8 16h.01M12 16h.01M8 8h.01M12 8h.01" /></svg>
@@ -257,8 +261,8 @@
                       <div class="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         <button
                           @click.stop="loadSave(session.sessionName, save.saveName)"
-                          :disabled="actionLoading"
-                          title="Load to Server — switches the live server to this save"
+                          :disabled="actionLoading || editCount > 0"
+                          :title="editCount > 0 ? 'Finish editing first — save or discard staged changes before loading' : 'Load to Server — switches the live server to this save'"
                           class="p-1.5 rounded-md bg-gray-800/80 hover:bg-gray-700 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                         >
                           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12V7a2 2 0 012-2h10a2 2 0 012 2v5M5 12h14M5 12a2 2 0 00-2 2v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 00-2-2M8 16h.01M12 16h.01M8 8h.01M12 8h.01" /></svg>
@@ -293,6 +297,28 @@
       </template>
 
       <div x-show="!saves?.sessions?.length && !loading" class="text-center py-10 text-gray-500 text-sm">No saves found.</div>
+      </div>
+
+      <!-- Editing lockout — the blur lives on the list above; this card (sticky so
+           it follows scroll) explains why and offers save/discard right here. -->
+      <div x-show="editCount > 0" x-transition.opacity
+           class="absolute inset-0 z-10 flex justify-center pointer-events-none" style="display:none">
+        <div class="pointer-events-auto sticky top-4 self-start mx-2 max-w-[18rem] rounded-xl border border-accent-500/30 bg-gray-900/85 backdrop-blur-md p-4 text-center shadow-[0_0_22px_-4px_rgb(var(--accent-500)/0.3),0_14px_30px_-10px_rgba(0,0,0,0.7)]">
+          <svg class="w-6 h-6 mx-auto text-accent-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+          <p class="text-sm font-semibold text-gray-100">Locked while editing</p>
+          <p class="text-xs text-gray-400 mt-1">Save or discard your
+            <span class="text-accent-300 font-medium" x-text="editCount"></span>
+            staged change<span x-show="editCount !== 1">s</span> to open or load another save.</p>
+          <div class="flex items-center justify-center gap-2 mt-3">
+            <button @click="cancelEdits()"
+              class="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-600/60 text-gray-300 hover:bg-gray-700/50 transition-colors">Discard</button>
+            <button @click="openPersistModal()"
+              class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-400 text-white transition-colors">Save changes</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
