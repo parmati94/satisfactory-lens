@@ -150,6 +150,13 @@ html.reduce-motion .leaflet-pan-anim .leaflet-proxy {
   background: #030712 !important; /* gray-950, matches app body */
 }
 
+/* Player marker with a staged (unsaved) teleport — accent glow so it reads as
+   "moved, not yet saved" against the un-edited markers. No transform here:
+   Leaflet positions markers via an inline transform, which we must not clobber. */
+.leaflet-marker-icon.sf-player-edited {
+  filter: drop-shadow(0 0 4px rgb(var(--accent-500) / 0.95)) drop-shadow(0 0 8px rgb(var(--accent-500) / 0.6));
+}
+
 /* Building hover tooltip — dark theme over Leaflet's default white tooltip */
 .leaflet-tooltip.sf-building-tooltip {
   background: rgba(17, 24, 39, 0.97); /* gray-900 */

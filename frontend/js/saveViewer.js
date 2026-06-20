@@ -181,6 +181,14 @@ export function saveViewer() {
     // the Saves tab's "Inspect" button. This only loads the save into Lens for viewing; it
     // never touches the live server (that's what "Load to Server" is for).
     async inspectSave(saveName, saveDateTime) {
+      // Inspecting swaps the loaded save (and clears the sv* caches), which would
+      // orphan any staged edits — their targets are instanceNames in the current
+      // save. Block until the user saves or discards; the save list is also blurred
+      // behind a lockout while editing (see saves-tab.html).
+      if (this.editCount > 0) {
+        this.actionResult = { ok: false, message: 'Finish editing first — save or discard your staged changes before opening another save.' };
+        return;
+      }
       this.actionLoading = true;
       this.actionResult = null;
       try {

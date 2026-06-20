@@ -48,6 +48,12 @@
         <span class="text-gray-700">·</span>
         <span class="text-gray-500">Y</span>
         <span class="text-gray-200 tabular-nums" x-text="((mouseCoord.y ?? 0) / 100).toFixed(0) + ' m'"></span>
+        <template x-if="svPlayers?.length">
+          <span class="text-gray-700">·</span>
+        </template>
+        <template x-if="svPlayers?.length">
+          <span class="text-gray-500 normal-case tracking-normal">right-click to teleport</span>
+        </template>
       </div>
 
 
@@ -409,6 +415,54 @@
       </svg>
       Reset to default
     </button>
+  </div>
+
+  <!-- ── Click-to-teleport — compact player picker anchored to an empty-map click ─ -->
+  <div x-show="teleportMenu.open"
+       x-transition:enter="transition ease-out duration-100"
+       x-transition:enter-start="opacity-0 scale-95"
+       x-transition:enter-end="opacity-100 scale-100"
+       x-transition:leave="transition ease-in duration-75"
+       x-transition:leave-start="opacity-100 scale-100"
+       x-transition:leave-end="opacity-0 scale-95"
+       @click.outside="teleportMenu.open = false"
+       @keydown.escape.window="teleportMenu.open = false"
+       class="fixed"
+       :style="`left:${teleportMenu.left}px;top:${teleportMenu.top}px;width:${teleportMenu.w}px;z-index:1100;transform-origin:${teleportMenu.tailLeft}px ${teleportMenu.tailEdge === 'bottom' ? '100%' : '0'}`"
+       x-cloak>
+    <!-- Speech-bubble tail: a rotated square poking out, behind the body so only
+         its outer point shows; sits at the click's x on the edge facing it. Kept
+         opaque (gray-900) so it doesn't double-darken under the translucent body. -->
+    <div class="absolute w-3 h-3 bg-gray-900 border border-accent-500/25 rotate-45"
+         :style="(teleportMenu.tailEdge === 'bottom' ? 'bottom:-6px;' : 'top:-6px;') + `left:${teleportMenu.tailLeft - 6}px`"></div>
+    <!-- Frosted-glass body: translucent + blurred so the map reads through, with a
+         soft accent glow tying it to the marker/edit-bar accent language. -->
+    <div class="relative rounded-xl bg-gray-900/70 backdrop-blur-xl border border-accent-500/25 p-2.5 ring-1 ring-inset ring-white/5 shadow-[0_0_16px_-3px_rgb(var(--accent-500)/0.20),0_14px_30px_-10px_rgba(0,0,0,0.75)]">
+      <div class="flex items-center gap-2 px-1 pb-2 mb-1.5 border-b border-white/10">
+        <svg class="w-4 h-4 text-accent-300 flex-shrink-0" style="filter:drop-shadow(0 0 4px rgb(var(--accent-500)/0.5))" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        <div class="min-w-0">
+          <div class="text-[10px] font-semibold uppercase tracking-widest text-gray-400 leading-none">Teleport to</div>
+          <div class="text-xs font-mono text-gray-200 mt-0.5 tabular-nums"
+               x-text="`${(teleportMenu.gx/100).toFixed(0)} m, ${(teleportMenu.gy/100).toFixed(0)} m`"></div>
+        </div>
+      </div>
+      <div class="flex flex-col gap-0.5 max-h-60 overflow-y-auto">
+        <template x-for="p in (svPlayers || [])" :key="p.instanceName">
+          <button @click="teleportPlayerTo(p)" :disabled="teleportMenu.loading"
+                  class="flex items-center gap-2 w-full text-left px-2 py-2 rounded-lg hover:bg-accent-500/15 transition-colors disabled:opacity-50">
+            <img src="/assets/players/player_marker.png" class="w-5 h-5 flex-shrink-0" onerror="this.style.display='none'">
+            <span class="flex-1 min-w-0 text-sm text-gray-100 truncate" x-text="p.playerName"></span>
+            <span x-show="isPositionEdited(p)" class="flex-shrink-0 text-[10px] font-medium text-accent-300">staged</span>
+          </button>
+        </template>
+      </div>
+      <p class="px-2 pt-1.5 mt-1 text-[10px] text-gray-500 border-t border-white/10 leading-snug">
+        Snaps to ground · saved from the edit bar
+      </p>
+    </div>
   </div>
 
 </div>

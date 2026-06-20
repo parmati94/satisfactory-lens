@@ -238,6 +238,11 @@ export function mapController() {
     svMapPins: null,
     svBuildingFootprints: null,
     mouseCoord: { x: null, y: null }, // live game coords under the cursor (cm)
+    // Click-to-teleport menu: a compact speech-bubble player picker whose tail
+    // points at the right-clicked spot. gx/gy hold the picked world coords (cm);
+    // left/top/w place the bubble; tailEdge/tailLeft place the tail (see
+    // _openTeleportMenu). Pick a player to stage a SetPlayerPosition edit.
+    teleportMenu: { open: false, gx: 0, gy: 0, loading: false, left: 0, top: 0, w: 232, tailEdge: 'bottom', tailLeft: 116 },
     // ─────────────────────────────────────────────────────────────────────
     // ── Phase 3: Map methods ──────────────────────────────────────────────
 
@@ -608,6 +613,10 @@ export function mapController() {
         maxNativeZoom: MAP_ZOOM_RATIO,
         maxZoom: 8,
         tileSize: TILE_SIZE,
+        // Keep more off-screen tiles mounted (default 2) so short pans don't drop
+        // and re-request them; and don't churn tile requests mid-zoom-animation.
+        keepBuffer: 4,
+        updateWhenZooming: false,
       }).addTo(_leafletMap);
 
       // Pane stack around the fog overlay (Leaflet defaults: tilePane 200,
@@ -693,6 +702,17 @@ export function mapController() {
         // nulls _cardEntry; set it last so the action button keeps its reference.
         _cardEntry = hit.entry;
         if (!hit.isSpline) this._enrichBuildingCard(hit.entry);
+      });
+
+      // Right-click → teleport player-picker. Replace the browser's native context
+      // menu (preventDefault) with our own, anchored at the cursor's world coords —
+      // so it teleports "here" regardless of what's underneath, and never competes
+      // with left-click (building cards) or double-click zoom.
+      mapEl.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        const cp = _leafletMap.mouseEventToContainerPoint(e);
+        const latlng = _leafletMap.containerPointToLatLng(cp);
+        this._openTeleportMenu(e, latlng);
       });
 
       const center = bounds.getCenter();
@@ -1375,24 +1395,68 @@ export function mapController() {
       }
     },
 
+    // Open the click-to-teleport player picker as a speech bubble whose tail points
+    // at the right-clicked spot. No-op when there's no loaded save with players.
+    // The bubble sits centred above the click (tail pointing down); it flips below
+    // when there's no room above, and clamps to the viewport while the tail still
+    // tracks the click's x. The chosen world coords are carried as gx/gy (cm).
+    _openTeleportMenu(e, latlng) {
+      if (!this.svPlayers?.length) return;
+      const g = latLngToGame(latlng);
+      const M = 8, W = 232, GAP = 11;
+      const n = Math.min(this.svPlayers.length, 6);
+      const H = 96 + n * 40; // header + rows + hint + padding (estimate; clamped below)
+      const vw = window.innerWidth, vh = window.innerHeight;
+      // Prefer above the click so the tail points down to the spot; flip below if tight.
+      let tailEdge = 'bottom';
+      let top = e.clientY - GAP - H;
+      if (top < M) { tailEdge = 'top'; top = e.clientY + GAP; }
+      top = Math.max(M, Math.min(top, vh - H - M));
+      // Centre on the click horizontally, clamped; the tail offset still points back at it.
+      const left = Math.max(M, Math.min(e.clientX - W / 2, vw - W - M));
+      const tailLeft = Math.max(16, Math.min(e.clientX - left, W - 16));
+      this.teleportMenu = { open: true, gx: g.x, gy: g.y, loading: false, left, top, w: W, tailEdge, tailLeft };
+    },
+
+    // Stage a teleport for the chosen player to the menu's picked coords, then move
+    // its marker to the staged spot. The edit lands in the shared editBuffer, so the
+    // global edit bar and the Explorer's player coordinates reflect it immediately.
+    async teleportPlayerTo(player) {
+      const { gx, gy } = this.teleportMenu;
+      this.teleportMenu.loading = true;
+      try {
+        await this.teleportPlayerToGround(player, gx, gy);
+      } finally {
+        this.teleportMenu.loading = false;
+        this.teleportMenu.open = false;
+      }
+      this._updatePlayerMarkers();
+    },
+
     _updatePlayerMarkers() {
       if (!_playerLayer) return;
       _playerLayer.clearLayers();
       if (!this.mapFilters.players || !this.svPlayers?.length) return;
 
       for (const player of this.svPlayers) {
-        const latlng = gameToLatLng(player.position.x, player.position.y);
-        const xM = (player.position.x / 100).toFixed(0);
-        const yM = (player.position.y / 100).toFixed(0);
-        const zM = (player.position.z / 100).toFixed(0);
+        // Draw at the effective (staged-or-baseline) position so a click-to-teleport
+        // edit moves the marker instantly, before it's persisted.
+        const pos = this.effectivePosition(player);
+        const edited = this.isPositionEdited(player);
+        const latlng = gameToLatLng(pos.x, pos.y);
+        const xM = (pos.x / 100).toFixed(0);
+        const yM = (pos.y / 100).toFixed(0);
+        const zM = (pos.z / 100).toFixed(0);
         const icon = L.icon({
           iconUrl: '/assets/players/player_marker.png',
           iconSize: [28, 28],
           iconAnchor: [14, 14],
           popupAnchor: [0, -14],
+          className: edited ? 'sf-player-edited' : '',
         });
+        const staged = edited ? ' <span style="color:rgb(var(--accent-300))">· staged</span>' : '';
         L.marker(latlng, { icon })
-          .bindPopup(`<strong>${player.playerName}</strong><br><span style="font-family:monospace;font-size:11px">${xM} m, ${yM} m, ${zM} m alt</span>`)
+          .bindPopup(`<strong>${player.playerName}</strong>${staged}<br><span style="font-family:monospace;font-size:11px">${xM} m, ${yM} m, ${zM} m alt</span>`)
           .addTo(_playerLayer);
       }
     },

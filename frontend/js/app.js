@@ -587,6 +587,14 @@ document.addEventListener('alpine:init', () => {
     },
 
     async loadSave(sessionName, saveName) {
+      // Loading swaps the underlying save out from under any staged edits (whose
+      // targets are instanceNames in the *current* save), which would orphan them.
+      // Same reason we block header reload while editing — make the user save or
+      // discard first. The Load buttons are also visibly disabled (editCount > 0).
+      if (this.editCount > 0) {
+        this.actionResult = { ok: false, message: 'Finish editing first — save or discard your staged changes before loading another save.' };
+        return;
+      }
       const ok = await this.showConfirm({
         title: 'Load to Server',
         message: `Switch the live server to <strong class="text-white">${saveName}</strong>? Connected players will be disconnected while it loads. This only affects the server — it won't change anything in the Save Viewer.`,
