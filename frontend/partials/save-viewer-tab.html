@@ -572,9 +572,10 @@
               <div x-show="svPower && svPower.totalCapacityMW > svPower.totalProducedMW" class="text-xs text-gray-500 mt-1"
                    x-text="svPower ? svPower.totalCapacityMW.toFixed(0) + ' MW capacity' : ''"></div>
             </div>
-            <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
-              <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Peak Draw</div>
-              <div class="text-xl font-bold text-accent-400" x-text="svPower ? svPower.totalMaxDrawMW.toFixed(1) + ' MW' : '—'"></div>
+            <div class="bg-gray-800 rounded-xl p-4 border border-gray-700" title="Actual draw at the moment the save was written (Σ each machine's live consumption). Idle machines draw almost nothing, so on an idle save this sits well below peak.">
+              <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">In Use</div>
+              <div class="text-xl font-bold text-accent-400" x-text="svPower ? svPower.totalConsumedMW.toFixed(1) + ' MW' : '—'"></div>
+              <div class="text-xs text-gray-500 mt-1" x-text="svPower ? svPower.totalMaxDrawMW.toFixed(0) + ' MW peak' : ''"></div>
             </div>
             <div class="bg-gray-800 rounded-xl p-4 border"
               :class="svPower && (svPower.totalCapacityMW - svPower.totalMaxDrawMW) < 0 ? 'border-danger-700 bg-danger-900/10' : 'border-gray-700'">
@@ -596,13 +597,14 @@
 
           <div x-show="svPower?.circuits?.length > 1" class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden mb-3">
             <div class="overflow-x-auto no-scrollbar">
-            <table class="w-full min-w-[480px] text-sm">
+            <table class="w-full min-w-[560px] text-sm">
               <thead>
                 <tr class="border-b border-gray-700">
                   <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Circuit</th>
                   <th class="text-right px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Produced</th>
                   <th class="text-right px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Capacity</th>
-                  <th class="text-right px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Peak Draw</th>
+                  <th class="text-right px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide" title="Actual draw at save time">In Use</th>
+                  <th class="text-right px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide" title="Theoretical max if every consumer ran at full clock">Peak</th>
                   <th class="text-center px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</th>
                 </tr>
               </thead>
@@ -612,7 +614,8 @@
                     <td class="px-4 py-2.5 text-gray-300" x-text="'Circuit ' + (i + 1)"></td>
                     <td class="px-4 py-2.5 text-right font-mono text-ok-400" x-text="c.producedMW.toFixed(1) + ' MW'"></td>
                     <td class="px-4 py-2.5 text-right font-mono text-gray-400" x-text="c.capacityMW.toFixed(1) + ' MW'"></td>
-                    <td class="px-4 py-2.5 text-right font-mono text-accent-400" x-text="c.maxDrawMW.toFixed(1) + ' MW'"></td>
+                    <td class="px-4 py-2.5 text-right font-mono text-accent-300" x-text="c.consumedMW.toFixed(1) + ' MW'"></td>
+                    <td class="px-4 py-2.5 text-right font-mono text-gray-500" x-text="c.maxDrawMW.toFixed(1) + ' MW'"></td>
                     <td class="px-4 py-2.5 text-center">
                       <span x-show="c.isFused" class="text-xs font-medium px-2 py-0.5 rounded-full bg-danger-900/50 text-danger-400 border border-danger-800">Fused</span>
                       <span x-show="!c.isFused && c.capacityMW > 0 && c.producedMW === 0" class="text-xs font-medium px-2 py-0.5 rounded-full bg-warn-900/40 text-warn-400 border border-warn-800">No Fuel</span>
@@ -735,8 +738,8 @@
                             >
                               <!-- Summary row (rich rows toggle their buffers; lean rows just show position) -->
                               <div
-                                class="flex items-center gap-2.5 px-3 py-2 hover:bg-gray-700/40"
-                                :class="inst.kind ? 'cursor-pointer' : ''"
+                                class="flex items-center gap-2.5 px-3 py-2 border-l-[3px] hover:bg-gray-700/40"
+                                :class="(inst.kind ? 'cursor-pointer ' : '') + statusStripeClass(inst)"
                                 @click="inst.kind && (expandedMachine = expandedMachine === instKey(inst) ? null : instKey(inst))"
                               >
                                 <span class="text-[11px] font-mono text-gray-500 w-6 flex-shrink-0">#<span x-text="i + 1"></span></span>
@@ -787,8 +790,11 @@
                                   <span x-show="inst.kind === 'production' && inst.outputs && inst.outputs.length" class="text-[11px] font-mono text-ok-300" x-text="fmtRate(inst.outputs[0])"></span>
                                   <span x-show="inst.clockPct !== undefined && inst.clockPct !== 100" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-warn-500/15 text-warn-300" x-text="inst.clockPct + '%'"></span>
                                   <span x-show="inst.kind === 'production' && inst.boostPct > 100" title="Somersloop boost" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-fuchsia-500/15 text-fuchsia-300" x-text="'×' + (inst.boostPct / 100)"></span>
-                                  <span x-show="inst.kind === 'generator' && inst.powerMW" class="text-[11px] font-mono text-warn-300" x-text="inst.powerMW + ' MW'"></span>
-                                  <span x-show="inst.isProducing" class="w-1.5 h-1.5 rounded-full bg-ok-400" title="Producing"></span>
+                                  <span x-show="inst.kind === 'generator' && inst.powerMW" class="text-[11px] font-mono" :class="inst.isProducing ? 'text-warn-300' : 'text-gray-500'" :title="inst.isProducing ? 'Power output' : 'Rated output (not generating)'" x-text="inst.powerMW + ' MW'"></span>
+                                  <span x-show="machineStatus(inst)" class="flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full" :class="statusChipClass(inst)">
+                                    <span class="w-1.5 h-1.5 rounded-full" :class="statusDotClass(inst)"></span>
+                                    <span x-text="machineStatus(inst)?.label"></span>
+                                  </span>
                                   <button
                                     @click.stop="showBuildingOnMap(b.buildClass, inst.pos.x, inst.pos.y)"
                                     title="Show on map"

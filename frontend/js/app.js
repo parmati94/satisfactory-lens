@@ -328,11 +328,12 @@ document.addEventListener('alpine:init', () => {
     // True once the core snapshot inputs are present.
     factorySnapshotReady() { return !!(this.svPower && this.svBuildings); },
 
-    // Power load as a % of actual production (0 production → 0). >100 means demand
-    // exceeds generation (shown red).
+    // Power load as a % of actual production (0 production → 0): the real draw at
+    // save time vs generation. >100 means the grid was drawing more than it made
+    // (shown red). Uses actual consumption, not the theoretical peak.
     powerLoadPct() {
       const p = this.svPower?.totalProducedMW ?? 0;
-      const d = this.svPower?.totalMaxDrawMW ?? 0;
+      const d = this.svPower?.totalConsumedMW ?? 0;
       return p > 0 ? Math.round((d / p) * 100) : 0;
     },
     powerLoadTone() {

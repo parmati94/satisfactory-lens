@@ -71,6 +71,7 @@ export interface PowerCircuit {
   producedMW: number;   // actual production — only generators with fuel in inventory
   capacityMW: number;   // max potential — all generators at overclock regardless of fuel
   maxDrawMW: number;    // estimated max consumption — all consumers at overclock
+  consumedMW: number;   // ACTUAL draw at save time — Σ each consumer's mTargetConsumption
   isFused: boolean;
 }
 
@@ -79,6 +80,7 @@ export interface PowerSummary {
   totalProducedMW: number;
   totalCapacityMW: number;
   totalMaxDrawMW: number;
+  totalConsumedMW: number;
   fuseCount: number;
 }
 
@@ -96,6 +98,18 @@ export function extractPower(save: SatisfactorySave): PowerSummary {
     if (!obj || !isSaveEntity(obj)) return 1.0;
     const p = obj.properties?.['mCurrentPotential'];
     return p && isFloatProperty(p) ? p.value : 1.0;
+  }
+
+  // Actual power a building was drawing at save time, from its FGPowerInfo's
+  // mTargetConsumption (e.g. 4 MW for a running constructor, 10 MW at 200%, ~0.1 MW
+  // idle). Only consumers carry it — generators/poles return 0 — so summing it never
+  // double-counts production. It's a snapshot of that exact tick.
+  function getActualConsumption(instanceName: string): number {
+    const entity = objectMap.get(instanceName);
+    const piPath: string = entity?.properties?.['mPowerInfo']?.value?.pathName ?? '';
+    if (!piPath) return 0;
+    const tc = objectMap.get(piPath)?.properties?.['mTargetConsumption'];
+    return tc && isFloatProperty(tc) ? Math.max(0, tc.value) : 0;
   }
 
   // Returns true if the generator has fuel loaded (or has no fuel inventory, e.g. geothermal).
@@ -128,6 +142,7 @@ export function extractPower(save: SatisfactorySave): PowerSummary {
       let producedMW = 0;
       let capacityMW = 0;
       let maxDrawMW = 0;
+      let consumedMW = 0;
 
       if (componentsProp && isArrayProperty(componentsProp)) {
         const seen = new Set<string>();
@@ -140,6 +155,11 @@ export function extractPower(save: SatisfactorySave): PowerSummary {
           if (!parsed) continue;
           if (seen.has(parsed.instanceName)) continue;
           seen.add(parsed.instanceName);
+
+          // Actual draw at save time — summed for every consumer on the circuit,
+          // including ones we don't model a base power for (counted before the
+          // BASE_POWER_MW gate below, which only feeds the theoretical estimates).
+          consumedMW += getActualConsumption(parsed.instanceName);
 
           const baseMW = BASE_POWER_MW[parsed.className];
           if (baseMW === undefined) continue;
@@ -156,7 +176,7 @@ export function extractPower(save: SatisfactorySave): PowerSummary {
         }
       }
 
-      circuits.push({ circuitId, producedMW, capacityMW, maxDrawMW, isFused });
+      circuits.push({ circuitId, producedMW, capacityMW, maxDrawMW, consumedMW, isFused });
     }
   }
 
@@ -168,6 +188,7 @@ export function extractPower(save: SatisfactorySave): PowerSummary {
     totalProducedMW: circuits.reduce((s, c) => s + c.producedMW, 0),
     totalCapacityMW: circuits.reduce((s, c) => s + c.capacityMW, 0),
     totalMaxDrawMW:  circuits.reduce((s, c) => s + c.maxDrawMW, 0),
+    totalConsumedMW: circuits.reduce((s, c) => s + c.consumedMW, 0),
     fuseCount: circuits.filter(c => c.isFused).length,
   };
 }

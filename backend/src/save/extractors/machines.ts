@@ -139,6 +139,19 @@ function refEntity(byInstance: Map<string, any>, prop: any): any {
   return ref ? byInstance.get(ref) : null;
 }
 
+// "Is producing" is derived from live power draw, NOT mIsProducing: that flag is
+// dead in 1.0+ saves (it reads false/absent even for machines actively crafting at
+// full power). A consumer's mPowerInfo.mTargetConsumption is a fixed ~0.10 MW when
+// idle and its full rated draw (≥4 MW) when running — a clean, version-proof split,
+// verified present on 100% of production/extractor machines in both old and new
+// saves. Threshold sits well above idle standby and below the smallest working draw.
+const PRODUCING_DRAW_MW = 0.5;
+function actualDrawMW(byInstance: Map<string, any>, obj: any): number {
+  const pi = refEntity(byInstance, obj?.properties?.mPowerInfo);
+  const tc = pi?.properties?.mTargetConsumption?.value;
+  return typeof tc === 'number' ? tc : 0;
+}
+
 function transformPos(obj: any): { x: number; y: number; z: number } {
   const t = obj?.transform?.translation ?? {};
   return { x: t.x ?? 0, y: t.y ?? 0, z: t.z ?? 0 };
@@ -156,7 +169,6 @@ export function extractMachineInstances(save: SatisfactorySave, buildClass: stri
     const base = {
       instanceName: obj.instanceName as string,
       pos: transformPos(obj),
-      isProducing: !!p.mIsProducing?.value,
     };
 
     if (PRODUCTION_CLASSES.has(buildClass)) {
@@ -172,6 +184,7 @@ export function extractMachineInstances(save: SatisfactorySave, buildClass: stri
       out.push({
         ...base,
         kind: 'production',
+        isProducing: actualDrawMW(byInstance, obj) > PRODUCING_DRAW_MW,
         recipeClass,
         recipeName: recipe?.name ?? null,
         recipeDurationSec: recipe?.durationSec ?? 0,
@@ -188,13 +201,17 @@ export function extractMachineInstances(save: SatisfactorySave, buildClass: stri
       });
     } else if (GENERATOR_CLASSES.has(buildClass)) {
       const fuelPath = p.mCurrentFuelClass?.value?.pathName ?? '';
+      // Generators have no mTargetConsumption (they produce), so derive "running"
+      // from fuel: a generator with fuel in its buffer is operational, empty = stalled.
+      const fuelBuffer = withNames(parseStacks(refEntity(byInstance, p.mFuelInventory)).contents);
       out.push({
         ...base,
         kind: 'generator',
+        isProducing: fuelBuffer.length > 0,
         fuelClass: fuelPath ? classStem(fuelPath) : null,
         fuelName: fuelPath ? itemDisplayName(fuelPath) : null,
         powerMW: GENERATOR_MW[buildClass] ?? null,
-        fuelBuffer: withNames(parseStacks(refEntity(byInstance, p.mFuelInventory)).contents),
+        fuelBuffer,
       });
     } else {
       // extractor — the extracted resource is NOT stored in any output inventory:
@@ -220,6 +237,7 @@ export function extractMachineInstances(save: SatisfactorySave, buildClass: stri
       out.push({
         ...base,
         kind: 'extractor',
+        isProducing: actualDrawMW(byInstance, obj) > PRODUCING_DRAW_MW,
         clockPct: Math.round(clock * 100),
         resourceClass,
         resourceName: resourceClass ? resourceLabel(resourceClass) : null,
