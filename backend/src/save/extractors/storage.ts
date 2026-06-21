@@ -168,6 +168,49 @@ export function extractPlayerInventory(
   };
 }
 
+// ── Dimensional Depot (Central Storage) ───────────────────────────────────────
+// Unlike a container, the depot isn't a slotted mInventoryStacks inventory — it's
+// an ArrayProperty of ItemAmount structs (ItemClass + Amount) on the subsystem.
+
+export interface DepotItem {
+  itemClass: string;   // e.g. "Desc_IronPlate" (icon lookup)
+  itemPath: string;    // full "/Game/…/Desc_X.Desc_X_C" path — the edit value
+  displayName: string;
+  amount: number;
+}
+
+export interface CentralStorage {
+  instanceName: string; // subsystem entity — the edit target for depot items
+  editable: boolean;    // mStoredItems already serialized → safe to add/edit in place
+  items: DepotItem[];
+}
+
+const CENTRAL_STORAGE_TYPE = '/Script/FactoryGame.FGCentralStorageSubsystem';
+
+export function extractCentralStorage(save: SatisfactorySave): CentralStorage | null {
+  for (const level of Object.values(save.levels)) {
+    for (const obj of level.objects) {
+      if (obj.typePath !== CENTRAL_STORAGE_TYPE) continue;
+      const stored = (obj.properties as any)?.mStoredItems;
+      const arr: any[] = stored?.values ?? [];
+      const items: DepotItem[] = [];
+      for (const entry of arr) {
+        const path: string = entry?.properties?.ItemClass?.value?.pathName ?? '';
+        if (!path) continue;
+        items.push({
+          itemClass: itemClass(path),
+          itemPath: path,
+          displayName: itemDisplayName(path),
+          amount: entry?.properties?.Amount?.value ?? 0,
+        });
+      }
+      items.sort((a, b) => a.displayName.localeCompare(b.displayName));
+      return { instanceName: obj.instanceName, editable: !!stored, items };
+    }
+  }
+  return null;
+}
+
 export function buildInstanceMap(save: SatisfactorySave): Map<string, any> {
   const map = new Map<string, any>();
   for (const level of Object.values(save.levels)) {

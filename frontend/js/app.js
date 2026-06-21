@@ -71,6 +71,7 @@ document.addEventListener('alpine:init', () => {
     svBuildings: null,
     svPower: null,
     svStorage: null,
+    svDepot: null,           // Dimensional Depot (Central Storage) contents + edit target
     expandedPlayer: null,    // instanceName of expanded player row
     expandedStorage: null,   // instanceName of expanded storage row
     expandedBuildingType: null,   // typePath of expanded building-type row (per-instance list)
@@ -94,7 +95,9 @@ document.addEventListener('alpine:init', () => {
     changesModal: { show: false },
     itemCatalog: null, // { itemClass: { path, name, stack } } for the slot picker
     slotEditor: { show: false, invName: '', slot: 0, contextLabel: '', search: '', selClass: '', count: 1, baseline: null, x: 0, y: 0 },
+    depotEditor: { show: false, target: '', fixedItem: null, selClass: '', count: 0, baselineAmount: 0, search: '', x: 0, y: 0 },
     svSchematics: null,       // baseline purchased set (path → true)
+    svGamePhase: null,        // { target, currentIndex, count } — Project Assembly phase
     schematicCatalog: null,   // full progression catalog (array)
     schematicsSearch: '',
     progOpen: {},             // expanded category sections in the Progression tab
@@ -325,11 +328,12 @@ document.addEventListener('alpine:init', () => {
     // True once the core snapshot inputs are present.
     factorySnapshotReady() { return !!(this.svPower && this.svBuildings); },
 
-    // Power load as a % of actual production (0 production → 0). >100 means demand
-    // exceeds generation (shown red).
+    // Power load as a % of actual production (0 production → 0): the real draw at
+    // save time vs generation. >100 means the grid was drawing more than it made
+    // (shown red). Uses actual consumption, not the theoretical peak.
     powerLoadPct() {
       const p = this.svPower?.totalProducedMW ?? 0;
-      const d = this.svPower?.totalMaxDrawMW ?? 0;
+      const d = this.svPower?.totalConsumedMW ?? 0;
       return p > 0 ? Math.round((d / p) * 100) : 0;
     },
     powerLoadTone() {

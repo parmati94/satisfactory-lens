@@ -3,6 +3,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { buildInstanceMap, parseStacks, itemDisplayName, type InventoryItem } from './storage';
 import { buildClassFromTypePath, buildingLabel } from './buildings';
+import { nodeResourceByPath, resourceLabel } from './resourceNodes';
 
 type SatisfactorySave = ReturnType<typeof Parser.ParseSave>;
 
@@ -56,7 +57,9 @@ const PRODUCTION_CLASSES = new Set([
 // Static base power output (MW) — not stored in the save. GeoThermal is variable
 // (omitted → no figure shown).
 const GENERATOR_MW: Record<string, number> = {
-  Build_GeneratorBiomass: 30,
+  Build_GeneratorBiomass:           30, // pre-1.0 class name (kept for old saves)
+  Build_GeneratorBiomass_Automated: 30, // "Automated Biomass Burner"
+  Build_GeneratorIntegratedBiomass: 30, // "Integrated Biomass Burner"
   Build_GeneratorCoal:    75,
   Build_GeneratorFuel:    250,
   Build_GeneratorNuclear: 2500,
@@ -136,6 +139,19 @@ function refEntity(byInstance: Map<string, any>, prop: any): any {
   return ref ? byInstance.get(ref) : null;
 }
 
+// "Is producing" is derived from live power draw, NOT mIsProducing: that flag is
+// dead in 1.0+ saves (it reads false/absent even for machines actively crafting at
+// full power). A consumer's mPowerInfo.mTargetConsumption is a fixed ~0.10 MW when
+// idle and its full rated draw (≥4 MW) when running — a clean, version-proof split,
+// verified present on 100% of production/extractor machines in both old and new
+// saves. Threshold sits well above idle standby and below the smallest working draw.
+const PRODUCING_DRAW_MW = 0.5;
+function actualDrawMW(byInstance: Map<string, any>, obj: any): number {
+  const pi = refEntity(byInstance, obj?.properties?.mPowerInfo);
+  const tc = pi?.properties?.mTargetConsumption?.value;
+  return typeof tc === 'number' ? tc : 0;
+}
+
 function transformPos(obj: any): { x: number; y: number; z: number } {
   const t = obj?.transform?.translation ?? {};
   return { x: t.x ?? 0, y: t.y ?? 0, z: t.z ?? 0 };
@@ -153,7 +169,6 @@ export function extractMachineInstances(save: SatisfactorySave, buildClass: stri
     const base = {
       instanceName: obj.instanceName as string,
       pos: transformPos(obj),
-      isProducing: !!p.mIsProducing?.value,
     };
 
     if (PRODUCTION_CLASSES.has(buildClass)) {
@@ -169,6 +184,7 @@ export function extractMachineInstances(save: SatisfactorySave, buildClass: stri
       out.push({
         ...base,
         kind: 'production',
+        isProducing: actualDrawMW(byInstance, obj) > PRODUCING_DRAW_MW,
         recipeClass,
         recipeName: recipe?.name ?? null,
         recipeDurationSec: recipe?.durationSec ?? 0,
@@ -185,26 +201,51 @@ export function extractMachineInstances(save: SatisfactorySave, buildClass: stri
       });
     } else if (GENERATOR_CLASSES.has(buildClass)) {
       const fuelPath = p.mCurrentFuelClass?.value?.pathName ?? '';
+      // Generators have no mTargetConsumption (they produce), so derive "running"
+      // from fuel: a generator with fuel in its buffer is operational, empty = stalled.
+      const fuelBuffer = withNames(parseStacks(refEntity(byInstance, p.mFuelInventory)).contents);
       out.push({
         ...base,
         kind: 'generator',
+        isProducing: fuelBuffer.length > 0,
         fuelClass: fuelPath ? classStem(fuelPath) : null,
         fuelName: fuelPath ? itemDisplayName(fuelPath) : null,
         powerMW: GENERATOR_MW[buildClass] ?? null,
-        fuelBuffer: withNames(parseStacks(refEntity(byInstance, p.mFuelInventory)).contents),
+        fuelBuffer,
       });
     } else {
-      // extractor
+      // extractor — the extracted resource is NOT stored in any output inventory:
+      // miners feed belts directly and fluid pumps have no item inventory, so the
+      // old "read mOutputInventory[0]" approach always yielded dashes. Resolve it
+      // instead from the node the extractor sits on (mExtractableResource → static
+      // node catalog). Fluid pumps point at a water/oil volume that isn't in the
+      // catalog, so fall back to the fixed resource for that build class.
       const clock = p.mCurrentPotential?.value ?? 1;
-      const outputBuffer = withNames(parseStacks(refEntity(byInstance, p.mOutputInventory)).contents);
-      const res = outputBuffer[0];
+      const extractRef: string = p.mExtractableResource?.value?.pathName ?? '';
+      const node = extractRef ? nodeResourceByPath(extractRef) : null;
+      let resourceClass: string | null = node?.resourceClass ?? null;
+      if (!resourceClass) {
+        if (buildClass === 'Build_WaterPump') resourceClass = 'Desc_Water';
+        else if (buildClass === 'Build_OilPump') resourceClass = 'Desc_LiquidOil';
+      }
+      // Power-shard slots: extractors overclock too. The potential inventory may
+      // serialize only mArbitrarySlotSizes on never-touched miners (no stacks yet),
+      // so fall back to that for the slot count.
+      const potInv = refEntity(byInstance, p.mInventoryPotential);
+      const potential = parseStacks(potInv);
+      const potentialSlots = potential.totalSlots || (potInv?.properties?.mArbitrarySlotSizes?.values?.length ?? 0);
       out.push({
         ...base,
         kind: 'extractor',
+        isProducing: actualDrawMW(byInstance, obj) > PRODUCING_DRAW_MW,
         clockPct: Math.round(clock * 100),
-        resourceClass: res?.itemClass ?? null,
-        resourceName: res?.displayName ?? null,
-        outputBuffer,
+        resourceClass,
+        resourceName: resourceClass ? resourceLabel(resourceClass) : null,
+        potential: withNames(potential.contents),
+        potentialSlots,
+        // Output buffer intentionally omitted: solid miners feed belts directly
+        // (buffer empty unless backed up) and fluid pumps never use an item
+        // inventory, so it's noise — the UI hides it for extractors.
       });
     }
   }

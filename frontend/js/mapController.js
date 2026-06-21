@@ -243,6 +243,7 @@ export function mapController() {
     // left/top/w place the bubble; tailEdge/tailLeft place the tail (see
     // _openTeleportMenu). Pick a player to stage a SetPlayerPosition edit.
     teleportMenu: { open: false, gx: 0, gy: 0, loading: false, left: 0, top: 0, w: 232, tailEdge: 'bottom', tailLeft: 116 },
+    markerMenu: { open: false, guid: '', name: '', colorHex: '#888888', left: 0, top: 0, w: 240, tailEdge: 'bottom', tailLeft: 120 },
     // ─────────────────────────────────────────────────────────────────────
     // ── Phase 3: Map methods ──────────────────────────────────────────────
 
@@ -418,7 +419,21 @@ export function mapController() {
       if (top + H > window.innerHeight - M) top = window.innerHeight - H - M;
       if (top < M) top = M;
       const { h, s, v } = this._hexToHsv(this.effectiveCategoryColor(cat));
-      this.colorPicker = { open: true, category: cat, top, left, h, s, v };
+      this.colorPicker = { open: true, mode: 'category', category: cat, markerGuid: null, label: cat, top, left, h, s, v };
+    },
+    // Same dark HSV picker, retargeted to a map marker's colour (staged edit).
+    openMarkerColorPicker(guid, evt) {
+      const r = evt.currentTarget.getBoundingClientRect();
+      const W = 240, H = 340, M = 8;
+      let left = r.right + M;
+      if (left + W > window.innerWidth - M) left = r.left - W - M;
+      if (left < M) left = M;
+      let top = r.top;
+      if (top + H > window.innerHeight - M) top = window.innerHeight - H - M;
+      if (top < M) top = M;
+      const stamp = this.effectiveStamps().find(s => s.guid === guid) || this._baselineStamp(guid);
+      const { h, s, v } = this._hexToHsv(this.rgbToHex(stamp.color));
+      this.colorPicker = { open: true, mode: 'marker', category: null, markerGuid: guid, label: stamp.name || 'Marker', top, left, h, s, v };
     },
     closeColorPicker() {
       this.colorPicker.open = false;
@@ -463,7 +478,9 @@ export function mapController() {
     },
     _applyPickerColor() {
       const p = this.colorPicker;
-      this.setCategoryColor(p.category, this._hsvToHex(p.h, p.s, p.v));
+      const hex = this._hsvToHex(p.h, p.s, p.v);
+      if (p.mode === 'marker') this.setMarker(p.markerGuid, { color: this._hexToRgb(hex) });
+      else this.setCategoryColor(p.category, hex);
     },
     // Pointer drag helper: applies onMove now and on every move until release.
     _startDrag(evt, onMove) {
@@ -495,15 +512,24 @@ export function mapController() {
     // Preset / hex entry: set the color AND re-sync the HSV thumbs.
     pickerPick(hex) {
       Object.assign(this.colorPicker, this._hexToHsv(hex));
-      this.setCategoryColor(this.colorPicker.category, hex);
+      this._applyPickerColor();
     },
     pickerSetHex(val) {
       if (!/^#[0-9a-fA-F]{6}$/.test(val)) return; // wait for a complete hex
       this.pickerPick(val.toLowerCase());
     },
     pickerReset() {
-      this.resetCategoryColor(this.colorPicker.category);
-      Object.assign(this.colorPicker, this._hexToHsv(this.effectiveCategoryColor(this.colorPicker.category)));
+      const p = this.colorPicker;
+      if (p.mode === 'marker') {
+        const base = this._baselineStamp(p.markerGuid);
+        if (base) {
+          this.setMarker(p.markerGuid, { color: { ...base.color } });
+          Object.assign(this.colorPicker, this._hexToHsv(this.rgbToHex(base.color)));
+        }
+        return;
+      }
+      this.resetCategoryColor(p.category);
+      Object.assign(this.colorPicker, this._hexToHsv(this.effectiveCategoryColor(p.category)));
     },
     setCategoryColor(cat, hex) {
       if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
@@ -1127,9 +1153,16 @@ export function mapController() {
         const arrow = ins && outs ? `<span style="color:#9ca3af;margin:0 2px">→</span>` : '';
         const rate = detail.outputs?.[0] ? this.fmtRate(detail.outputs[0]) : '';
         const boost = detail.boostPct > 100 ? ` · ×${detail.boostPct / 100}` : '';
+        // "What's it doing": producing/idle state, with the current craft-cycle
+        // progress when it's actively producing — both already in the detail.
+        const prog = detail.isProducing && detail.progressPct !== undefined ? ` · ${detail.progressPct}%` : '';
+        const status = detail.isProducing
+          ? `<span style="color:#4ade80">● Producing${prog}</span>`
+          : `<span style="color:#9ca3af">○ Idle</span>`;
         return `<div class="sf-card-row"><span class="sf-card-k">Recipe</span><span class="sf-card-v">${detail.recipeName || 'None'}</span></div>
           <div style="display:flex;align-items:center;gap:3px;margin:2px 0 4px">${ins}${arrow}${outs}</div>
-          <div class="sf-card-row"><span class="sf-card-k">Output</span><span class="sf-card-v">${rate ? rate + ' · ' : ''}${detail.clockPct}%${boost}</span></div>`;
+          <div class="sf-card-row"><span class="sf-card-k">Output</span><span class="sf-card-v">${rate ? rate + ' · ' : ''}${detail.clockPct}%${boost}</span></div>
+          <div class="sf-card-row"><span class="sf-card-k">Status</span><span class="sf-card-v">${status}</span></div>`;
       }
       if (detail.kind === 'generator') {
         return `<div class="sf-card-row"><span class="sf-card-k">Fuel</span><span class="sf-card-v">${detail.fuelClass ? icon(detail.fuelClass, detail.fuelName) + ' ' : ''}${detail.fuelName || 'None'}</span></div>`
@@ -1140,9 +1173,36 @@ export function mapController() {
         <div class="sf-card-row"><span class="sf-card-k">Clock</span><span class="sf-card-v">${detail.clockPct}%</span></div>`;
     },
 
+    // A compact inventory peek for the map card. `c` is a fetched StorageContainer;
+    // shows the top item stacks (icon + count) plus a slot-fill bar — a read-only
+    // sneak peek; the full editable grid lives in the Explorer's Storage tab.
+    _cardStorageHtml(c) {
+      if (!c.totalSlots || !c.contents?.length) {
+        return `<div class="sf-card-row"><span class="sf-card-k">Contents</span><span class="sf-card-v">Empty</span></div>`;
+      }
+      const { items, overflow } = this.storagePreview(c.contents, 4);
+      const stk = (i) => `<div class="sf-card-stk">
+        <img src="/assets/items/${i.itemClass}.png" title="${i.displayName || ''}" onerror="this.style.display='none'">
+        <span>${this.fmtCount(i.count)}</span>
+      </div>`;
+      const more = overflow > 0 ? `<span class="sf-card-more">+${overflow}</span>` : '';
+      const pct = Math.round((c.usedSlots / c.totalSlots) * 100);
+      return `<div class="sf-card-stacks">${items.map(stk).join('')}${more}</div>
+        <div class="sf-card-row"><span class="sf-card-k">Slots</span><span class="sf-card-v">${c.usedSlots}/${c.totalSlots}</span></div>
+        <div class="sf-card-bar"><div class="sf-card-barfill" style="width:${pct}%"></div></div>`;
+    },
+
+    // Compact integer formatter for the inventory peek (e.g. 12345 → "12.3k").
+    fmtCount(n) {
+      if (n >= 10000) return (n / 1000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, '') + 'k';
+      return String(n);
+    },
+
     // Click detail card content. Position/length fact, plus — for machines whose
     // per-instance detail has been fetched — a recipe (in→out) / fuel / resource
-    // summary, and the launch button into the Save Viewer.
+    // summary, for storage containers an inventory peek, and the launch button
+    // into the Save Viewer. `detail` is a MachineInstance or a StorageContainer
+    // (discriminated by its `contents` field).
     _buildingCardHtml(entry, isSpline, detail) {
       let factLabel, factValue;
       if (isSpline) {
@@ -1157,7 +1217,9 @@ export function mapController() {
         factLabel = 'Position';
         factValue = `${(entry.cx / 100).toFixed(0)} m, ${(entry.cy / 100).toFixed(0)} m`;
       }
-      const machineHtml = detail ? this._cardMachineHtml(detail) : '';
+      const detailHtml = !detail ? ''
+        : detail.contents !== undefined ? this._cardStorageHtml(detail)
+        : this._cardMachineHtml(detail);
       return `<div class="sf-card">
         <div class="sf-card-head">
           <img class="sf-card-icon" src="/assets/buildings/${entry.buildClass}.png" onerror="this.style.display='none'">
@@ -1167,7 +1229,7 @@ export function mapController() {
           </div>
         </div>
         <div class="sf-card-body">
-          ${machineHtml}
+          ${detailHtml}
           <div class="sf-card-row"><span class="sf-card-k">${factLabel}</span><span class="sf-card-v">${factValue}</span></div>
         </div>
         <button class="sf-card-action" type="button">Open in Explorer
@@ -1176,10 +1238,13 @@ export function mapController() {
       </div>`;
     },
 
-    // After a machine is clicked on the map, fetch its type's detail and, if the
-    // card is still showing that instance, re-render with recipe/fuel/resource info.
+    // After a building is clicked on the map, fetch its detail and, if the card is
+    // still showing that instance, re-render with the peek: recipe/fuel/resource for
+    // machines, an inventory preview for storage containers.
     async _enrichBuildingCard(entry) {
-      if (!entry || !this.isInstanceableCategory(entry.category)) return;
+      if (!entry) return;
+      if (entry.category === 'Storage') { await this._enrichStorageCard(entry); return; }
+      if (!this.isInstanceableCategory(entry.category)) return;
       await this.loadMachineDetail(entry.buildClass);
       if (_cardEntry !== entry) return; // popup changed/closed while loading
       const list = this.svMachineDetail[entry.buildClass];
@@ -1188,6 +1253,23 @@ export function mapController() {
       for (const m of list) {
         const d = Math.hypot(Math.round(m.pos.x) - entry.gx, Math.round(m.pos.y) - entry.gy);
         if (d < bestD) { bestD = d; best = m; }
+      }
+      if (best) _detailPopup.setContent(this._buildingCardHtml(entry, false, best));
+    },
+
+    // Storage peek: lazily load the storage census, match the clicked container by
+    // buildClass + nearest position (positions are metres in the census, game-cm on
+    // the map), and re-render the card with its inventory preview. Containers the
+    // census doesn't track (e.g. Dimensional Depot) simply find no match → bare card.
+    async _enrichStorageCard(entry) {
+      if (!this.svStorage) await this.loadSvStorage();
+      if (_cardEntry !== entry) return; // popup changed/closed while loading
+      const mx = Math.round(entry.gx / 100), my = Math.round(entry.gy / 100);
+      let best = null, bestD = Infinity;
+      for (const c of this.svStorage ?? []) {
+        if (c.buildClass !== entry.buildClass || !c.position) continue;
+        const d = Math.hypot(c.position.x - mx, c.position.y - my);
+        if (d < bestD) { bestD = d; best = c; }
       }
       if (best) _detailPopup.setContent(this._buildingCardHtml(entry, false, best));
     },
@@ -1418,6 +1500,22 @@ export function mapController() {
       this.teleportMenu = { open: true, gx: g.x, gy: g.y, loading: false, left, top, w: W, tailEdge, tailLeft };
     },
 
+    // Anchor the marker edit menu to the clicked stamp (mirrors _openTeleportMenu).
+    _openMarkerMenu(guid, e) {
+      const stamp = this.effectiveStamps().find(s => s.guid === guid) || this._baselineStamp(guid);
+      if (!stamp) return;
+      const M = 8, W = 240, GAP = 14, H = 188;
+      const vw = window.innerWidth, vh = window.innerHeight;
+      const cx = e?.clientX ?? vw / 2, cy = e?.clientY ?? vh / 2;
+      let tailEdge = 'bottom';
+      let top = cy - GAP - H;
+      if (top < M) { tailEdge = 'top'; top = cy + GAP; }
+      top = Math.max(M, Math.min(top, vh - H - M));
+      const left = Math.max(M, Math.min(cx - W / 2, vw - W - M));
+      const tailLeft = Math.max(16, Math.min(cx - left, W - 16));
+      this.markerMenu = { open: true, guid, name: stamp.name || '', colorHex: this.rgbToHex(stamp.color), left, top, w: W, tailEdge, tailLeft };
+    },
+
     // Stage a teleport for the chosen player to the menu's picked coords, then move
     // its marker to the staged spot. The edit lands in the shared editBuffer, so the
     // global edit bar and the Explorer's player coordinates reflect it immediately.
@@ -1486,18 +1584,21 @@ export function mapController() {
           .addTo(_mapPinLayer);
       }
 
-      // Player-placed map stamps
-      if (this.mapFilters.stamps && this.svMapPins.stamps?.length) {
-        for (const stamp of this.svMapPins.stamps) {
+      // Player-placed map stamps — drawn from effective (staged-or-baseline) values
+      // so a rename/recolor/delete previews instantly before it's persisted.
+      if (this.mapFilters.stamps) {
+        for (const stamp of this.effectiveStamps()) {
           const latlng = gameToLatLng(stamp.position.x, stamp.position.y);
           const { r, g, b } = stamp.color;
           const cssColor = `rgb(${r},${g},${b})`;
+          const edited = this.isMarkerEdited(stamp.guid);
+          const ring = edited ? 'border:2px solid rgb(var(--accent-400));box-shadow:0 0 8px rgb(var(--accent-500)/.7)' : 'border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,.6)';
           const icon = L.divIcon({
             className: '',
             iconSize: [28, 28],
             iconAnchor: [14, 14],
             popupAnchor: [0, -16],
-            html: `<div style="width:28px;height:28px;border-radius:50%;background:${cssColor};border:2px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.6)">
+            html: `<div style="width:28px;height:28px;border-radius:50%;background:${cssColor};${ring};display:flex;align-items:center;justify-content:center;cursor:${stamp.editable ? 'pointer' : 'default'}">
               <svg width="13" height="15" viewBox="0 0 16 18" fill="white" xmlns="http://www.w3.org/2000/svg">
                 <ellipse cx="8" cy="7" rx="6" ry="6"/>
                 <ellipse cx="8" cy="7" rx="2.5" ry="2.5" fill="${cssColor}"/>
@@ -1506,9 +1607,13 @@ export function mapController() {
             </div>`,
           });
           const label = stamp.name || 'Map Marker';
-          L.marker(latlng, { icon })
-            .bindPopup(`<strong>${label}</strong>`)
-            .addTo(_mapPinLayer);
+          const m = L.marker(latlng, { icon }).addTo(_mapPinLayer);
+          // Editable stamps open the edit menu on click; legacy markers keep a read-only popup.
+          if (stamp.editable) {
+            m.on('click', (ev) => this._openMarkerMenu(stamp.guid, ev.originalEvent));
+          } else {
+            m.bindPopup(`<strong>${label}</strong><br><span style="font-size:11px;color:#9ca3af">legacy marker · read-only</span>`);
+          }
         }
       }
     },

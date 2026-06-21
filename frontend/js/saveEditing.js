@@ -190,6 +190,279 @@ export function saveEditing() {
       this.slotEditor.show = false;
     },
 
+    // ── Dimensional Depot (Central Storage) editing ───────────────────────
+    // Keyed by item path (the depot is an item→amount list, not slots).
+    _depotKey(itemPath) { return `depot:${itemPath}`; },
+    isDepotEdited(itemPath) { return !!this.editBuffer[this._depotKey(itemPath)]; },
+
+    // Baseline depot items overlaid with staged edits/additions/removals.
+    effectiveDepotItems(depot) {
+      if (!depot) return [];
+      const map = new Map();
+      for (const it of depot.items) map.set(it.itemPath, { ...it, edited: false });
+      for (const e of Object.values(this.editBuffer)) {
+        if (e.kind !== 'SetDepotItem' || e.target !== depot.instanceName) continue;
+        const path = e.value.item;
+        if (!(e.value.amount > 0)) { map.delete(path); continue; }
+        const cls = path.split('.').pop().replace(/_C$/, '');
+        const existing = map.get(path);
+        map.set(path, {
+          itemClass: cls, itemPath: path,
+          displayName: existing?.displayName ?? this.itemCatalog?.[cls]?.name ?? cls,
+          amount: e.value.amount, edited: true,
+        });
+      }
+      return [...map.values()].sort((a, b) => a.displayName.localeCompare(b.displayName));
+    },
+
+    // item = an existing DepotItem (edit, item locked) or null (add a new item).
+    async openDepotEditor(depot, item, ev) {
+      await this.loadItemCatalog();
+      const x = ev?.clientX ?? (window.innerWidth / 2);
+      const y = ev?.clientY ?? (window.innerHeight / 2);
+      this.depotEditor = {
+        show: true, target: depot.instanceName,
+        fixedItem: item?.itemPath ?? null,          // locks the item when editing an existing row
+        selClass: item?.itemClass ?? '',
+        count: item?.amount ?? 100,
+        baselineAmount: depot.items.find(i => i.itemPath === (item?.itemPath))?.amount ?? 0,
+        search: '', x, y,
+      };
+      this.$nextTick(() => document.getElementById('depot-search')?.focus());
+    },
+    depotEditorStyle() {
+      const M = 8, H = 360;
+      const vw = window.innerWidth, vh = window.innerHeight;
+      const W = Math.min(280, vw - 2 * M);
+      let left = this.depotEditor.x + 12, top = this.depotEditor.y + 12;
+      if (left + W > vw - M) left = Math.max(M, this.depotEditor.x - W - 12);
+      if (top + H > vh - M) top = Math.max(M, vh - H - M);
+      return `left:${left}px;top:${top}px;width:${W}px`;
+    },
+    depotEditorItems() {
+      if (!this.itemCatalog) return [];
+      const q = this.depotEditor.search.toLowerCase().trim();
+      const all = Object.entries(this.itemCatalog).map(([cls, v]) => ({ cls, name: v.name, stack: v.stack }));
+      const filtered = q ? all.filter(i => i.name.toLowerCase().includes(q) || i.cls.toLowerCase().includes(q)) : all;
+      filtered.sort((a, b) => a.name.localeCompare(b.name));
+      return filtered.slice(0, 8);
+    },
+    selectDepotItem(cls) { this.depotEditor.selClass = cls; },
+
+    applyDepotEdit() {
+      const { target, selClass, count, baselineAmount, fixedItem } = this.depotEditor;
+      // Existing rows carry their real path (works even for items outside the picker);
+      // new rows resolve the path from the picked catalog item.
+      const path = fixedItem ?? (selClass ? this.itemCatalog?.[selClass]?.path : null);
+      if (!path) { this.depotEditor.show = false; return; }
+      const amt = Math.max(0, Math.round(Number(count) || 0));
+      const key = this._depotKey(path);
+      if (amt === baselineAmount) {                 // net-zero → drop the override
+        const { [key]: _, ...rest } = this.editBuffer;
+        this.editBuffer = rest;
+      } else {
+        const cls = path.split('.').pop().replace(/_C$/, '');
+        const name = this.itemCatalog?.[cls]?.name ?? cls;
+        this.editBuffer = {
+          ...this.editBuffer,
+          [key]: {
+            kind: 'SetDepotItem', target,
+            value: { item: path, amount: amt },
+            label: 'Dimensional Depot',
+            changeText: amt <= 0 ? `Depot: removed ${name}` : `Depot: ${name} → ${amt.toLocaleString()}`,
+          },
+        };
+      }
+      this.depotEditor.show = false;
+    },
+
+    // Stage a removal (amount 0) directly from a depot row.
+    removeDepotItem(depot, item) {
+      const key = this._depotKey(item.itemPath);
+      const base = depot.items.find(i => i.itemPath === item.itemPath)?.amount ?? 0;
+      if (base === 0) {                              // was a staged add → just drop it
+        const { [key]: _, ...rest } = this.editBuffer;
+        this.editBuffer = rest;
+        return;
+      }
+      this.editBuffer = {
+        ...this.editBuffer,
+        [key]: {
+          kind: 'SetDepotItem', target: depot.instanceName,
+          value: { item: item.itemPath, amount: 0 },
+          label: 'Dimensional Depot',
+          changeText: `Depot: removed ${item.displayName}`,
+        },
+      };
+    },
+
+    // ── Machine overclock + recipe editing ───────────────────────────────
+    _clockKey(inst) { return `machine:${inst.instanceName}:clock`; },
+    isClockEdited(inst) { return !!this.editBuffer[this._clockKey(inst)]; },
+    // Effective overclock %, overlaying any staged edit on the baseline.
+    effectiveClockPct(inst) {
+      const e = this.editBuffer[this._clockKey(inst)];
+      return e ? Math.round(e.value * 100) : (inst.clockPct ?? 100);
+    },
+    // Shards a given % requires: 0 shards caps at 100%, each shard adds +50% to the
+    // cap, so >100% needs ⌈(pct−100)/50⌉ (101–150→1, 151–200→2, 201–250→3), max 3.
+    clockShards(pct) { return pct <= 100 ? 0 : Math.min(3, Math.ceil((pct - 100) / 50)); },
+
+    setMachineClock(inst, pct) {
+      const key = this._clockKey(inst);
+      const clamped = Math.max(1, Math.min(250, Math.round(Number(pct) || 0)));
+      const baseline = inst.clockPct ?? 100;
+      if (clamped === baseline) {                  // net-zero → drop the override
+        const { [key]: _, ...rest } = this.editBuffer;
+        this.editBuffer = rest;
+        return;
+      }
+      const shards = this.clockShards(clamped);
+      this.editBuffer = {
+        ...this.editBuffer,
+        [key]: {
+          kind: 'SetMachineClock', target: inst.instanceName, value: clamped / 100,
+          label: inst.recipeName ? `Machine · ${inst.recipeName}` : 'Machine overclock',
+          changeText: `Overclock → ${clamped}%` + (shards ? ` · ${shards} shard${shards > 1 ? 's' : ''}` : ''),
+        },
+      };
+    },
+
+    // Power-shard / somersloop slots reflecting a staged overclock: shows the
+    // shards the clock edit will add (ringed), preserving baseline somersloops.
+    // Reverts with the edit since it's derived from the editBuffer.
+    effectivePotential(inst) {
+      const base = inst.potential || [];
+      if (!this.isClockEdited(inst)) return base;
+      const want = this.clockShards(this.effectiveClockPct(inst));
+      const baseShards = base.filter(it => it.itemClass === 'Desc_CrystalShard').length;
+      const somersloops = base.filter(it => it.itemClass === 'Desc_WAT1');
+      const shards = [];
+      for (let i = 0; i < want; i++) {
+        shards.push({ itemClass: 'Desc_CrystalShard', displayName: 'Power Shard', count: 1, staged: i >= baseShards });
+      }
+      return shards.concat(somersloops);
+    },
+
+    // ── Map marker editing ────────────────────────────────────────────────
+    _markerKey(guid) { return `marker:${guid}`; },
+    _markerDelKey(guid) { return `marker:${guid}:delete`; },
+    isMarkerEdited(guid) { return !!this.editBuffer[this._markerKey(guid)] || !!this.editBuffer[this._markerDelKey(guid)]; },
+    isMarkerDeleted(guid) { return !!this.editBuffer[this._markerDelKey(guid)]; },
+    _baselineStamp(guid) { return (this.svMapPins?.stamps || []).find(s => s.guid === guid); },
+
+    // Stamps to draw: staged name/color overlaid, deleted ones removed.
+    effectiveStamps() {
+      const stamps = this.svMapPins?.stamps || [];
+      return stamps
+        .filter(s => !this.isMarkerDeleted(s.guid))
+        .map(s => {
+          const e = this.editBuffer[this._markerKey(s.guid)];
+          if (!e) return s;
+          return { ...s, name: e.value.name ?? s.name, color: e.value.color ?? s.color, edited: true };
+        });
+    },
+
+    _hexToRgb(hex) {
+      const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex || '');
+      return m ? { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) } : { r: 136, g: 136, b: 136 };
+    },
+    rgbToHex(c) {
+      const h = (n) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0');
+      return `#${h(c.r)}${h(c.g)}${h(c.b)}`;
+    },
+
+    // Merge a name and/or color change into one SetMapMarker edit (net-zero clears it).
+    setMarker(guid, { name, color }) {
+      const base = this._baselineStamp(guid);
+      if (!base) return;
+      const key = this._markerKey(guid);
+      const cur = this.editBuffer[key]?.value || {};
+      const nextName = name !== undefined ? name : (cur.name !== undefined ? cur.name : base.name);
+      const nextColor = color !== undefined ? color : (cur.color !== undefined ? cur.color : base.color);
+      const sameName = nextName === base.name;
+      const sameColor = nextColor.r === base.color.r && nextColor.g === base.color.g && nextColor.b === base.color.b;
+      if (sameName && sameColor) {
+        const { [key]: _, ...rest } = this.editBuffer;
+        this.editBuffer = rest;
+      } else {
+        const parts = [];
+        if (!sameName) parts.push('renamed');
+        if (!sameColor) parts.push('recolored');
+        this.editBuffer = {
+          ...this.editBuffer,
+          [key]: {
+            kind: 'SetMapMarker', target: guid,
+            value: { name: nextName, color: nextColor },
+            label: `Marker · ${base.name || '(unnamed)'}`,
+            changeText: `Marker ${parts.join(' + ')} → ${nextName || '(unnamed)'}`,
+          },
+        };
+      }
+      this._refreshStamps();
+    },
+
+    deleteMarker(guid) {
+      const base = this._baselineStamp(guid);
+      if (!base) return;
+      const { [this._markerKey(guid)]: _drop, ...rest } = this.editBuffer; // supersede any rename/recolor
+      this.editBuffer = {
+        ...rest,
+        [this._markerDelKey(guid)]: {
+          kind: 'DeleteMapMarker', target: guid, value: {},
+          label: `Marker · ${base.name || '(unnamed)'}`,
+          changeText: `Marker deleted: ${base.name || '(unnamed)'}`,
+        },
+      };
+      if (this.markerMenu) this.markerMenu.open = false;
+      this._refreshStamps();
+    },
+    undeleteMarker(guid) {
+      const { [this._markerDelKey(guid)]: _, ...rest } = this.editBuffer;
+      this.editBuffer = rest;
+      this._refreshStamps();
+    },
+    _refreshStamps() { if (this.mapInitialized && this._updateMapPinMarkers) this._updateMapPinMarkers(); },
+
+    // Effective (staged-or-baseline) marker colour as hex — drives the menu swatch.
+    markerEffectiveHex(guid) {
+      const s = this.effectiveStamps().find(x => x.guid === guid);
+      return s ? this.rgbToHex(s.color) : '#888888';
+    },
+    // Whether a marker's colour differs from baseline (for the picker's reset button).
+    markerColorEdited(guid) {
+      const e = this.editBuffer[this._markerKey(guid)];
+      const base = this._baselineStamp(guid);
+      if (!e || !base) return false;
+      const c = e.value.color;
+      return !!c && (c.r !== base.color.r || c.g !== base.color.g || c.b !== base.color.b);
+    },
+
+    // ── Game phase (Project Assembly) editing ─────────────────────────────
+    _phaseKey() { return this.svGamePhase ? `phase:${this.svGamePhase.target}` : 'phase'; },
+    isPhaseEdited() { return !!this.editBuffer[this._phaseKey()]; },
+    effectivePhaseIndex() {
+      const e = this.editBuffer[this._phaseKey()];
+      return e ? e.value.index : (this.svGamePhase?.currentIndex ?? -1);
+    },
+    setGamePhase(index) {
+      if (!this.svGamePhase) return;
+      const key = this._phaseKey();
+      const idx = Math.max(0, Math.min(this.svGamePhase.count - 1, Math.round(index)));
+      if (idx === this.svGamePhase.currentIndex) {   // net-zero → drop
+        const { [key]: _, ...rest } = this.editBuffer;
+        this.editBuffer = rest;
+        return;
+      }
+      this.editBuffer = {
+        ...this.editBuffer,
+        [key]: {
+          kind: 'SetGamePhase', target: this.svGamePhase.target, value: { index: idx },
+          label: 'Game phase', changeText: `Project Assembly → Phase ${idx}`,
+        },
+      };
+    },
+
     // ── Player health editing ─────────────────────────────────────────────
     _healthKey(player) { return `player:${player.instanceName}:health`; },
     effectiveHealth(player) {

@@ -65,6 +65,38 @@ export function saveViewer() {
       return `${v}${o.fluid ? ' m³' : ''}/min`;
     },
 
+    // Run-state for a collapsed instance row → a colour-coded chip + left stripe.
+    // null for lean rows (no `kind`). Generators distinguish "No fuel" (idle + empty
+    // fuel buffer — the problem case) from merely "Idle" (fuelled, no current demand).
+    machineStatus(inst) {
+      if (!inst.kind) return null;
+      if (inst.isProducing) {
+        return { label: inst.kind === 'extractor' ? 'Extracting' : 'Producing', tone: 'ok' };
+      }
+      if (inst.kind === 'generator' && !(inst.fuelBuffer && inst.fuelBuffer.length)) {
+        return { label: 'No fuel', tone: 'warn' };
+      }
+      return { label: 'Idle', tone: 'idle' };
+    },
+    statusChipClass(inst) {
+      const t = this.machineStatus(inst)?.tone;
+      return t === 'ok'   ? 'bg-ok-500/15 text-ok-300'
+        : t === 'warn'    ? 'bg-warn-500/15 text-warn-300'
+        :                   'bg-gray-700/60 text-gray-400';
+    },
+    statusDotClass(inst) {
+      const t = this.machineStatus(inst)?.tone;
+      return t === 'ok' ? 'bg-ok-400' : t === 'warn' ? 'bg-warn-400' : 'bg-gray-500';
+    },
+    // Left-edge stripe colour (transparent for lean rows so every row insets equally).
+    statusStripeClass(inst) {
+      const t = this.machineStatus(inst)?.tone;
+      return t === 'ok' ? 'border-ok-400/70'
+        : t === 'warn'  ? 'border-warn-400/80'
+        : t === 'idle'  ? 'border-gray-600/70'
+        :                 'border-transparent';
+    },
+
     // How many instance rows to render for a type (capped so a 500-constructor type
     // doesn't lag Alpine). "Show more" bumps the cap in INSTANCE_PAGE steps.
     INSTANCE_PAGE: 100,
@@ -131,12 +163,14 @@ export function saveViewer() {
     clearSvCaches() {
       this.svPlayers = null;
       this.svStorage = null;
+      this.svDepot = null;
       this.svBuildings = null;
       this.svPower = null;
       this.svResourceNodes = null;
       this.svMapPins = null;
       this.svBuildingFootprints = null;
       this.svSchematics = null;
+      this.svGamePhase = null;
       this.expandedBuildingType = null;
       this.highlightedInstanceName = null;
       this.buildingInstanceCap = {};
@@ -235,6 +269,7 @@ export function saveViewer() {
         const data = await api.save.schematics();
         // plain object map (path → true) — Alpine proxies don't play well with Set
         this.svSchematics = Object.fromEntries((data.purchased ?? []).map((p) => [p, true]));
+        this.svGamePhase = (await api.save.gamePhase()).phase;
       } catch (e) {
         this.saveDataError = e.message;
       } finally {
@@ -262,6 +297,7 @@ export function saveViewer() {
       try {
         const data = await api.save.storage();
         this.svStorage = data.containers;
+        this.svDepot = data.depot;
       } catch (e) {
         this.saveDataError = e.message;
       } finally {

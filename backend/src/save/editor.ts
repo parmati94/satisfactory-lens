@@ -3,6 +3,7 @@ import path from 'path';
 import { Parser } from '@etothepii/satisfactory-file-parser';
 import { getSave, getSaveStatus, setSave } from './saveState';
 import { findSchematicManager } from './extractors/schematics';
+import { gamePhasePath, PHASE_COUNT } from './extractors/gamePhase';
 import { getSaveSourceMode, findLatestApiSave } from './loader';
 import { config } from '../config';
 import { uploadSavegame, isConnected } from '../api/sfClient';
@@ -109,11 +110,254 @@ function applySetSchematicPurchased(save: SatisfactorySave, edit: SaveEdit): voi
   }
 }
 
+// Set the stored amount of one item in the Dimensional Depot (Central Storage).
+// target: the FGCentralStorageSubsystem instanceName. value: { item, amount }, where
+// `item` is the full item path; amount<=0 removes the entry. The depot is an
+// ArrayProperty of ItemAmount structs keyed by ItemClass — not a slotted inventory.
+function makeItemAmount(itemPath: string, amount: number): any {
+  return {
+    type: 'ItemAmount',
+    properties: {
+      ItemClass: {
+        type: 'ObjectProperty', name: 'ItemClass',
+        propertyTagType: { name: 'ObjectProperty', children: [] },
+        value: { levelName: '', pathName: itemPath },
+      },
+      Amount: {
+        type: 'IntProperty', name: 'Amount',
+        propertyTagType: { name: 'IntProperty', children: [] },
+        value: amount,
+      },
+    },
+  };
+}
+
+// Build the mStoredItems ArrayProperty from scratch (depots that have never been
+// used don't serialize it). binarySize is recomputed by WriteSave, so 0 is fine.
+function makeStoredItemsArray(): any {
+  const tag = { name: 'StructProperty', children: [{ name: 'ItemAmount', children: [] }] };
+  return {
+    type: 'ArrayProperty', name: 'mStoredItems',
+    propertyTagType: { name: 'ArrayProperty', children: [tag] },
+    structTag: {
+      propertyName: 'mStoredItems', binarySize: 0,
+      propertyTagType: tag, propertyType: 'StructProperty',
+      index: 0, subtype: 'ItemAmount', structGuid: [0, 0, 0, 0],
+    },
+    values: [],
+  };
+}
+
+function applySetDepotItem(save: SatisfactorySave, edit: SaveEdit): void {
+  const v = edit.value as { item: string; amount: number };
+  if (!v || typeof v.item !== 'string' || !v.item) {
+    throw new Error(`SetDepotItem: invalid value for ${edit.target}`);
+  }
+  const sub = findEntity(save, edit.target);
+  if (!sub?.properties) throw new Error(`SetDepotItem: central storage not found (${edit.target})`);
+  const amount = Math.max(0, Math.round(v.amount));
+  // Synthesize the stored-items array on first use (never-used depots omit it).
+  if (!Array.isArray(sub.properties.mStoredItems?.values)) {
+    if (amount <= 0) return; // nothing to remove from an absent array
+    sub.properties.mStoredItems = makeStoredItemsArray();
+  }
+  const arr = sub.properties.mStoredItems.values;
+  const idx = arr.findIndex((e: any) => e?.properties?.ItemClass?.value?.pathName === v.item);
+  if (amount <= 0) {
+    if (idx !== -1) arr.splice(idx, 1);
+  } else if (idx !== -1) {
+    arr[idx].properties.Amount.value = amount;
+  } else {
+    arr.push(makeItemAmount(v.item, amount));
+  }
+}
+
+// ── Machine overclock + recipe ──────────────────────────────────────────────
+const POWER_SHARD = '/Game/FactoryGame/Resource/Environment/Crystal/Desc_CrystalShard.Desc_CrystalShard_C';
+const SOMERSLOOP  = '/Game/FactoryGame/Prototype/WAT/Desc_WAT1.Desc_WAT1_C';
+
+// One empty inventory slot (the shape the parser emits for an unfilled stack).
+function makeInventoryStack(): any {
+  return {
+    type: 'InventoryStack',
+    properties: {
+      Item: {
+        type: 'StructProperty', name: 'Item',
+        propertyTagType: { name: 'StructProperty', children: [{ name: 'InventoryItem', children: [] }] },
+        value: { itemReference: { levelName: '', pathName: '' }, itemState: { hasValidStruct: false } },
+      },
+      NumItems: {
+        type: 'IntProperty', name: 'NumItems',
+        propertyTagType: { name: 'IntProperty', children: [] },
+        value: 0,
+      },
+    },
+  };
+}
+
+// Build an mInventoryStacks ArrayProperty of N empty slots (for pristine extractor
+// potential inventories that serialize only mArbitrarySlotSizes). binarySize is
+// recomputed by WriteSave, so 0 is fine.
+function makeInventoryStacksArray(slots: number): any {
+  const tag = { name: 'StructProperty', children: [{ name: 'InventoryStack', children: [] }] };
+  return {
+    type: 'ArrayProperty', name: 'mInventoryStacks',
+    propertyTagType: { name: 'ArrayProperty', children: [tag] },
+    structTag: {
+      propertyName: 'mInventoryStacks', binarySize: 0,
+      propertyTagType: tag, propertyType: 'StructProperty',
+      index: 0, subtype: 'InventoryStack', structGuid: [0, 0, 0, 0],
+    },
+    values: Array.from({ length: slots }, () => makeInventoryStack()),
+  };
+}
+
+// Set a production machine's overclock and keep its Power Shards consistent.
+// target: machine instanceName. value: clock as a fraction (1 = 100%, max 2.5).
+// >100% is backed by shards in mInventoryPotential (each shard = +50%, max 3); we
+// fill the leading shard slots and never disturb a somersloop (Desc_WAT1) slot.
+function applySetMachineClock(save: SatisfactorySave, edit: SaveEdit): void {
+  const raw = edit.value as number;
+  if (typeof raw !== 'number' || !isFinite(raw)) {
+    throw new Error(`SetMachineClock: invalid value for ${edit.target}`);
+  }
+  const clock = Math.max(0.01, Math.min(2.5, raw));
+  const machine = findEntity(save, edit.target);
+  if (!machine?.properties) throw new Error(`SetMachineClock: machine not found (${edit.target})`);
+
+  // 1) Set/create mCurrentPotential (absent at default 100%, like health). Keep
+  //    mPendingPotential in lock-step so the value doesn't snap back on resolve.
+  let prop = machine.properties.mCurrentPotential;
+  if (!prop) {
+    prop = { type: 'FloatProperty', name: 'mCurrentPotential', propertyTagType: { name: 'FloatProperty', children: [] }, value: 1 };
+    machine.properties.mCurrentPotential = prop;
+  }
+  prop.value = clock;
+  if (machine.properties.mPendingPotential) machine.properties.mPendingPotential.value = clock;
+
+  // 2) Reconcile shards. Each Power Shard raises the clock CAP by +50% (0 shards =
+  //    100%), so any overclock above 100% needs ⌈(pct−100)/50⌉ shards: 101–150 → 1,
+  //    151–200 → 2, 201–250 → 3. Computed from the integer percent to dodge float
+  //    edges. Production machines keep a fully-serialized potential inventory with
+  //    writable slots; pristine extractors (never-touched miners) carry only
+  //    mArbitrarySlotSizes, so synthesize the shard slots.
+  const pct = Math.round(clock * 100);
+  const shardCount = pct <= 100 ? 0 : Math.min(3, Math.ceil((pct - 100) / 50));
+  const invRef = machine.properties.mInventoryPotential?.value?.pathName;
+  const invEntity = invRef ? findEntity(save, invRef) : null;
+  let stacks = invEntity?.properties?.mInventoryStacks?.values;
+  if (!Array.isArray(stacks)) {
+    if (shardCount <= 0) return; // ≤100% with no shard slots: clock set, nothing to place
+    if (!invEntity?.properties) throw new Error(`SetMachineClock: no potential inventory (${edit.target})`);
+    const slots = Math.max(invEntity.properties.mArbitrarySlotSizes?.values?.length || 3, shardCount);
+    invEntity.properties.mInventoryStacks = makeInventoryStacksArray(slots);
+    stacks = invEntity.properties.mInventoryStacks.values;
+  }
+  let placed = 0;
+  for (const stack of stacks) {
+    const itemRef = stack?.properties?.Item?.value?.itemReference;
+    const num = stack?.properties?.NumItems;
+    if (!itemRef || !num) continue;
+    if (itemRef.pathName === SOMERSLOOP) continue;      // never touch somersloop slots
+    if (placed < shardCount) {
+      itemRef.pathName = POWER_SHARD; itemRef.levelName = ''; num.value = 1; placed++;
+    } else if (itemRef.pathName === POWER_SHARD) {
+      itemRef.pathName = ''; itemRef.levelName = ''; num.value = 0; // clear surplus on downclock
+    }
+  }
+  if (placed < shardCount) throw new Error(`SetMachineClock: not enough shard slots for ${Math.round(clock * 100)}% (${edit.target})`);
+}
+
+// ── Map markers (player-placed stamps on FGMapManager) ──────────────────────
+function findMapManager(save: SatisfactorySave): any | null {
+  for (const level of Object.values(save.levels)) {
+    for (const obj of level.objects) {
+      if ((obj as any).typePath === '/Script/FactoryGame.FGMapManager') return obj;
+    }
+  }
+  return null;
+}
+
+// Markers are matched by markerGuid (joined) — order-independent, so a batch of
+// renames/deletes never collides via shifting array indices.
+function findMarker(save: SatisfactorySave, guid: string): { arr: any[] | null; idx: number } {
+  const arr = findMapManager(save)?.properties?.mMapMarkers?.values;
+  if (!Array.isArray(arr)) return { arr: null, idx: -1 };
+  const idx = arr.findIndex((m: any) => (m?.properties?.markerGuid?.value as number[] | undefined)?.join('-') === guid);
+  return { arr, idx };
+}
+
+// sRGB byte (0–255) → linear float (0–1); inverse of the extractor's display gamma.
+function srgbToLinear(c: number): number {
+  return Math.pow(Math.max(0, Math.min(255, c)) / 255, 2.2);
+}
+
+// Edit a marker's name / color / icon / position. value carries only the changed
+// fields. target: markerGuid (joined). Color arrives as sRGB 0–255.
+function applySetMapMarker(save: SatisfactorySave, edit: SaveEdit): void {
+  const v = edit.value as {
+    name?: string; color?: { r: number; g: number; b: number };
+    iconId?: number; position?: { x: number; y: number; z: number };
+  };
+  const { arr, idx } = findMarker(save, edit.target);
+  if (!arr || idx === -1) throw new Error(`SetMapMarker: marker not found (${edit.target})`);
+  const props = arr[idx].properties;
+  if (typeof v.name === 'string' && props.Name) props.Name.value = v.name;
+  if (v.color && props.Color?.value) {
+    props.Color.value.r = srgbToLinear(v.color.r);
+    props.Color.value.g = srgbToLinear(v.color.g);
+    props.Color.value.b = srgbToLinear(v.color.b);
+  }
+  if (typeof v.iconId === 'number' && props.IconID) props.IconID.value = Math.round(v.iconId);
+  if (v.position && props.Location?.value?.properties) {
+    const lp = props.Location.value.properties;
+    if (lp.X) lp.X.value = v.position.x;
+    if (lp.Y) lp.Y.value = v.position.y;
+    if (lp.Z) lp.Z.value = v.position.z;
+  }
+}
+
+function applyDeleteMapMarker(save: SatisfactorySave, edit: SaveEdit): void {
+  const { arr, idx } = findMarker(save, edit.target);
+  if (!arr || idx === -1) throw new Error(`DeleteMapMarker: marker not found (${edit.target})`);
+  arr.splice(idx, 1);
+}
+
+// Bump the Project Assembly / Space Elevator phase. target: phase-manager
+// instanceName. value: { index }. Sets the current phase and leaves a consistent
+// "just entered phase N" state — target = next phase, nothing paid toward it yet —
+// so the game's Space-Elevator UI doesn't read a half-paid stale target.
+function applySetGamePhase(save: SatisfactorySave, edit: SaveEdit): void {
+  const v = edit.value as { index: number };
+  if (!v || typeof v.index !== 'number' || !isFinite(v.index)) {
+    throw new Error(`SetGamePhase: invalid value for ${edit.target}`);
+  }
+  const idx = Math.max(0, Math.min(PHASE_COUNT - 1, Math.round(v.index)));
+  const mgr = findEntity(save, edit.target);
+  const cur = mgr?.properties?.mCurrentGamePhase;
+  if (!cur?.value) throw new Error(`SetGamePhase: phase manager not found (${edit.target})`);
+  cur.value.levelName = '';
+  cur.value.pathName = gamePhasePath(idx);
+  const tgt = mgr.properties.mTargetGamePhase;
+  if (tgt?.value) {
+    tgt.value.levelName = '';
+    tgt.value.pathName = gamePhasePath(Math.min(PHASE_COUNT - 1, idx + 1));
+  }
+  if (Array.isArray(mgr.properties.mTargetGamePhasePaidOffCosts?.values)) {
+    mgr.properties.mTargetGamePhasePaidOffCosts.values = [];
+  }
+}
+
 const MUTATORS: Record<string, (save: SatisfactorySave, edit: SaveEdit) => void> = {
   SetPlayerPosition: applySetPlayerPosition,
   SetInventorySlot: applySetInventorySlot,
   SetPlayerHealth: applySetPlayerHealth,
   SetSchematicPurchased: applySetSchematicPurchased,
+  SetDepotItem: applySetDepotItem,
+  SetMachineClock: applySetMachineClock,
+  SetMapMarker: applySetMapMarker,
+  DeleteMapMarker: applyDeleteMapMarker,
+  SetGamePhase: applySetGamePhase,
 };
 
 export function applyEdits(save: SatisfactorySave, edits: SaveEdit[]): void {

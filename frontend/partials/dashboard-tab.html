@@ -111,8 +111,8 @@
             <div class="mt-2 h-1.5 rounded-full bg-gray-900/70 overflow-hidden">
               <div class="h-full rounded-full transition-all" :class="powerLoadTone()" :style="`width:${Math.min(100, powerLoadPct())}%`"></div>
             </div>
-            <div class="text-[11px] text-gray-500 mt-1">
-              <span x-text="Math.round(svPower?.totalMaxDrawMW ?? 0)"></span> MW load · <span x-text="powerLoadPct()"></span>%
+            <div class="text-[11px] text-gray-500 mt-1" title="Actual draw at the save's snapshot, vs generation">
+              <span x-text="Math.round(svPower?.totalConsumedMW ?? 0)"></span> MW load · <span x-text="powerLoadPct()"></span>%
             </div>
           </div>
 
