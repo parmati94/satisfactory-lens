@@ -350,19 +350,20 @@
                 </div>
               </div>
 
-              <!-- Equipment (click a slot to edit) -->
+              <!-- Equipment (read-only) — the Arms equipment slot. Not editable: it's
+                   really the held item's ammo/consumable inventory (not a clean
+                   equipment list), and Head/Body/Back use a non-stack structure, so
+                   free-form edits here risk breaking the save. -->
               <div x-show="player.equipmentSlots > 0" class="px-4 pb-3 border-t border-gray-700/40 pt-2">
-                <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Equipped <span class="text-gray-600 normal-case tracking-normal">· click a slot to edit</span></p>
+                <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Equipped</p>
                 <div class="flex flex-wrap gap-1.5">
-                  <template x-for="(slot, idx) in effectiveSlotGrid(player.equipmentName, player.equipment, player.equipmentSlots)" :key="idx">
-                    <button type="button" x-data="{ imgErr: false }" class="relative"
-                         @click.stop="openSlotEditor(player.equipmentName, idx, player.playerName + ' · Equipped', slotGrid(player.equipment, player.equipmentSlots)[idx], $event)"
+                  <template x-for="(slot, idx) in slotGrid(player.equipment, player.equipmentSlots)" :key="idx">
+                    <div x-data="{ imgErr: false }" class="relative"
                          @mouseenter="slot && showItemTooltip($event, slot)"
                          @mouseleave="hideTooltip()">
                       <template x-if="slot !== null">
                         <div>
-                          <div class="w-12 h-12 bg-blue-900/20 rounded-lg border overflow-hidden flex items-center justify-center transition-colors"
-                               :class="isSlotEdited(player.equipmentName, idx) ? 'border-accent-500/70' : 'border-blue-800/40 hover:border-blue-700/60'">
+                          <div class="w-12 h-12 bg-blue-900/20 rounded-lg border border-blue-800/40 overflow-hidden flex items-center justify-center">
                             <img x-show="!imgErr"
                                  :src="'/assets/items/' + slot.itemClass + '.png'"
                                  :alt="slot.displayName"
@@ -376,10 +377,9 @@
                         </div>
                       </template>
                       <template x-if="slot === null">
-                        <div class="w-12 h-12 rounded-lg border border-dashed transition-colors"
-                             :class="isSlotEdited(player.equipmentName, idx) ? 'border-accent-500/60' : 'border-blue-900/30 hover:border-blue-800/50'"></div>
+                        <div class="w-12 h-12 rounded-lg border border-dashed border-blue-900/30"></div>
                       </template>
-                    </button>
+                    </div>
                   </template>
                 </div>
               </div>

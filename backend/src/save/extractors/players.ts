@@ -9,7 +9,6 @@ const PLAYER_TYPE_PATH = '/Game/FactoryGame/Character/Player/Char_Player.Char_Pl
 export interface PlayerInfo {
   instanceName: string;
   inventoryName: string; // inventory component entity — the edit target for slots
-  equipmentName: string; // arm-slot inventory component — the edit target for equipped slots
   playerName: string;
   health: number | null;
   position: { x: number; y: number; z: number };
@@ -46,7 +45,6 @@ export function extractPlayers(save: SatisfactorySave): PlayerInfo[] {
       players.push({
         instanceName: obj.instanceName,
         inventoryName: `${obj.instanceName}.inventory`,
-        equipmentName: `${obj.instanceName}.ArmSlot`,
         playerName,
         health,
         position: {
