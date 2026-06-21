@@ -97,10 +97,20 @@ async function checkApiForNewerSave(): Promise<{ newerSaveAvailable: boolean; ne
  * active — against the currently loaded one. Read-only — never reloads.
  */
 export async function checkForNewerSave(): Promise<{ newerSaveAvailable: boolean; newerSaveName: string | null }> {
-  const mode = getSaveSourceMode();
-  if (mode === 'mount') return checkDiskForNewerSave();
-  if (mode === 'api') return checkApiForNewerSave();
-  return { newerSaveAvailable: false, newerSaveName: null };
+  const none = { newerSaveAvailable: false, newerSaveName: null };
+  // Best-effort, read-only poll. It's awaited inside fullStatus() (so it rides on most
+  // status responses) and runs on a timer — a transient SF API hiccup (e.g. the socket
+  // closing mid-fetch: UND_ERR_SOCKET) MUST degrade to "no newer save", never reject.
+  // An unhandled rejection here would otherwise take the whole process down.
+  try {
+    const mode = getSaveSourceMode();
+    if (mode === 'mount') return await checkDiskForNewerSave();
+    if (mode === 'api') return await checkApiForNewerSave();
+    return none;
+  } catch (err) {
+    log.warn(`newer-save check failed (ignored): ${(err as Error).message}`);
+    return none;
+  }
 }
 
 /**

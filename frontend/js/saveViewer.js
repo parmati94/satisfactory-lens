@@ -398,7 +398,12 @@ export function saveViewer() {
       this.saveDataLoading = true;
       this.saveDataError = null;
       try {
-        this.svBuildings = await api.save.buildings();
+        // Same reason as svBuildingFootprints: this census carries a full per-instance
+        // list (pos/rot) for every building — 100k+ entries on a megabase. Assigned to a
+        // reactive prop, Alpine/Vue deep-proxies the whole tree, which then drags ALL
+        // app-wide reactivity (the "everything feels slower" symptom). Freeze → raw,
+        // non-reactive; correct since it's read-only display data (edits go via editBuffer).
+        this.svBuildings = Object.freeze(await api.save.buildings());
       } catch (e) {
         this.saveDataError = e.message;
       } finally {
@@ -421,7 +426,9 @@ export function saveViewer() {
 
     async loadSvResourceNodes() {
       try {
-        this.svResourceNodes = await api.save.resourceNodes();
+        // Read-only map data (node positions/purity) — freeze so it stays out of the
+        // reactive graph, same rationale as svBuildings/svBuildingFootprints.
+        this.svResourceNodes = Object.freeze(await api.save.resourceNodes());
       } catch { this.svResourceNodes = []; }
       this._ensureNodeTypeFilters();
     },

@@ -288,12 +288,23 @@ export interface BuildingInstance {
   name?: string;
 }
 
+// What the census actually ships per instance. Deliberately leaner than
+// BuildingInstance: `pos` is rounded to integer cm (the UI shows whole metres and the
+// map matches on Math.round, so sub-cm precision is wasted bytes), and the rotation
+// quaternion is omitted entirely — nothing on the client reads it, and across 100k+
+// instances those four floats were roughly half of a ~24 MB response. (The footprints
+// extractor still consumes rot on its own separate walk to derive each sprite's yaw.)
+export interface CensusInstance {
+  pos: Vec3;
+  name?: string;
+}
+
 export interface BuildingCount {
   buildClass: string;
   label: string;
   typePath: string;
   count: number;
-  instances: BuildingInstance[];
+  instances: CensusInstance[];
 }
 
 export interface BuildingCategory {
@@ -310,13 +321,19 @@ export interface BuildingSummary {
   categories: BuildingCategory[];
 }
 
-type BuildingEntry = { buildClass: string; label: string; typePath: string; category: string; count: number; instances: BuildingInstance[] };
+type BuildingEntry = { buildClass: string; label: string; typePath: string; category: string; count: number; instances: CensusInstance[] };
 
 function addCount(counts: Map<string, BuildingEntry>, typePath: string, instance: BuildingInstance) {
+  // Slim to the census shape here: rounded position + optional name, no rotation.
+  const slim: CensusInstance = {
+    pos: { x: Math.round(instance.pos.x), y: Math.round(instance.pos.y), z: Math.round(instance.pos.z) },
+  };
+  if (instance.name !== undefined) slim.name = instance.name;
+
   const existing = counts.get(typePath);
   if (existing) {
     existing.count++;
-    existing.instances.push(instance);
+    existing.instances.push(slim);
   } else {
     counts.set(typePath, {
       buildClass: buildClassFromTypePath(typePath),
@@ -324,7 +341,7 @@ function addCount(counts: Map<string, BuildingEntry>, typePath: string, instance
       typePath,
       category:   categoryFromTypePath(typePath),
       count: 1,
-      instances: [instance],
+      instances: [slim],
     });
   }
 }
