@@ -47,6 +47,17 @@ from shapely.geometry import Polygon, MultiPolygon, box as shbox
 from shapely.ops import unary_union
 from shapely.affinity import rotate as shrotate, translate as shtranslate
 
+# Buildings are processed in a process pool (see main); keep cv2 single-threaded per
+# worker so 12 procs don't each spawn 12 threads (oversubscription) and so per-building
+# output stays deterministic regardless of how the pool schedules them.
+cv2.setNumThreads(1)
+
+# Read-only mesh indexes, built once in main and handed to the pool workers via the
+# pool initializer (below) — so this doesn't depend on the multiprocessing start
+# method (fork vs spawn/forkserver), it works either way.
+_MESH_IDX: dict[str, Path] = {}
+_GLB_IDX: dict[str, Path] = {}
+
 # Outline geometry is essentially rectilinear (machines are boxes with box-shaped
 # legs/notches), and so is the collision data. So we snap each collision piece to
 # an axis-aligned rectangle on a grid and keep right angles, rather than convex-
@@ -579,12 +590,80 @@ def outline_from_meshes(mesh_paths: list[Path], clearance: dict | None) -> list 
     return [[round(x, 1), round(y, 1)] for x, y in coords]
 
 
-def main():
-    mesh_idx = index_meshes()
-    glb_idx = index_glb()
-    print(f'Indexed {len(mesh_idx)} mesh/object jsons, {len(glb_idx)} render meshes (.glb).')
+def _init_worker(mesh_idx, glb_idx):
+    """Pool worker initializer — receive the read-only mesh indexes explicitly so a
+    worker has them no matter how it was started (fork inheritance, or a fresh spawn/
+    forkserver process that would otherwise see the empty module-level defaults)."""
+    global _MESH_IDX, _GLB_IDX
+    _MESH_IDX, _GLB_IDX = mesh_idx, glb_idx
 
-    out: dict[str, dict] = {}
+
+def _process_building(path: Path):
+    """One building's footprint record (and its relief PNG, written as a side effect).
+    Runs in a pool worker; reads the shared _MESH_IDX/_GLB_IDX set by _init_worker.
+    Returns (cls, rec, kind, missing) or None to skip the building."""
+    cls = path.stem  # e.g. "Build_SmelterMk1"
+    try:
+        raw = path.read_text()
+        data = json.loads(raw)
+    except Exception:
+        return None
+
+    footprint = None
+    for entry in data:
+        cd = (entry.get('Properties') or {}).get('mClearanceData')
+        if cd:
+            footprint = footprint_from_clearance(cd[0])
+            break
+
+    rec = footprint if footprint else dict(DEFAULT_FOOTPRINT)
+    missing = footprint is None
+
+    mesh_names = list(dict.fromkeys(_MESH_REF_RE.findall(raw)))  # dedup, keep order
+    glb_named = [(n, _GLB_IDX[n]) for n in mesh_names if n in _GLB_IDX]
+
+    outline = relief = None
+    kind = 'box'
+    # 1. Height relief image (best) from the render mesh.
+    if glb_named:
+        try:
+            res = render_relief(glb_named, footprint, RELIEF_DIR / f'{cls}.png')
+        except Exception as e:
+            print(f'  ! relief failed for {cls}: {e}')
+            res = None
+        if res:
+            relief, outline = res
+            kind = 'relief'
+        else:
+            # 2. Flat-but-shaped render mesh → solid silhouette polygon.
+            try:
+                outline = outline_from_glb(glb_named, footprint)
+            except Exception as e:
+                print(f'  ! glb outline failed for {cls}: {e}')
+            if outline:
+                kind = 'glb'
+    # 3. No render mesh → collision geometry.
+    if outline is None and relief is None:
+        mesh_paths = [_MESH_IDX[n] for n in mesh_names if n in _MESH_IDX]
+        outline = outline_from_meshes(mesh_paths, footprint) if mesh_paths else None
+        if outline:
+            kind = 'collision'
+
+    if outline or relief:
+        rec = dict(rec)
+        if outline:
+            rec['outline'] = outline
+        if relief:
+            rec['relief'] = relief
+
+    return (cls, rec, kind, missing)
+
+
+def main():
+    global _MESH_IDX, _GLB_IDX
+    _MESH_IDX = index_meshes()
+    _GLB_IDX = index_glb()
+    print(f'Indexed {len(_MESH_IDX)} mesh/object jsons, {len(_GLB_IDX)} render meshes (.glb).')
 
     # Clear stale relief PNGs so removed/renamed buildings don't leave orphans.
     if RELIEF_DIR.exists():
@@ -593,72 +672,31 @@ def main():
     RELIEF_DIR.mkdir(parents=True, exist_ok=True)
 
     build_jsons = sorted(BUILDABLE_ROOT.rglob('Build_*.json')) + sorted(BUILDABLE_ROOT.rglob('BUILD_*.json'))
-    print(f'Scanning {len(build_jsons)} Build_*.json files...')
+    print(f'Scanning {len(build_jsons)} Build_*.json files across a process pool...')
 
+    # Each building is independent (own meshes, own PNG), and rendering dominates the
+    # runtime — fan out across cores. pool.map preserves input order, so assembly is
+    # deterministic; per-building PNGs are order-independent.
+    from multiprocessing import Pool
+    with Pool(initializer=_init_worker, initargs=(_MESH_IDX, _GLB_IDX)) as pool:
+        results = pool.map(_process_building, build_jsons, chunksize=4)
+
+    out: dict[str, dict] = {}
     missing_box = []
-    from_relief = 0
-    from_glb = 0
-    from_collision = 0
-    for i, path in enumerate(build_jsons):
-        cls = path.stem  # e.g. "Build_SmelterMk1"
-
-        try:
-            raw = path.read_text()
-            data = json.loads(raw)
-        except Exception:
+    from_relief = from_glb = from_collision = 0
+    for r in results:
+        if r is None:
             continue
-
-        footprint = None
-        for entry in data:
-            cd = (entry.get('Properties') or {}).get('mClearanceData')
-            if cd:
-                footprint = footprint_from_clearance(cd[0])
-                break
-
-        rec = footprint if footprint else dict(DEFAULT_FOOTPRINT)
-        if not footprint:
-            missing_box.append(cls)
-
-        mesh_names = list(dict.fromkeys(_MESH_REF_RE.findall(raw)))  # dedup, keep order
-        glb_named = [(n, glb_idx[n]) for n in mesh_names if n in glb_idx]
-
-        outline = None
-        relief = None
-        # 1. Height relief image (best) from the render mesh.
-        if glb_named:
-            try:
-                res = render_relief(glb_named, footprint, RELIEF_DIR / f'{cls}.png')
-            except Exception as e:
-                print(f'  ! relief failed for {cls}: {e}')
-                res = None
-            if res:
-                relief, outline = res
-                from_relief += 1
-            else:
-                # 2. Flat-but-shaped render mesh → solid silhouette polygon.
-                try:
-                    outline = outline_from_glb(glb_named, footprint)
-                except Exception as e:
-                    print(f'  ! glb outline failed for {cls}: {e}')
-                if outline:
-                    from_glb += 1
-        # 3. No render mesh → collision geometry.
-        if outline is None and relief is None:
-            mesh_paths = [mesh_idx[n] for n in mesh_names if n in mesh_idx]
-            outline = outline_from_meshes(mesh_paths, footprint) if mesh_paths else None
-            if outline:
-                from_collision += 1
-
-        if outline or relief:
-            rec = dict(rec)
-            if outline:
-                rec['outline'] = outline
-            if relief:
-                rec['relief'] = relief
-
+        cls, rec, kind, missing = r
         out[cls] = rec
-        if (i + 1) % 100 == 0:
-            print(f'  ...{i + 1}/{len(build_jsons)} ({from_relief} relief so far)')
+        if missing:
+            missing_box.append(cls)
+        if kind == 'relief':
+            from_relief += 1
+        elif kind == 'glb':
+            from_glb += 1
+        elif kind == 'collision':
+            from_collision += 1
 
     out = dict(sorted(out.items()))
 

@@ -26,6 +26,10 @@ internal static class Program
 
     private static readonly EGame Game = EGame.GAME_UE5_6;
 
+    // Per-package work is independent and CUE4Parse reads are thread-safe, so the
+    // extraction loops run across all cores. Output is per-file → order-independent.
+    private static ParallelOptions ParallelOpts => new() { MaxDegreeOfParallelism = Environment.ProcessorCount };
+
     private static int Main(string[] args)
     {
         var cmd = args.Length > 0 ? args[0] : "smoke";
@@ -96,7 +100,7 @@ internal static class Program
         Console.WriteLine($"copying {keys.Count} raw files under '{mountPrefix}' → {OutRoot}");
 
         int ok = 0, fail = 0;
-        foreach (var key in keys)
+        Parallel.ForEach(keys, ParallelOpts, key =>
         {
             try
             {
@@ -104,14 +108,13 @@ internal static class Program
                 var outPath = Path.Combine(OutRoot, key);
                 Directory.CreateDirectory(Path.GetDirectoryName(outPath)!);
                 File.WriteAllBytes(outPath, bytes);
-                if (++ok % 500 == 0) Console.WriteLine($"  ...{ok}");
+                if (Interlocked.Increment(ref ok) % 500 == 0) Console.WriteLine($"  ...{ok}");
             }
             catch (Exception ex)
             {
-                fail++;
-                if (fail <= 10) Console.Error.WriteLine($"  FAIL {key}: {ex.Message}");
+                if (Interlocked.Increment(ref fail) <= 10) Console.Error.WriteLine($"  FAIL {key}: {ex.Message}");
             }
-        }
+        });
         Console.WriteLine($"done: {ok} copied, {fail} failed");
         return 0;
     }
@@ -130,7 +133,7 @@ internal static class Program
         Console.WriteLine($"raw-list: {stems.Count} stems from {Path.GetFileName(listFile)} → {OutRoot}");
 
         int ok = 0, missing = 0, fail = 0;
-        foreach (var stem in stems)
+        Parallel.ForEach(stems, ParallelOpts, stem =>
         {
             var any = false;
             foreach (var ext in new[] { ".uasset", ".ubulk", ".uexp" })
@@ -145,10 +148,10 @@ internal static class Program
                     File.WriteAllBytes(outPath, bytes);
                     any = true;
                 }
-                catch (Exception ex) { fail++; if (fail <= 10) Console.Error.WriteLine($"  FAIL {key}: {ex.Message}"); }
+                catch (Exception ex) { if (Interlocked.Increment(ref fail) <= 10) Console.Error.WriteLine($"  FAIL {key}: {ex.Message}"); }
             }
-            if (any) ok++; else { missing++; if (missing <= 10) Console.Error.WriteLine($"  missing: {stem}"); }
-        }
+            if (any) Interlocked.Increment(ref ok); else { if (Interlocked.Increment(ref missing) <= 10) Console.Error.WriteLine($"  missing: {stem}"); }
+        });
         Console.WriteLine($"done: {ok} stems copied, {missing} not found, {fail} file errors");
         return 0;
     }
@@ -173,18 +176,18 @@ internal static class Program
         Console.WriteLine($"exporting meshes under '{mountPrefix}' ({keys.Count} packages) → {OutRoot}");
 
         int ok = 0, fail = 0, nomesh = 0;
-        foreach (var key in keys)
+        Parallel.ForEach(keys, ParallelOpts, key =>
         {
             try
             {
                 var pkg = provider.LoadPackage(key);
                 var sm = pkg.GetExports().OfType<CUE4Parse.UE4.Assets.Exports.StaticMesh.UStaticMesh>().FirstOrDefault();
-                if (sm == null) { nomesh++; continue; }
+                if (sm == null) { Interlocked.Increment(ref nomesh); return; }
                 var exporter = new CUE4Parse_Conversion.Meshes.MeshExporter(sm, options);
                 // TryWriteToDir appends the package's full mount path under the base dir,
                 // so pass OutRoot directly → <OutRoot>/FactoryGame/Content/.../SM_X.glb.
                 Directory.CreateDirectory(OutRoot);
-                if (exporter.TryWriteToDir(new DirectoryInfo(OutRoot), out _, out _)) ok++; else fail++;
+                if (exporter.TryWriteToDir(new DirectoryInfo(OutRoot), out _, out _)) Interlocked.Increment(ref ok); else Interlocked.Increment(ref fail);
                 // Also emit the mesh's property JSON next to the glb — footprints reads it
                 // for the collision (BodySetup.AggGeom) fallback when a glb isn't usable.
                 var jsonPath = Path.Combine(OutRoot, Path.ChangeExtension(key, ".json"));
@@ -193,10 +196,9 @@ internal static class Program
             }
             catch (Exception ex)
             {
-                fail++;
-                if (fail <= 10) Console.Error.WriteLine($"  FAIL {key}: {ex.Message}");
+                if (Interlocked.Increment(ref fail) <= 10) Console.Error.WriteLine($"  FAIL {key}: {ex.Message}");
             }
-        }
+        });
         Console.WriteLine($"done: {ok} meshes exported, {nomesh} non-mesh skipped, {fail} failed");
         return 0;
     }
@@ -214,7 +216,7 @@ internal static class Program
         Console.WriteLine($"exporting {keys.Count} packages under '{mountPrefix}' → {OutRoot}");
 
         int ok = 0, fail = 0;
-        foreach (var key in keys)
+        Parallel.ForEach(keys, ParallelOpts, key =>
         {
             try
             {
@@ -224,14 +226,13 @@ internal static class Program
                 var outPath = Path.Combine(OutRoot, rel);
                 Directory.CreateDirectory(Path.GetDirectoryName(outPath)!);
                 File.WriteAllText(outPath, json);
-                if (++ok % 500 == 0) Console.WriteLine($"  ...{ok}");
+                if (Interlocked.Increment(ref ok) % 500 == 0) Console.WriteLine($"  ...{ok}");
             }
             catch (Exception ex)
             {
-                fail++;
-                if (fail <= 10) Console.Error.WriteLine($"  FAIL {key}: {ex.Message}");
+                if (Interlocked.Increment(ref fail) <= 10) Console.Error.WriteLine($"  FAIL {key}: {ex.Message}");
             }
-        }
+        });
         Console.WriteLine($"done: {ok} written, {fail} failed");
         return 0;
     }
