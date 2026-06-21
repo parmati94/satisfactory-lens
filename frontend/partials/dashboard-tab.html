@@ -6,26 +6,19 @@
     <h2 class="text-xl font-semibold text-gray-300 mb-2">Not Connected</h2>
     <p class="text-gray-500 mb-6 text-sm">Connect to your Satisfactory dedicated server to get started.</p>
     <button
+      x-show="isAdmin"
       @click="showConnectModal = true"
       class="px-5 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition-colors text-sm"
     >
       Connect to Server
     </button>
+    <p x-show="!isAdmin" class="text-gray-600 text-xs">Read-only access — ask the owner to connect the server.</p>
   </div>
 
   <!-- Connected -->
   <div x-show="sfStatus.connected">
 
-    <!-- Action result banner -->
-    <div
-      x-show="actionResult"
-      x-transition
-      :class="actionResult?.ok ? 'bg-ok-900/30 border-ok-800 text-ok-300' : 'bg-danger-900/30 border-danger-800 text-danger-300'"
-      class="p-3 border rounded-lg text-sm mb-5 flex items-center justify-between"
-    >
-      <span x-text="actionResult?.message"></span>
-      <button @click="actionResult = null" class="text-current opacity-60 hover:opacity-100 ml-4">✕</button>
-    </div>
+    <!-- Action-result outcomes now surface in the global toast (partials/toast.html). -->
 
     <!-- Loading -->
     <div x-show="loading" class="flex items-center justify-center py-16">

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as sf from '../api/sfClient';
 import { childLogger } from '../log';
+import { requireAdmin } from '../auth';
 
 const router = Router();
 const log = childLogger('saves');
@@ -14,7 +15,7 @@ router.get('/api/saves', async (_req, res) => {
   }
 });
 
-router.post('/api/saves/load', async (req, res) => {
+router.post('/api/saves/load', requireAdmin, async (req, res) => {
   const { sessionName, saveName, enableAdvancedGameSettings } = req.body as {
     sessionName?: string;
     saveName?: string;
@@ -34,7 +35,7 @@ router.post('/api/saves/load', async (req, res) => {
   }
 });
 
-router.post('/api/saves/save', async (req, res) => {
+router.post('/api/saves/save', requireAdmin, async (req, res) => {
   const { saveName } = req.body as { saveName?: string };
   if (!saveName) {
     res.status(400).json({ error: 'saveName is required' });
@@ -50,8 +51,8 @@ router.post('/api/saves/save', async (req, res) => {
   }
 });
 
-router.delete('/api/saves/:saveName', async (req, res) => {
-  const { saveName } = req.params;
+router.delete('/api/saves/:saveName', requireAdmin, async (req, res) => {
+  const { saveName } = req.params as { saveName: string };
   try {
     const result = await sf.deleteSavegame(saveName);
     log.info(`DeleteSavegame "${saveName}" accepted`);

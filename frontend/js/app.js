@@ -34,6 +34,12 @@ document.addEventListener('alpine:init', () => {
 
     // App auth (login may be disabled via config — drives the header logout control)
     loginEnabled: false,
+    role: null,            // 'admin' | 'viewer' | null — from /api/auth/status
+    viewerEnabled: false,  // whether a read-only VIEWER_PASSWORD is configured server-side
+    // Single gate for every mutating control. Login off ⇒ everyone's an admin
+    // (single-user local/dev). This is UX only — the backend's requireAdmin is the
+    // real boundary; a viewer who forces a write still gets a 403.
+    get isAdmin() { return !this.loginEnabled || this.role === 'admin'; },
 
     // SF server connection
     sfStatus: { connected: false, host: '', port: 7777 },
@@ -59,6 +65,7 @@ document.addEventListener('alpine:init', () => {
     actionLoading: false,      // global mutex: an action is running, disable other action buttons
     creatingSave: false,       // specifically the "Save Now" create flow (drives that button's label)
     actionResult: null,
+    _actionResultTimer: null,  // auto-dismiss timer for a successful actionResult toast
 
     // ── Phase 2: Save Viewer ──────────────────────────────────────────────
     saveStatus: null,
@@ -91,6 +98,8 @@ document.addEventListener('alpine:init', () => {
     buildingsSearch: '',
     // ── Save editing (override dictionary over the loaded baseline) ────────
     editBuffer: {},   // key → { kind, target, value, label, changeText }
+    _editOrder: [],   // editBuffer keys in last-touched order — drives Ctrl/Cmd+Z undo
+    editHintDismissed: false, // one-time "what's editable" hint on the Save Tools tab
     persistModal: { show: false, saveName: '', overwrite: false, loading: false, error: null },
     changesModal: { show: false },
     itemCatalog: null, // { itemClass: { path, name, stack } } for the slot picker
@@ -115,10 +124,47 @@ document.addEventListener('alpine:init', () => {
       // Apply device prefs: reduced motion (seeded from the OS) and landing tab.
       this.applyReduceMotion(this._initialReduceMotion());
       this.loadDefaultTab();
+      this.editHintDismissed = localStorage.getItem('sl-edit-hint-dismissed') === 'true';
+
+      // Persist staged edits to localStorage and track last-touched order for undo.
+      // Every editBuffer mutation replaces the object reference (see saveEditing.js),
+      // so this single watch catches them all.
+      this.$watch('editBuffer', (val, old) => {
+        const order = this._editOrder.filter((k) => k in val); // drop reverted keys
+        for (const k of Object.keys(val)) {
+          // New key, or same key with a fresh value → it was just touched: move to end.
+          if (!old || !(k in old) || val[k] !== old[k]) {
+            const i = order.indexOf(k);
+            if (i !== -1) order.splice(i, 1);
+            order.push(k);
+          }
+        }
+        this._editOrder = order;
+        this._persistEditBuffer();
+      });
+      // Auto-dismiss a successful action toast; leave errors up until dismissed.
+      this.$watch('actionResult', (r) => {
+        clearTimeout(this._actionResultTimer);
+        if (r && r.ok) this._actionResultTimer = setTimeout(() => { this.actionResult = null; }, 4500);
+      });
+      // No beforeunload prompt: staged edits are mirrored to localStorage and
+      // re-staged on reload (same save), so a refresh/close doesn't lose them — the
+      // browser's "Reload site?" nag would be redundant and annoying.
+      // Ctrl/Cmd+Z undoes the most recently staged edit (off when typing in a field).
+      window.addEventListener('keydown', (e) => {
+        if (e.shiftKey || !(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 'z') return;
+        const t = e.target;
+        if (t && (/^(input|textarea|select)$/i.test(t.tagName) || t.isContentEditable)) return;
+        if (this.editCount === 0) return;
+        e.preventDefault();
+        this.undoLastEdit();
+      });
 
       try {
         const authStatus = await api.auth.status();
         this.loginEnabled = !!authStatus.loginEnabled;
+        this.role = authStatus.role ?? null;
+        this.viewerEnabled = !!authStatus.viewerEnabled;
         if (!authStatus.authenticated) {
           window.location.href = '/login.html';
           return;
@@ -131,6 +177,7 @@ document.addEventListener('alpine:init', () => {
       // save is loaded. Works with a mounted save with no SF connection at all, or
       // via the API once connected (status reflects whichever applies).
       await this.loadSaveStatus();
+      this._restoreEditBuffer(); // re-stage edits that survived a reload (same save only)
       this.connectSaveSSE();
 
       // Open the user's chosen landing tab and trigger its data load.
@@ -199,7 +246,8 @@ document.addEventListener('alpine:init', () => {
         confirmLabel: 'Reset',
       });
       if (!ok) return;
-      ['sl-theme', 'sl-map-colors', 'sl-default-tab', 'sl-reduce-motion', 'sl-map-filters', 'sl-saves-rail-collapsed'].forEach((k) => localStorage.removeItem(k));
+      ['sl-theme', 'sl-map-colors', 'sl-default-tab', 'sl-reduce-motion', 'sl-map-filters', 'sl-saves-rail-collapsed', 'sl-edit-hint-dismissed'].forEach((k) => localStorage.removeItem(k));
+      this.editHintDismissed = false;
       this.applyTheme('orange');
       this.resetAllCategoryColors?.();
       this._resetMapFilters?.();
@@ -219,6 +267,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     async connectToSF() {
+      if (!this.isAdmin) return;
       this.connectLoading = true;
       this.connectError = null;
       try {
@@ -239,6 +288,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     async disconnect() {
+      if (!this.isAdmin) return;
       await api.sf.disconnect();
       this.sfStatus = { connected: false, host: this.sfStatus.host, port: this.sfStatus.port };
       this.serverState = null;
@@ -509,6 +559,7 @@ document.addEventListener('alpine:init', () => {
 
     // Apply changed keys, grouped by scope, via the existing PATCH routes.
     async applySettings() {
+      if (!this.isAdmin) return;
       const serverPayload = {}, advancedPayload = {};
       for (const [k, v] of Object.entries(this.settingEdits)) {
         const [scope, ...rest] = k.split(':');
@@ -546,6 +597,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     async triggerSave() {
+      if (!this.isAdmin) return;
       const name = this.newSaveName.trim();
       if (!name) return;
       this.actionLoading = true;
@@ -566,6 +618,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     async deleteSave(saveName, saveDateTime) {
+      if (!this.isAdmin) return;
       const ok = await this.showConfirm({
         title: 'Delete Save',
         message: `Permanently delete <strong class="text-white">${saveName}</strong>?${saveDateTime ? `<br><span class="text-gray-500 text-xs">${this.formatSaveDate(saveDateTime)}</span>` : ''}<br><br>This cannot be undone.`,
@@ -591,6 +644,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     async loadSave(sessionName, saveName) {
+      if (!this.isAdmin) return;
       // Loading swaps the underlying save out from under any staged edits (whose
       // targets are instanceNames in the *current* save), which would orphan them.
       // Same reason we block header reload while editing — make the user save or

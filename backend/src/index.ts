@@ -26,6 +26,16 @@ if (config.enableLogin && (!config.sessionSecret || config.sessionSecret === DEF
   process.exit(1);
 }
 
+// VIEWER_PASSWORD (read-only sharing) must differ from the admin PASSWORD, or the
+// login can't tell an admin apart from a viewer. Only matters when login is on.
+if (config.enableLogin && config.viewerPassword && config.viewerPassword === config.password) {
+  childLogger('auth').fatal(
+    'VIEWER_PASSWORD is identical to PASSWORD. The two must differ so login can ' +
+    'distinguish a read-only viewer from an admin. Refusing to start.',
+  );
+  process.exit(1);
+}
+
 const app = express();
 
 // Behind a reverse proxy (nginx/Caddy/Cloudflare) — honour X-Forwarded-* so

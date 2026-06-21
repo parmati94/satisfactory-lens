@@ -60,12 +60,21 @@
         <span class="hidden lg:inline">Connected</span>
       </button>
       <button
-        x-show="!sfStatus.connected"
+        x-show="!sfStatus.connected && isAdmin"
         @click="showConnectModal = true"
         class="px-3 py-1.5 text-sm bg-accent-500 hover:bg-accent-600 text-white rounded-lg transition-colors font-medium shrink-0"
       >
         Connect
       </button>
+      <!-- Read-only badge: shown when signed in as a viewer (login on + not admin). -->
+      <span
+        x-show="loginEnabled && !isAdmin"
+        title="You're signed in with read-only access — editing and server actions are disabled."
+        class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-gray-800 text-gray-400 border border-gray-700 shrink-0"
+      >
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        <span class="hidden lg:inline">Read-only</span>
+      </span>
       <button
         x-show="sfStatus.connected && saveStatus?.loaded"
         @click="headerReloadSave()"
@@ -111,7 +120,7 @@
       <!-- Exit group: disconnect from the SF server / log out of the UI -->
       <div x-show="sfStatus.connected || loginEnabled" class="w-px self-center h-6 bg-gray-800 mx-1 shrink-0"></div>
       <button
-        x-show="sfStatus.connected"
+        x-show="sfStatus.connected && isAdmin"
         @click="disconnect()"
         title="Disconnect from server"
         class="p-1.5 hover:bg-gray-700/60 rounded-lg transition-colors group shrink-0"
@@ -209,10 +218,18 @@
 
       <!-- Connection / server actions (live status shows as a dot in the bar) -->
       <button
-        x-show="!sfStatus.connected"
+        x-show="!sfStatus.connected && isAdmin"
         @click="mobileMenuOpen = false; showConnectModal = true"
         class="flex items-center w-full px-3 py-3 text-sm font-medium rounded-lg bg-accent-500 hover:bg-accent-600 text-white transition-colors"
       >Connect</button>
+      <!-- Read-only indicator (mobile menu) -->
+      <div
+        x-show="loginEnabled && !isAdmin"
+        class="flex items-center gap-2 w-full px-3 py-3 text-sm font-medium text-gray-400"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        Read-only access
+      </div>
       <button
         @click="mobileMenuOpen = false; openServerPanel()"
         class="flex items-center gap-2 w-full px-3 py-3 text-sm font-medium rounded-lg text-gray-300 hover:bg-gray-800/40 transition-colors"
@@ -237,7 +254,7 @@
         <div class="my-2 h-px bg-gray-800"></div>
       </template>
       <button
-        x-show="sfStatus.connected"
+        x-show="sfStatus.connected && isAdmin"
         @click="mobileMenuOpen = false; disconnect()"
         class="flex items-center gap-2 w-full px-3 py-3 text-sm font-medium rounded-lg text-gray-300 hover:text-danger-400 hover:bg-gray-800/40 transition-colors"
       >

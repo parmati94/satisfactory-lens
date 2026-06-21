@@ -15,6 +15,14 @@
   <!-- Label hidden on mobile (the pencil icon carries it); flex-1 spacer keeps the actions right-aligned either way. -->
   <span class="hidden sm:inline text-sm font-medium text-accent-100">Editing</span>
   <div class="flex-1"></div>
+  <!-- Undo the most recent staged change (same as Ctrl/⌘ Z). Icon-only to stay
+       compact; the keyboard hint lives in the title. -->
+  <button @click="undoLastEdit()" title="Undo last change (Ctrl/⌘ Z)" aria-label="Undo last change"
+    class="inline-flex items-center justify-center h-7 w-7 rounded-lg border border-gray-600/60 text-gray-300 hover:bg-gray-700/50 transition-colors">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:15px;height:15px">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a4 4 0 010 8h-1M3 10l4-4M3 10l4 4"/>
+    </svg>
+  </button>
   <!-- All three share a fixed h-7 + transparent borders so the badge and the
        outline/filled styles never change the box height — uniform sizing. -->
   <button @click="cancelEdits()"

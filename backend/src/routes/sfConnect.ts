@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { config } from '../config';
 import * as sf from '../api/sfClient';
 import { autoLoadSaveIfNeeded } from '../save/autoLoad';
+import { requireAdmin } from '../auth';
 
 const router = Router();
 
@@ -11,7 +12,7 @@ router.get('/api/sf/status', (_req, res) => {
 });
 
 // POST /api/sf/connect — connect (host/port/password from body, falls back to env)
-router.post('/api/sf/connect', async (req, res) => {
+router.post('/api/sf/connect', requireAdmin, async (req, res) => {
   const { host, port, password } = req.body as {
     host?: string;
     port?: number;
@@ -33,7 +34,7 @@ router.post('/api/sf/connect', async (req, res) => {
 });
 
 // POST /api/sf/disconnect — clear token
-router.post('/api/sf/disconnect', (_req, res) => {
+router.post('/api/sf/disconnect', requireAdmin, (_req, res) => {
   sf.disconnect();
   res.json({ ok: true });
 });

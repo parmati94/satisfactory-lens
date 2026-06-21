@@ -20,11 +20,13 @@ import { extractBuildingFootprints } from '../save/extractors/buildingFootprints
 import { extractMachineInstances } from '../save/extractors/machines';
 import { getFogPng } from '../save/extractors/fogOfWar';
 import { persistEdits, type SaveEdit } from '../save/editor';
+import { getItemCatalog } from '../save/itemCatalog';
 import { groundZ } from '../save/worldHeight';
 import { extractPurchasedSchematics } from '../save/extractors/schematics';
 import { extractGamePhase } from '../save/extractors/gamePhase';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { requireAdmin } from '../auth';
 
 const router = Router();
 
@@ -45,6 +47,8 @@ router.get('/api/save/status', async (_req, res) => {
 });
 
 // POST /api/save/reload — reload from whichever source is active (mount, else API)
+// Viewer-allowed: only refreshes what Lens displays (latest save into memory) — it
+// does not touch the running game server. Loading to the live server is admin-only.
 router.post('/api/save/reload', async (_req, res) => {
   await loadLatest();
   const status = getSaveStatus();
@@ -54,7 +58,9 @@ router.post('/api/save/reload', async (_req, res) => {
   res.json(await fullStatus());
 });
 
-// POST /api/save/download — download a specific save by name from the SF API and parse it
+// POST /api/save/download — download a specific save by name from the SF API and parse it.
+// Viewer-allowed: this loads a save into Lens for *viewing* (inspect), not onto the live
+// game server. It swaps the shared in-memory loaded save, but doesn't change the game.
 router.post('/api/save/download', async (req, res) => {
   const { saveName, saveDateTime } = req.body as { saveName?: string; saveDateTime?: string };
   if (!saveName) {
@@ -70,7 +76,7 @@ router.post('/api/save/download', async (req, res) => {
 });
 
 // POST /api/save/watch — start/restart file watching
-router.post('/api/save/watch', (_req, res) => {
+router.post('/api/save/watch', requireAdmin, (_req, res) => {
   startWatching();
   res.json({ ok: true, watchedPath: getWatchedPath() });
 });
@@ -229,17 +235,10 @@ router.get('/api/world/ground-height', (req, res) => {
 });
 
 // GET /api/items — static item catalog (class → { path, name, stack }) for the
-// inventory editor's item picker. Loaded once and cached for the process.
-let _itemCatalog: unknown = null;
+// inventory editor's item picker. Shared loader (cached) — same source the
+// extractors use for display names, so names stay consistent.
 router.get('/api/items', (_req, res) => {
-  if (!_itemCatalog) {
-    try {
-      _itemCatalog = JSON.parse(readFileSync(join(__dirname, '../../data/items.json'), 'utf-8'));
-    } catch {
-      _itemCatalog = {};
-    }
-  }
-  res.json(_itemCatalog);
+  res.json(getItemCatalog());
 });
 
 // GET /api/schematics — static schematic catalog (progression tree) for the editor.
@@ -279,7 +278,7 @@ router.get('/api/save/game-phase', (_req, res) => {
 
 // POST /api/save/edit/persist — apply staged edits to the in-memory save and
 // persist (upload to the server, optionally loading live; or write to the mount).
-router.post('/api/save/edit/persist', async (req, res) => {
+router.post('/api/save/edit/persist', requireAdmin, async (req, res) => {
   const { saveName, mode, edits } = req.body as {
     saveName?: string;
     mode?: string;

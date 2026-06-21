@@ -124,10 +124,11 @@
           ></div>
 
           <div x-show="serverOptions && !loading" class="space-y-4">
-            <!-- View / Edit mode toggle (read-only by default) -->
+            <!-- View / Edit mode toggle (read-only by default; the toggle itself is
+                 admin-only — viewers stay in read-only View) -->
             <div class="flex items-center justify-between">
-              <p class="text-[11px] text-gray-500" x-text="settingsEditMode ? 'Editing — changes are staged until you Apply.' : 'Read-only. Switch to Edit to make changes.'"></p>
-              <div class="flex items-center rounded-lg border border-gray-700 overflow-hidden text-xs font-medium flex-shrink-0">
+              <p class="text-[11px] text-gray-500" x-text="!isAdmin ? 'Read-only access.' : (settingsEditMode ? 'Editing — changes are staged until you Apply.' : 'Read-only. Switch to Edit to make changes.')"></p>
+              <div x-show="isAdmin" class="flex items-center rounded-lg border border-gray-700 overflow-hidden text-xs font-medium flex-shrink-0">
                 <button @click="settingsEditMode = false" class="px-3 py-1 transition-colors"
                         :class="!settingsEditMode ? 'bg-gray-700 text-accent-400' : 'text-gray-400 hover:text-gray-200'">View</button>
                 <button @click="settingsEditMode = true" class="px-3 py-1 transition-colors flex items-center gap-1.5"
@@ -246,7 +247,7 @@
     </div>
 
     <!-- Footer (apply bar — only on Configuration when there are pending edits) -->
-    <div x-show="sfStatus.connected && settingsTab === 'config' && settingsDirtyCount() > 0"
+    <div x-show="isAdmin && sfStatus.connected && settingsTab === 'config' && settingsDirtyCount() > 0"
          class="flex items-center justify-between gap-3 px-6 py-3 border-t border-gray-700 flex-shrink-0 bg-gray-800/80">
       <span class="text-xs text-gray-400">
         <span class="text-accent-300 font-semibold" x-text="settingsDirtyCount()"></span>

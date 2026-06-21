@@ -7,16 +7,7 @@
 
   <div x-show="sfStatus.connected">
 
-    <!-- Action result banner -->
-    <div
-      x-show="actionResult"
-      x-transition
-      :class="actionResult?.ok ? 'bg-ok-900/30 border-ok-800 text-ok-300' : 'bg-danger-900/30 border-danger-800 text-danger-300'"
-      class="p-3 border rounded-lg text-sm mb-5 flex items-center justify-between"
-    >
-      <span x-text="actionResult?.message"></span>
-      <button @click="actionResult = null" class="text-current opacity-60 hover:opacity-100 ml-4">✕</button>
-    </div>
+    <!-- Action-result outcomes now surface in the global toast (partials/toast.html). -->
 
     <!-- Header row -->
     <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
@@ -28,8 +19,8 @@
         </p>
       </div>
       <div class="flex items-center gap-2">
-        <!-- Create save -->
-        <div class="flex gap-2">
+        <!-- Create save (admin only — writes a save on the server) -->
+        <div class="flex gap-2" x-show="isAdmin">
           <input
             type="text"
             x-model="newSaveName"
@@ -190,8 +181,10 @@
                           <span x-show="save.isCreativeModeEnabled" title="Creative mode" class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
                         </span>
                       </div>
-                      <!-- Hover actions (icon-only, tooltips): absolute so they never steal width from the name -->
-                      <div class="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                      <!-- Hover actions (icon-only, tooltips): absolute so they never steal width from the name.
+                           Admin only — Load to Server and Delete both mutate the server. Inspect (the row
+                           click) stays available to viewers. -->
+                      <div x-show="isAdmin" class="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         <button
                           @click.stop="loadSave(session.sessionName, save.saveName)"
                           :disabled="actionLoading || editCount > 0"
@@ -257,8 +250,10 @@
                           <span x-show="save.isCreativeModeEnabled" title="Creative mode" class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
                         </span>
                       </div>
-                      <!-- Hover actions (icon-only, tooltips): absolute so they never steal width from the name -->
-                      <div class="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                      <!-- Hover actions (icon-only, tooltips): absolute so they never steal width from the name.
+                           Admin only — Load to Server and Delete both mutate the server. Inspect (the row
+                           click) stays available to viewers. -->
+                      <div x-show="isAdmin" class="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         <button
                           @click.stop="loadSave(session.sessionName, save.saveName)"
                           :disabled="actionLoading || editCount > 0"
