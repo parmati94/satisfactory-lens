@@ -1,0 +1,9 @@
+{
+  "_comment": "Game version the committed game-derived data (items.json, recipes.json, schematics.json, buildable-footprints.json, resource-nodes.json, icons, etc.) was generated from. Bump this whenever that data is regenerated for a new Satisfactory version. See PLANNING.md 'Game-version updates'.",
+  "gameVersion": "1.2.3.0",
+  "gameBuild": 493833,
+  "saveFormatVersion": 60,
+  "generatedAt": "2026-06-21",
+  "source": "en-US.json (game's CommunityResources/Docs) + FModel/CUE4Parse pak export",
+  "notes": "gameBuild + saveFormatVersion read from save headers (paulyamorous build 493833 / World2 491125, both saveVersion 60)."
+}
