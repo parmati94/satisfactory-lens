@@ -24,6 +24,10 @@ scripts/_scim_tile_cache/
 scripts/build_map_tiles_webp.py
 frontend/public/tiles_webp/
 
+# Data-generation pipeline local artifacts (the scripts are tracked; these aren't)
+scripts/datagen/__pycache__/
+scripts/datagen/.venv/
+
 # Env files
 .env
 .env.local

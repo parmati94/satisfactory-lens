@@ -1,0 +1,11 @@
+# Data-generation pipeline deps (Python 3.12). Install into a venv:
+#   python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
+#
+# The JSON-only generators (recipes, schematics, item_catalog, buildable_names,
+# extract_node_data) need nothing here. The icon/relief/heightmap generators do:
+Pillow>=11.0            # image compositing (markers, icon decode)
+texture2ddecoder>=1.0.6 # decode UE DXT/BC textures from .ubulk sidecars
+numpy>=2.0              # heightmap + footprint rasterisation
+opencv-python>=4.10     # contour tracing for building footprints
+pygltflib>=1.16         # read exported .glb render meshes (footprints/relief)
+shapely>=2.0            # footprint polygon union/simplify
