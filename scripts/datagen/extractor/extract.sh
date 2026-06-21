@@ -23,7 +23,10 @@ echo "== building extractor =="
 dotnet build -c Release -v q -nologo "$HERE/Extractor.csproj"
 EX=(dotnet run -c Release --no-build --project "$HERE/Extractor.csproj" --)
 
-echo "== extracting assets → $EXTRACTED =="
+echo "== extracting assets → $EXTRACTED (fresh) =="
+# Start clean so content removed/renamed in a game update doesn't linger as stale
+# assets. EXTRACTED is always "<PAK_DIR>/extracted"; guard against a surprise value.
+case "$EXTRACTED" in */extracted) rm -rf "$EXTRACTED" ;; *) echo "refusing to rm '$EXTRACTED'"; exit 1 ;; esac
 # Property JSON (the catalog/name/schematic/footprint generators read these)
 "${EX[@]}" json-tree "FactoryGame/Content/FactoryGame/Buildable" "Build_,BUILD_,SM_"
 "${EX[@]}" json-tree "FactoryGame/Content/FactoryGame/Schematics"
