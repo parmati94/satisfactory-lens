@@ -256,14 +256,17 @@ export function saveViewer() {
       const f = fileList && fileList[0];
       if (!f) return;
       if (!f.name.toLowerCase().endsWith('.sav')) {
-        this.actionResult = { ok: false, message: 'Please choose a .sav file.' };
+        // Inline error, not the global toast — the toast sits below modals (z-index), so
+        // it'd be blurred behind this one. Mirrors persistModal.error.
+        this.uploadModal.error = `“${f.name}” isn’t a .sav file — pick a Satisfactory save.`;
         return;
       }
+      this.uploadModal.error = null;
       this.uploadModal.file = f;
     },
 
     openUploadModal() {
-      this.uploadModal = { show: true, file: null, dragging: false, busy: false, progress: { loaded: 0, total: 0 } };
+      this.uploadModal = { show: true, file: null, dragging: false, busy: false, error: null, progress: { loaded: 0, total: 0 } };
     },
 
     // Upload progress as a whole-number percent (browser → server transfer).
@@ -279,11 +282,12 @@ export function saveViewer() {
       const f = this.uploadModal.file;
       if (!f || this.uploadModal.busy) return;
       if (this.editCount > 0) {
-        this.actionResult = { ok: false, message: 'Finish editing first — save or discard your staged changes before uploading a save.' };
+        this.uploadModal.error = 'Finish editing first — save or discard your staged changes before uploading a save.';
         return;
       }
       const saveName = f.name.replace(/\.sav$/i, '').trim() || 'uploaded';
       this.uploadModal.busy = true;
+      this.uploadModal.error = null;
       this.uploadModal.progress = { loaded: 0, total: f.size };
       this.actionResult = null;
       try {
@@ -302,7 +306,8 @@ export function saveViewer() {
           ? `Uploaded "${saveName}" and loaded it on the server.`
           : `Uploaded "${saveName}" to the server.` };
       } catch (e) {
-        this.actionResult = { ok: false, message: `Upload failed: ${e.message}` };
+        // Modal stays open on failure → show the error inside it, not behind it.
+        this.uploadModal.error = `Upload failed: ${e.message}`;
       } finally {
         this.uploadModal.busy = false;
       }
