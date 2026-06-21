@@ -55,6 +55,20 @@ export const api = {
     reload: () => apiFetch('/api/save/reload', { method: 'POST' }),
     download: (saveName, saveDateTime) =>
       apiFetch('/api/save/download', { method: 'POST', body: { saveName, saveDateTime } }),
+    // Upload a .sav from the browser to the server (raw bytes, not JSON — bypasses
+    // apiFetch). `loadAfter` boots the live game into it. Admin cookie rides along
+    // same-origin. Returns the new save status (the upload is auto-inspected).
+    upload: async (file, saveName, loadAfter) => {
+      const qs = new URLSearchParams({ saveName, load: loadAfter ? 'true' : 'false' });
+      const res = await fetch('/api/save/upload?' + qs.toString(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/octet-stream' },
+        body: file,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? `Upload failed (${res.status})`);
+      return data;
+    },
     watch: () => apiFetch('/api/save/watch', { method: 'POST' }),
     players: () => apiFetch('/api/save/players'),
     buildings: () => apiFetch('/api/save/buildings'),

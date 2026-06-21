@@ -1,7 +1,8 @@
-import { Router, Request, Response } from 'express';
+import express, { Router, Request, Response } from 'express';
 import { config } from '../config';
-import { getSave, getSaveStatus } from '../save/saveState';
-import { loadFromApi, loadLatest, getSaveSourceMode } from '../save/loader';
+import { getSave, getSaveStatus, setSave } from '../save/saveState';
+import { loadFromApi, loadLatest, getSaveSourceMode, parseSaveBuffer, findLatestApiSave } from '../save/loader';
+import { isConnected, uploadSavegame } from '../api/sfClient';
 import {
   addSseClient,
   removeSseClient,
@@ -74,6 +75,58 @@ router.post('/api/save/download', async (req, res) => {
   }
   res.json(await fullStatus());
 });
+
+// POST /api/save/upload?saveName=Foo&load=true — upload a .sav from the browser to
+// the dedicated server, then inspect it in Lens. Body is the raw .sav bytes
+// (application/octet-stream). Admin-only and API-only: the destination is the
+// server's save list, so it requires an SF connection (a mounted dir has no
+// "load into the running game" control). `load=true` boots the live game into it.
+router.post(
+  '/api/save/upload',
+  requireAdmin,
+  express.raw({ type: '*/*', limit: '512mb' }),
+  async (req, res) => {
+    const saveName = String(req.query.saveName ?? '').trim().replace(/\.sav$/i, '');
+    const loadAfter = String(req.query.load ?? '') === 'true';
+    const buf = req.body as Buffer;
+    if (!saveName) { res.status(400).json({ error: 'saveName query param is required' }); return; }
+    if (!Buffer.isBuffer(buf) || buf.length === 0) { res.status(400).json({ error: 'Empty upload body' }); return; }
+    if (!isConnected()) {
+      res.status(409).json({ error: 'Not connected to the server — connect to upload saves.' });
+      return;
+    }
+
+    // 1) Validate it actually parses before shipping bytes to the server (don't
+    //    commit it as the viewed save yet — upload could still fail).
+    let parsed;
+    try {
+      parsed = parseSaveBuffer(buf, `${saveName}.sav`);
+    } catch (err) {
+      res.status(400).json({ error: `Not a valid save file: ${(err as Error).message}` });
+      return;
+    }
+
+    // 2) Push to the server (optionally booting the live game into it).
+    try {
+      await uploadSavegame(saveName, buf, loadAfter);
+    } catch (err) {
+      res.status(502).json({ error: `Upload to server failed: ${(err as Error).message}` });
+      return;
+    }
+
+    // 3) Commit it as the viewed save (auto-inspect). The just-uploaded save is now
+    //    the session-latest, so carry its saveDateTime through as the newer-save
+    //    watcher's baseline (mirrors persistEdits) — else detection goes silent. A
+    //    hiccup resolving that timestamp must not fail an upload that already landed.
+    let settledSaveDateTime: string | null = null;
+    try {
+      settledSaveDateTime = (await findLatestApiSave())?.saveDateTime ?? null;
+    } catch { /* baseline is best-effort; re-established on next full reload */ }
+    setSave(parsed, saveName, null, settledSaveDateTime);
+    broadcastSaveReloaded({ sourceName: getSaveStatus().sourceName });
+    res.json({ ok: true, saveName, loadedToServer: loadAfter, ...(await fullStatus()) });
+  },
+);
 
 // POST /api/save/watch — start/restart file watching
 router.post('/api/save/watch', requireAdmin, (_req, res) => {

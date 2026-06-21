@@ -67,6 +67,10 @@ document.addEventListener('alpine:init', () => {
     actionResult: null,
     _actionResultTimer: null,  // auto-dismiss timer for a successful actionResult toast
 
+    // Upload-a-save modal (admin only — uploads a .sav from the browser to the
+    // server's save list, then inspects it; see uploadSave() in saveViewer.js).
+    uploadModal: { show: false, file: null, dragging: false, busy: false },
+
     // ── Phase 2: Save Viewer ──────────────────────────────────────────────
     saveStatus: null,
     saveTab: 'players',       // sub-tab: 'players' | 'progression' | 'production' | 'power' | 'storage' | 'structures'

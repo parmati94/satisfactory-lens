@@ -248,6 +248,55 @@ export function saveViewer() {
       }
     },
 
+    // Accept a dropped/picked file into the upload popover (validates extension only;
+    // the backend does the real parse-validation before anything touches the server).
+    setUploadFile(fileList) {
+      const f = fileList && fileList[0];
+      if (!f) return;
+      if (!f.name.toLowerCase().endsWith('.sav')) {
+        this.actionResult = { ok: false, message: 'Please choose a .sav file.' };
+        return;
+      }
+      this.uploadModal.file = f;
+    },
+
+    openUploadModal() {
+      this.uploadModal = { show: true, file: null, dragging: false, busy: false };
+    },
+
+    // Admin-only: upload the picked .sav to the server's save list, then auto-inspect
+    // it. `loadAfter` also boots the live game into it. Swaps the viewed save (same as
+    // inspectSave), so it's blocked while edits are staged to avoid orphaning them.
+    async uploadSave(loadAfter) {
+      const f = this.uploadModal.file;
+      if (!f || this.uploadModal.busy) return;
+      if (this.editCount > 0) {
+        this.actionResult = { ok: false, message: 'Finish editing first — save or discard your staged changes before uploading a save.' };
+        return;
+      }
+      const saveName = f.name.replace(/\.sav$/i, '').trim() || 'uploaded';
+      this.uploadModal.busy = true;
+      this.actionResult = null;
+      try {
+        this.saveStatus = await api.save.upload(f, saveName, loadAfter);
+        this.newerSaveAvailable = !!this.saveStatus?.newerSaveAvailable;
+        this.newerSaveName = this.saveStatus?.newerSaveName ?? null;
+        this.clearSvCaches();
+        await this.loadSaves();   // refresh the list so the new save's row appears
+        this.uploadModal.show = false;
+        this.uploadModal.file = null;
+        this.savesDrawerOpen = false;
+        await this.switchTab('saves');
+        this.actionResult = { ok: true, message: loadAfter
+          ? `Uploaded "${saveName}" and loaded it on the server.`
+          : `Uploaded "${saveName}" to the server.` };
+      } catch (e) {
+        this.actionResult = { ok: false, message: `Upload failed: ${e.message}` };
+      } finally {
+        this.uploadModal.busy = false;
+      }
+    },
+
     async switchSaveTab(tab) {
       this.saveTab = tab;
       this.saveDataError = null;
