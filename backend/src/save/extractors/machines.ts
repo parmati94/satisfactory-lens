@@ -57,7 +57,9 @@ const PRODUCTION_CLASSES = new Set([
 // Static base power output (MW) — not stored in the save. GeoThermal is variable
 // (omitted → no figure shown).
 const GENERATOR_MW: Record<string, number> = {
-  Build_GeneratorBiomass: 30,
+  Build_GeneratorBiomass:           30, // pre-1.0 class name (kept for old saves)
+  Build_GeneratorBiomass_Automated: 30, // "Automated Biomass Burner"
+  Build_GeneratorIntegratedBiomass: 30, // "Integrated Biomass Burner"
   Build_GeneratorCoal:    75,
   Build_GeneratorFuel:    250,
   Build_GeneratorNuclear: 2500,
@@ -209,16 +211,23 @@ export function extractMachineInstances(save: SatisfactorySave, buildClass: stri
         if (buildClass === 'Build_WaterPump') resourceClass = 'Desc_Water';
         else if (buildClass === 'Build_OilPump') resourceClass = 'Desc_LiquidOil';
       }
+      // Power-shard slots: extractors overclock too. The potential inventory may
+      // serialize only mArbitrarySlotSizes on never-touched miners (no stacks yet),
+      // so fall back to that for the slot count.
+      const potInv = refEntity(byInstance, p.mInventoryPotential);
+      const potential = parseStacks(potInv);
+      const potentialSlots = potential.totalSlots || (potInv?.properties?.mArbitrarySlotSizes?.values?.length ?? 0);
       out.push({
         ...base,
         kind: 'extractor',
         clockPct: Math.round(clock * 100),
         resourceClass,
         resourceName: resourceClass ? resourceLabel(resourceClass) : null,
-        // Solid miners feed belts and fluid pumps feed pipes, so this is usually
-        // empty — kept for the rare case a buffer exists, but no longer the source
-        // of the resource label.
-        outputBuffer: withNames(parseStacks(refEntity(byInstance, p.mOutputInventory)).contents),
+        potential: withNames(potential.contents),
+        potentialSlots,
+        // Output buffer intentionally omitted: solid miners feed belts directly
+        // (buffer empty unless backed up) and fluid pumps never use an item
+        // inventory, so it's noise — the UI hides it for extractors.
       });
     }
   }

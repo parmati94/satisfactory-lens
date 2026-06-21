@@ -71,6 +71,7 @@ document.addEventListener('alpine:init', () => {
     svBuildings: null,
     svPower: null,
     svStorage: null,
+    svDepot: null,           // Dimensional Depot (Central Storage) contents + edit target
     expandedPlayer: null,    // instanceName of expanded player row
     expandedStorage: null,   // instanceName of expanded storage row
     expandedBuildingType: null,   // typePath of expanded building-type row (per-instance list)
@@ -94,7 +95,9 @@ document.addEventListener('alpine:init', () => {
     changesModal: { show: false },
     itemCatalog: null, // { itemClass: { path, name, stack } } for the slot picker
     slotEditor: { show: false, invName: '', slot: 0, contextLabel: '', search: '', selClass: '', count: 1, baseline: null, x: 0, y: 0 },
+    depotEditor: { show: false, target: '', fixedItem: null, selClass: '', count: 0, baselineAmount: 0, search: '', x: 0, y: 0 },
     svSchematics: null,       // baseline purchased set (path → true)
+    svGamePhase: null,        // { target, currentIndex, count } — Project Assembly phase
     schematicCatalog: null,   // full progression catalog (array)
     schematicsSearch: '',
     progOpen: {},             // expanded category sections in the Progression tab

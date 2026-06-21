@@ -68,6 +68,7 @@ export const api = {
     buildingFootprints: () => apiFetch('/api/save/building-footprints'),
     machineInstances: (cls) => apiFetch('/api/save/machine-instances?class=' + encodeURIComponent(cls)),
     schematics: () => apiFetch('/api/save/schematics'),
+    gamePhase: () => apiFetch('/api/save/game-phase'),
     persistEdits: ({ saveName, mode, edits }) =>
       apiFetch('/api/save/edit/persist', { method: 'POST', body: { saveName, mode, edits } }),
   },

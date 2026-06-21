@@ -131,12 +131,14 @@ export function saveViewer() {
     clearSvCaches() {
       this.svPlayers = null;
       this.svStorage = null;
+      this.svDepot = null;
       this.svBuildings = null;
       this.svPower = null;
       this.svResourceNodes = null;
       this.svMapPins = null;
       this.svBuildingFootprints = null;
       this.svSchematics = null;
+      this.svGamePhase = null;
       this.expandedBuildingType = null;
       this.highlightedInstanceName = null;
       this.buildingInstanceCap = {};
@@ -235,6 +237,7 @@ export function saveViewer() {
         const data = await api.save.schematics();
         // plain object map (path → true) — Alpine proxies don't play well with Set
         this.svSchematics = Object.fromEntries((data.purchased ?? []).map((p) => [p, true]));
+        this.svGamePhase = (await api.save.gamePhase()).phase;
       } catch (e) {
         this.saveDataError = e.message;
       } finally {
@@ -262,6 +265,7 @@ export function saveViewer() {
       try {
         const data = await api.save.storage();
         this.svStorage = data.containers;
+        this.svDepot = data.depot;
       } catch (e) {
         this.saveDataError = e.message;
       } finally {

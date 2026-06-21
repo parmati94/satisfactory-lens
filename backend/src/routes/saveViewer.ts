@@ -15,13 +15,14 @@ import { extractBuildings } from '../save/extractors/buildings';
 import { extractPower } from '../save/extractors/power';
 import { extractResourceNodes } from '../save/extractors/resourceNodes';
 import { extractMapPins } from '../save/extractors/mapPins';
-import { extractStorage } from '../save/extractors/storage';
+import { extractStorage, extractCentralStorage } from '../save/extractors/storage';
 import { extractBuildingFootprints } from '../save/extractors/buildingFootprints';
 import { extractMachineInstances } from '../save/extractors/machines';
 import { getFogPng } from '../save/extractors/fogOfWar';
 import { persistEdits, type SaveEdit } from '../save/editor';
 import { groundZ } from '../save/worldHeight';
 import { extractPurchasedSchematics } from '../save/extractors/schematics';
+import { extractGamePhase } from '../save/extractors/gamePhase';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -163,7 +164,7 @@ router.get('/api/save/storage', (_req, res) => {
   const save = getSave();
   if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
   try {
-    res.json({ containers: extractStorage(save) });
+    res.json({ containers: extractStorage(save), depot: extractCentralStorage(save) });
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }
@@ -260,6 +261,17 @@ router.get('/api/save/schematics', (_req, res) => {
   if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
   try {
     res.json({ purchased: extractPurchasedSchematics(save) });
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+// GET /api/save/game-phase — current Project Assembly phase + edit target.
+router.get('/api/save/game-phase', (_req, res) => {
+  const save = getSave();
+  if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
+  try {
+    res.json({ phase: extractGamePhase(save) });
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }

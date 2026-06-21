@@ -243,6 +243,7 @@ export function mapController() {
     // left/top/w place the bubble; tailEdge/tailLeft place the tail (see
     // _openTeleportMenu). Pick a player to stage a SetPlayerPosition edit.
     teleportMenu: { open: false, gx: 0, gy: 0, loading: false, left: 0, top: 0, w: 232, tailEdge: 'bottom', tailLeft: 116 },
+    markerMenu: { open: false, guid: '', name: '', colorHex: '#888888', left: 0, top: 0, w: 240, tailEdge: 'bottom', tailLeft: 120 },
     // ─────────────────────────────────────────────────────────────────────
     // ── Phase 3: Map methods ──────────────────────────────────────────────
 
@@ -418,7 +419,21 @@ export function mapController() {
       if (top + H > window.innerHeight - M) top = window.innerHeight - H - M;
       if (top < M) top = M;
       const { h, s, v } = this._hexToHsv(this.effectiveCategoryColor(cat));
-      this.colorPicker = { open: true, category: cat, top, left, h, s, v };
+      this.colorPicker = { open: true, mode: 'category', category: cat, markerGuid: null, label: cat, top, left, h, s, v };
+    },
+    // Same dark HSV picker, retargeted to a map marker's colour (staged edit).
+    openMarkerColorPicker(guid, evt) {
+      const r = evt.currentTarget.getBoundingClientRect();
+      const W = 240, H = 340, M = 8;
+      let left = r.right + M;
+      if (left + W > window.innerWidth - M) left = r.left - W - M;
+      if (left < M) left = M;
+      let top = r.top;
+      if (top + H > window.innerHeight - M) top = window.innerHeight - H - M;
+      if (top < M) top = M;
+      const stamp = this.effectiveStamps().find(s => s.guid === guid) || this._baselineStamp(guid);
+      const { h, s, v } = this._hexToHsv(this.rgbToHex(stamp.color));
+      this.colorPicker = { open: true, mode: 'marker', category: null, markerGuid: guid, label: stamp.name || 'Marker', top, left, h, s, v };
     },
     closeColorPicker() {
       this.colorPicker.open = false;
@@ -463,7 +478,9 @@ export function mapController() {
     },
     _applyPickerColor() {
       const p = this.colorPicker;
-      this.setCategoryColor(p.category, this._hsvToHex(p.h, p.s, p.v));
+      const hex = this._hsvToHex(p.h, p.s, p.v);
+      if (p.mode === 'marker') this.setMarker(p.markerGuid, { color: this._hexToRgb(hex) });
+      else this.setCategoryColor(p.category, hex);
     },
     // Pointer drag helper: applies onMove now and on every move until release.
     _startDrag(evt, onMove) {
@@ -495,15 +512,24 @@ export function mapController() {
     // Preset / hex entry: set the color AND re-sync the HSV thumbs.
     pickerPick(hex) {
       Object.assign(this.colorPicker, this._hexToHsv(hex));
-      this.setCategoryColor(this.colorPicker.category, hex);
+      this._applyPickerColor();
     },
     pickerSetHex(val) {
       if (!/^#[0-9a-fA-F]{6}$/.test(val)) return; // wait for a complete hex
       this.pickerPick(val.toLowerCase());
     },
     pickerReset() {
-      this.resetCategoryColor(this.colorPicker.category);
-      Object.assign(this.colorPicker, this._hexToHsv(this.effectiveCategoryColor(this.colorPicker.category)));
+      const p = this.colorPicker;
+      if (p.mode === 'marker') {
+        const base = this._baselineStamp(p.markerGuid);
+        if (base) {
+          this.setMarker(p.markerGuid, { color: { ...base.color } });
+          Object.assign(this.colorPicker, this._hexToHsv(this.rgbToHex(base.color)));
+        }
+        return;
+      }
+      this.resetCategoryColor(p.category);
+      Object.assign(this.colorPicker, this._hexToHsv(this.effectiveCategoryColor(p.category)));
     },
     setCategoryColor(cat, hex) {
       if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
@@ -1474,6 +1500,22 @@ export function mapController() {
       this.teleportMenu = { open: true, gx: g.x, gy: g.y, loading: false, left, top, w: W, tailEdge, tailLeft };
     },
 
+    // Anchor the marker edit menu to the clicked stamp (mirrors _openTeleportMenu).
+    _openMarkerMenu(guid, e) {
+      const stamp = this.effectiveStamps().find(s => s.guid === guid) || this._baselineStamp(guid);
+      if (!stamp) return;
+      const M = 8, W = 240, GAP = 14, H = 188;
+      const vw = window.innerWidth, vh = window.innerHeight;
+      const cx = e?.clientX ?? vw / 2, cy = e?.clientY ?? vh / 2;
+      let tailEdge = 'bottom';
+      let top = cy - GAP - H;
+      if (top < M) { tailEdge = 'top'; top = cy + GAP; }
+      top = Math.max(M, Math.min(top, vh - H - M));
+      const left = Math.max(M, Math.min(cx - W / 2, vw - W - M));
+      const tailLeft = Math.max(16, Math.min(cx - left, W - 16));
+      this.markerMenu = { open: true, guid, name: stamp.name || '', colorHex: this.rgbToHex(stamp.color), left, top, w: W, tailEdge, tailLeft };
+    },
+
     // Stage a teleport for the chosen player to the menu's picked coords, then move
     // its marker to the staged spot. The edit lands in the shared editBuffer, so the
     // global edit bar and the Explorer's player coordinates reflect it immediately.
@@ -1542,18 +1584,21 @@ export function mapController() {
           .addTo(_mapPinLayer);
       }
 
-      // Player-placed map stamps
-      if (this.mapFilters.stamps && this.svMapPins.stamps?.length) {
-        for (const stamp of this.svMapPins.stamps) {
+      // Player-placed map stamps — drawn from effective (staged-or-baseline) values
+      // so a rename/recolor/delete previews instantly before it's persisted.
+      if (this.mapFilters.stamps) {
+        for (const stamp of this.effectiveStamps()) {
           const latlng = gameToLatLng(stamp.position.x, stamp.position.y);
           const { r, g, b } = stamp.color;
           const cssColor = `rgb(${r},${g},${b})`;
+          const edited = this.isMarkerEdited(stamp.guid);
+          const ring = edited ? 'border:2px solid rgb(var(--accent-400));box-shadow:0 0 8px rgb(var(--accent-500)/.7)' : 'border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,.6)';
           const icon = L.divIcon({
             className: '',
             iconSize: [28, 28],
             iconAnchor: [14, 14],
             popupAnchor: [0, -16],
-            html: `<div style="width:28px;height:28px;border-radius:50%;background:${cssColor};border:2px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.6)">
+            html: `<div style="width:28px;height:28px;border-radius:50%;background:${cssColor};${ring};display:flex;align-items:center;justify-content:center;cursor:${stamp.editable ? 'pointer' : 'default'}">
               <svg width="13" height="15" viewBox="0 0 16 18" fill="white" xmlns="http://www.w3.org/2000/svg">
                 <ellipse cx="8" cy="7" rx="6" ry="6"/>
                 <ellipse cx="8" cy="7" rx="2.5" ry="2.5" fill="${cssColor}"/>
@@ -1562,9 +1607,13 @@ export function mapController() {
             </div>`,
           });
           const label = stamp.name || 'Map Marker';
-          L.marker(latlng, { icon })
-            .bindPopup(`<strong>${label}</strong>`)
-            .addTo(_mapPinLayer);
+          const m = L.marker(latlng, { icon }).addTo(_mapPinLayer);
+          // Editable stamps open the edit menu on click; legacy markers keep a read-only popup.
+          if (stamp.editable) {
+            m.on('click', (ev) => this._openMarkerMenu(stamp.guid, ev.originalEvent));
+          } else {
+            m.bindPopup(`<strong>${label}</strong><br><span style="font-size:11px;color:#9ca3af">legacy marker · read-only</span>`);
+          }
         }
       }
     },

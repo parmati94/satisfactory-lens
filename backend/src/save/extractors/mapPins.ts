@@ -8,6 +8,7 @@ export interface HubInfo {
 
 export interface MapStamp {
   guid: string;
+  editable: boolean; // has a markerGuid → safely targetable for edits (legacy markers don't)
   name: string;
   position: { x: number; y: number; z: number };
   color: { r: number; g: number; b: number };
@@ -41,8 +42,12 @@ export function extractMapPins(save: SatisfactorySave): MapPinsResult {
           if (m.type !== 'MapMarker') continue;
           const p = m.properties;
 
+          // markerGuid is the stable, shift-safe edit target. Legacy markers lack it
+          // (older saves) — give them a deterministic id (so Alpine :key is stable)
+          // but flag them non-editable rather than inventing a random target.
           const guidArr = p['markerGuid']?.value as number[] | undefined;
-          const guid = guidArr ? guidArr.join('-') : String(Math.random());
+          const editable = !!guidArr;
+          const guid = guidArr ? guidArr.join('-') : `legacy:${stamps.length}`;
 
           const locProps = p['Location']?.value?.properties;
           if (!locProps) continue;
@@ -51,6 +56,7 @@ export function extractMapPins(save: SatisfactorySave): MapPinsResult {
 
           stamps.push({
             guid,
+            editable,
             name: (p['Name']?.value as string) ?? '',
             position: {
               x: locProps['X']?.value as number ?? 0,
