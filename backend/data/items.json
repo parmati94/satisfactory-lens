@@ -314,6 +314,16 @@
 "path": "/Game/FactoryGame/Resource/Parts/GoldIngot/Desc_GoldIngot.Desc_GoldIngot_C",
 "stack": 100
 },
+"Desc_GolfCart": {
+"name": "Factory Cart\u2122",
+"path": "/Game/FactoryGame/Resource/Equipment/Golfcart/Desc_GolfCart.Desc_GolfCart_C",
+"stack": 1
+},
+"Desc_GolfCartGold": {
+"name": "Golden Factory Cart\u2122",
+"path": "/Game/FactoryGame/Resource/Equipment/Golfcart/Desc_GolfCartGold.Desc_GolfCartGold_C",
+"stack": 1
+},
 "Desc_Gunpowder": {
 "name": "Black Powder",
 "path": "/Game/FactoryGame/Resource/Parts/GunPowder/Desc_Gunpowder.Desc_Gunpowder_C",
