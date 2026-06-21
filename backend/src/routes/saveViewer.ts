@@ -20,6 +20,7 @@ import { extractBuildingFootprints } from '../save/extractors/buildingFootprints
 import { extractMachineInstances } from '../save/extractors/machines';
 import { getFogPng } from '../save/extractors/fogOfWar';
 import { persistEdits, type SaveEdit } from '../save/editor';
+import { getItemCatalog } from '../save/itemCatalog';
 import { groundZ } from '../save/worldHeight';
 import { extractPurchasedSchematics } from '../save/extractors/schematics';
 import { extractGamePhase } from '../save/extractors/gamePhase';
@@ -234,17 +235,10 @@ router.get('/api/world/ground-height', (req, res) => {
 });
 
 // GET /api/items — static item catalog (class → { path, name, stack }) for the
-// inventory editor's item picker. Loaded once and cached for the process.
-let _itemCatalog: unknown = null;
+// inventory editor's item picker. Shared loader (cached) — same source the
+// extractors use for display names, so names stay consistent.
 router.get('/api/items', (_req, res) => {
-  if (!_itemCatalog) {
-    try {
-      _itemCatalog = JSON.parse(readFileSync(join(__dirname, '../../data/items.json'), 'utf-8'));
-    } catch {
-      _itemCatalog = {};
-    }
-  }
-  res.json(_itemCatalog);
+  res.json(getItemCatalog());
 });
 
 // GET /api/schematics — static schematic catalog (progression tree) for the editor.

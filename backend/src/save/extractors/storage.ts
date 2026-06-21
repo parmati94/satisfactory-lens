@@ -1,4 +1,5 @@
 import { Parser } from '@etothepii/satisfactory-file-parser';
+import { itemName } from '../itemCatalog';
 
 type SatisfactorySave = ReturnType<typeof Parser.ParseSave>;
 
@@ -44,6 +45,11 @@ export function itemDisplayName(pathName: string): string {
   if (!pathName) return 'Unknown';
   // Format: "…/Desc_Foo.Desc_Foo_C" — take the part after the last dot
   const className = pathName.split('.').pop()?.replace(/_C$/, '') ?? '';
+  // Prefer the authoritative catalog (proper names like "Somersloop"/"Mercer
+  // Sphere"). The CamelCase heuristic below mangles acronym classes (WAT1 →
+  // "W A T1"), so it's only a fallback for items missing from the catalog.
+  const fromCatalog = itemName(className);
+  if (fromCatalog) return fromCatalog;
   const cleaned = className
     .replace(/^Desc_/, '')
     .replace(/^BP_EquipmentDescriptor/, '')
