@@ -110,26 +110,15 @@ def main():
     print('Decoding TXUI_MIcon_Pioneer…')
     pioneer = decode_dxt5_ubulk(PIONEER_UBULK, *PIONEER_SIZE)
 
-    print('Decoding MapCompass_Icon_hub (inline)…')
-    hub_icon = decode_dxt5_inline(HUB_UASSET, HUB_MIP0_OFF, *HUB_SIZE)
+    # Only player_marker.png is consumed by the app (mapController iconUrl + the
+    # legend img). The HUB and map stamps render as CSS divIcons in the frontend, and
+    # player_marker_self is unused — those PNGs were dead output, so we don't emit them.
+    img = make_marker(pioneer, fill_color=SF_ORANGE)
+    path = out / 'player_marker.png'
+    img.save(path)
+    print(f'  → player_marker.png  (player — SF orange)')
 
-    print('Building pin icon (programmatic)…')
-    pin_icon = make_pin_icon()
-
-    outputs = [
-        ('player_marker.png',      pioneer,  SF_ORANGE, 'player — SF orange'),
-        ('player_marker_self.png', pioneer,  SF_BLUE,   'local player — blue'),
-        ('hub_marker.png',         hub_icon, SF_ORANGE, 'HUB terminal — SF orange'),
-        ('stamp_marker.png',       pin_icon, SF_BLUE,   'map stamp base (color overridden in frontend)'),
-    ]
-
-    for filename, icon, fill, label in outputs:
-        img = make_marker(icon, fill_color=fill)
-        path = out / filename
-        img.save(path)
-        print(f'  → {filename}  ({label})')
-
-    print(f'\nDone. {len(outputs)} markers → {out}')
+    print(f'\nDone. 1 marker → {out}')
 
 
 if __name__ == '__main__':

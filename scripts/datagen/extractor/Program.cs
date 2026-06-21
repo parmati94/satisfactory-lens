@@ -42,6 +42,8 @@ internal static class Program
                 return JsonTree(provider, args[1], args.Length > 2 ? args[2].Split(',') : null);
             case "raw":
                 return Raw(provider, args[1], args.Length > 2 ? args[2].Split(',') : null);
+            case "raw-list":
+                return RawList(provider, args[1]);
             case "mesh":
                 return Mesh(provider, args[1], args.Length > 2 ? args[2].Split(',') : null);
             default:
@@ -114,6 +116,43 @@ internal static class Program
         return 0;
     }
 
+    // Raw-copy a precise set of packages listed in a file (one mount-path stem per line,
+    // with or without .uasset). Pulls each stem's .uasset/.ubulk/.uexp siblings. Used to
+    // extract exactly the icon textures the descriptors reference (no name-pattern guessing).
+    private static int RawList(DefaultFileProvider provider, string listFile)
+    {
+        var stems = File.ReadAllLines(listFile)
+            .Select(l => l.Trim())
+            .Where(l => l.Length > 0)
+            .Select(l => l.EndsWith(".uasset", StringComparison.OrdinalIgnoreCase) ? l[..^7] : l)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        Console.WriteLine($"raw-list: {stems.Count} stems from {Path.GetFileName(listFile)} → {OutRoot}");
+
+        int ok = 0, missing = 0, fail = 0;
+        foreach (var stem in stems)
+        {
+            var any = false;
+            foreach (var ext in new[] { ".uasset", ".ubulk", ".uexp" })
+            {
+                var key = stem + ext;
+                if (!provider.Files.ContainsKey(key)) continue;
+                try
+                {
+                    var bytes = provider.SaveAsset(key);
+                    var outPath = Path.Combine(OutRoot, key);
+                    Directory.CreateDirectory(Path.GetDirectoryName(outPath)!);
+                    File.WriteAllBytes(outPath, bytes);
+                    any = true;
+                }
+                catch (Exception ex) { fail++; if (fail <= 10) Console.Error.WriteLine($"  FAIL {key}: {ex.Message}"); }
+            }
+            if (any) ok++; else { missing++; if (missing <= 10) Console.Error.WriteLine($"  missing: {stem}"); }
+        }
+        Console.WriteLine($"done: {ok} stems copied, {missing} not found, {fail} file errors");
+        return 0;
+    }
+
     // Export StaticMeshes under a mount prefix to binary glTF (.glb) — the render-mesh
     // input generate_building_footprints reads (FModel "Save Model"). Same CUE4Parse
     // conversion FModel uses, so vertices match. Writes ONLY under OutRoot.
@@ -146,6 +185,11 @@ internal static class Program
                 // so pass OutRoot directly → <OutRoot>/FactoryGame/Content/.../SM_X.glb.
                 Directory.CreateDirectory(OutRoot);
                 if (exporter.TryWriteToDir(new DirectoryInfo(OutRoot), out _, out _)) ok++; else fail++;
+                // Also emit the mesh's property JSON next to the glb — footprints reads it
+                // for the collision (BodySetup.AggGeom) fallback when a glb isn't usable.
+                var jsonPath = Path.Combine(OutRoot, Path.ChangeExtension(key, ".json"));
+                Directory.CreateDirectory(Path.GetDirectoryName(jsonPath)!);
+                File.WriteAllText(jsonPath, JsonConvert.SerializeObject(pkg.GetExports(), Formatting.Indented));
             }
             catch (Exception ex)
             {

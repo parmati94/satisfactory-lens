@@ -2,10 +2,15 @@
 #   python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
 #
 # The JSON-only generators (recipes, schematics, item_catalog, buildable_names,
-# extract_node_data) need nothing here. The icon/relief/heightmap generators do:
-Pillow>=11.0            # image compositing (markers, icon decode)
-texture2ddecoder>=1.0.6 # decode UE DXT/BC textures from .ubulk sidecars
-numpy>=2.0              # heightmap + footprint rasterisation
-opencv-python>=4.10     # contour tracing for building footprints
+# extract_node_data) need nothing here. The icon/relief/heightmap generators do.
+#
+# The PNG-emitting deps are PINNED EXACTLY: Pillow's encoder and opencv/numpy's
+# rasterisation aren't byte-stable across versions, so a version bump silently
+# re-bytes marker/icon/relief PNGs (visually identical, but noisy diffs). Pin to
+# keep generated assets reproducible; bump deliberately + re-baseline if needed.
+Pillow==11.0.0          # image compositing + PNG encode (markers, icon decode)
+numpy==2.4.6            # heightmap + footprint rasterisation
+opencv-python==4.13.0   # contour tracing + relief render for footprints
+texture2ddecoder>=1.0.6 # decode UE DXT/BC textures from .ubulk sidecars (decode is byte-stable)
 pygltflib>=1.16         # read exported .glb render meshes (footprints/relief)
 shapely>=2.0            # footprint polygon union/simplify
