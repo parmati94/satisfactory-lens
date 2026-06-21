@@ -23,7 +23,21 @@ let _buildingOverlayContainer = null;
 // from each loaded save, so neither is safe to persist by key.
 const PERSISTED_FILTER_KEYS = ['players', 'hub', 'stamps', 'fog', 'purityImpure', 'purityNormal', 'purityPure'];
 let _buildingHitList = [];
+// Uniform spatial grid over _buildingHitList for O(1) hover/click picking: a megabase
+// has 100k+ buildings, and a linear scan per mousemove is what tanks interaction on big
+// saves. Each building is bucketed into every cell its AABB overlaps, so a pick only
+// tests the few candidates in the mouse's cell. Built once per save (see _buildHitGrid).
+const HIT_GRID_CM = 2500; // cell size in game-cm (~25 m); most buildings land in one cell
+let _buildingHitGrid = null; // Map<"ix,iy", hitEntry[]> | null
 let _splineHitList = [];
+// Viewport culling for the building sprites. Every highlight/hover redraw re-runs the
+// overlay draw callback (render of the whole container), so on a megabase that's a full
+// 100k-sprite render on each hover change — the main source of map stutter. We toggle
+// each sprite's .visible to the current (padded) viewport so render() only draws the
+// on-screen subset. _cullSprites: [{ s: Sprite, gx, gy }]; _lastCullKey skips re-culling
+// when the viewport hasn't moved (e.g. a hover redraw at the same pan/zoom).
+let _cullSprites = [];
+let _lastCullKey = null;
 let _lastHoverMs = 0;
 let _clickDownX = 0; // pointer-down position, to tell a click from a map drag
 let _clickDownY = 0;
@@ -829,6 +843,7 @@ export function mapController() {
         }
 
         container.visible = !!this.mapFilters.buildings && !!data;
+        if (container.visible) this._cullToViewport();
         container.addChild(_highlightGfx); // re-assert top of z-order each draw
 
         utils.getRenderer().render(container);
@@ -845,6 +860,30 @@ export function mapController() {
       _buildingOverlay?.redraw();
     },
 
+    // Toggle each building sprite's visibility to the current (padded) viewport so the
+    // renderer only draws the on-screen subset. Keyed on bounds+zoom: a redraw at the
+    // same viewport (hover highlight) is a no-op, so only pan/zoom actually re-culls.
+    // Composes with per-category filters (those set the category container's .visible).
+    _cullToViewport() {
+      if (!_leafletMap || !_cullSprites.length) return;
+      const b = _leafletMap.getBounds();
+      const c1 = latLngToGame(b.getNorthWest());
+      const c2 = latLngToGame(b.getSouthEast());
+      let minX = Math.min(c1.x, c2.x), maxX = Math.max(c1.x, c2.x);
+      let minY = Math.min(c1.y, c2.y), maxY = Math.max(c1.y, c2.y);
+      // Pad by 25% of the span each side so a pan reveals already-visible sprites
+      // before the next moveend re-culls (no blank edge), and so the generous-area
+      // hover never points at a culled sprite near the edge.
+      const padX = (maxX - minX) * 0.25, padY = (maxY - minY) * 0.25;
+      minX -= padX; maxX += padX; minY -= padY; maxY += padY;
+      const key = _leafletMap.getZoom() + '|' + (minX | 0) + '|' + (minY | 0) + '|' + (maxX | 0) + '|' + (maxY | 0);
+      if (key === _lastCullKey) return; // viewport unchanged — visibility still valid
+      _lastCullKey = key;
+      for (const c of _cullSprites) {
+        c.s.visible = c.gx >= minX && c.gx <= maxX && c.gy >= minY && c.gy <= maxY;
+      }
+    },
+
     // Rebuilds every building sprite from scratch. Only called when the underlying
     // data actually changes (new save loaded/reloaded) — not on every redraw — since
     // positions are static between loads and the overlay handles zoom/pan scaling
@@ -856,7 +895,10 @@ export function mapController() {
       }
       _highlightGfx?.clear();
       _buildingHitList = [];
+      _buildingHitGrid = null;
       _splineHitList = [];
+      _cullSprites = [];
+      _lastCullKey = null;
       _categoryDisplayObjects = new Map();
       if (!data) return;
 
@@ -981,6 +1023,8 @@ export function mapController() {
         sprite.rotation = yaw;
 
         categoryContainer(type.category).addChild(sprite);
+        // Register for viewport culling (drawn centre in game-cm).
+        _cullSprites.push({ s: sprite, gx: worldX, gy: worldY });
 
         // Full footprint for hit testing — generous hover area even for thin belts/pipes.
         // Skip structural categories: they're numerous, uninteresting, and their
@@ -1062,9 +1106,35 @@ export function mapController() {
         registerCategoryObj(group.category, g);
       }
 
+      // Index the finished hit list into the spatial grid for fast picking.
+      this._buildHitGrid();
+
       // Apply current per-category visibility to the freshly-built objects
       // (no redraw — we're already inside the overlay draw callback).
       this._applyCategoryVisibility(false);
+    },
+
+    // Bucket every building hit entry into each grid cell its axis-aligned bounds
+    // overlap. Iterating _buildingHitList in order means each bucket preserves the
+    // list's global ordering, so the first-match tie-break in _pickBuildingAt is
+    // unchanged from the old linear scan — just over far fewer candidates.
+    _buildHitGrid() {
+      const grid = new Map();
+      for (const b of _buildingHitList) {
+        const ix0 = Math.floor((b.cx - b.aabbHW) / HIT_GRID_CM);
+        const ix1 = Math.floor((b.cx + b.aabbHW) / HIT_GRID_CM);
+        const iy0 = Math.floor((b.cy - b.aabbHH) / HIT_GRID_CM);
+        const iy1 = Math.floor((b.cy + b.aabbHH) / HIT_GRID_CM);
+        for (let ix = ix0; ix <= ix1; ix++) {
+          for (let iy = iy0; iy <= iy1; iy++) {
+            const key = ix + ',' + iy;
+            let bucket = grid.get(key);
+            if (!bucket) { bucket = []; grid.set(key, bucket); }
+            bucket.push(b);
+          }
+        }
+      }
+      _buildingHitGrid = grid;
     },
 
     // Shared hit-test for hover and click: returns { entry, isSpline } or null.
@@ -1072,13 +1142,19 @@ export function mapController() {
     _pickBuildingAt(latlng) {
       const { x: mx, y: my } = latLngToGame(latlng);
 
-      for (const b of _buildingHitList) {
-        if (this.categoryFilters[b.category] === false) continue; // hidden category
-        const dx = mx - b.cx, dy = my - b.cy;
-        if (Math.abs(dx) > b.aabbHW || Math.abs(dy) > b.aabbHH) continue;
-        const lx = dx * b.cos + dy * b.sin;
-        const ly = -dx * b.sin + dy * b.cos;
-        if (Math.abs(lx) <= b.hw && Math.abs(ly) <= b.hh) return { entry: b, isSpline: false };
+      // Only the buildings bucketed into the mouse's cell can contain the point.
+      const bucket = _buildingHitGrid?.get(
+        Math.floor(mx / HIT_GRID_CM) + ',' + Math.floor(my / HIT_GRID_CM),
+      );
+      if (bucket) {
+        for (const b of bucket) {
+          if (this.categoryFilters[b.category] === false) continue; // hidden category
+          const dx = mx - b.cx, dy = my - b.cy;
+          if (Math.abs(dx) > b.aabbHW || Math.abs(dy) > b.aabbHH) continue;
+          const lx = dx * b.cos + dy * b.sin;
+          const ly = -dx * b.sin + dy * b.cos;
+          if (Math.abs(lx) <= b.hw && Math.abs(ly) <= b.hh) return { entry: b, isSpline: false };
+        }
       }
 
       for (const s of _splineHitList) {

@@ -1,0 +1,18 @@
+<!-- Global blocking overlay while a save is fetched + parsed server-side for
+     inspection. The work (SF-API download + parse) happens on the backend, so the
+     browser can't measure byte progress here — it's an indeterminate spinner by
+     necessity (see inspectSave in saveViewer.js). -->
+<div x-show="inspectOverlay.show" x-transition.opacity
+     class="fixed inset-0 z-[1350] flex items-center justify-center bg-black/70 backdrop-blur-sm"
+     style="display:none">
+  <div class="flex flex-col items-center gap-4 px-9 py-7 rounded-2xl bg-gray-900/90 border border-gray-700/60 shadow-2xl">
+    <svg class="w-9 h-9 text-accent-400 animate-spin" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+    </svg>
+    <div class="text-center">
+      <p class="text-sm font-semibold text-gray-100">Loading save for inspection…</p>
+      <p class="text-xs text-gray-400 mt-1 max-w-[18rem] truncate" x-show="inspectOverlay.name" x-text="inspectOverlay.name"></p>
+    </div>
+  </div>
+</div>

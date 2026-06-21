@@ -230,6 +230,7 @@ export function saveViewer() {
       }
       this.actionLoading = true;
       this.actionResult = null;
+      this.inspectOverlay = { show: true, name: saveName };
       try {
         // Pass along the saveDateTime we already know from the Saves list, so the backend
         // can keep comparing against it for newer-save polling — otherwise that check has
@@ -245,6 +246,65 @@ export function saveViewer() {
         this.actionResult = { ok: false, message: `Failed to load "${saveName}" for inspection: ${e.message}` };
       } finally {
         this.actionLoading = false;
+        this.inspectOverlay.show = false;
+      }
+    },
+
+    // Accept a dropped/picked file into the upload popover (validates extension only;
+    // the backend does the real parse-validation before anything touches the server).
+    setUploadFile(fileList) {
+      const f = fileList && fileList[0];
+      if (!f) return;
+      if (!f.name.toLowerCase().endsWith('.sav')) {
+        this.actionResult = { ok: false, message: 'Please choose a .sav file.' };
+        return;
+      }
+      this.uploadModal.file = f;
+    },
+
+    openUploadModal() {
+      this.uploadModal = { show: true, file: null, dragging: false, busy: false, progress: { loaded: 0, total: 0 } };
+    },
+
+    // Upload progress as a whole-number percent (browser → server transfer).
+    uploadPct() {
+      const { loaded, total } = this.uploadModal.progress;
+      return total > 0 ? Math.round((loaded / total) * 100) : 0;
+    },
+
+    // Admin-only: upload the picked .sav to the server's save list, then auto-inspect
+    // it. `loadAfter` also boots the live game into it. Swaps the viewed save (same as
+    // inspectSave), so it's blocked while edits are staged to avoid orphaning them.
+    async uploadSave(loadAfter) {
+      const f = this.uploadModal.file;
+      if (!f || this.uploadModal.busy) return;
+      if (this.editCount > 0) {
+        this.actionResult = { ok: false, message: 'Finish editing first — save or discard your staged changes before uploading a save.' };
+        return;
+      }
+      const saveName = f.name.replace(/\.sav$/i, '').trim() || 'uploaded';
+      this.uploadModal.busy = true;
+      this.uploadModal.progress = { loaded: 0, total: f.size };
+      this.actionResult = null;
+      try {
+        this.saveStatus = await api.save.upload(f, saveName, loadAfter, (loaded, total) => {
+          this.uploadModal.progress = { loaded, total };
+        });
+        this.newerSaveAvailable = !!this.saveStatus?.newerSaveAvailable;
+        this.newerSaveName = this.saveStatus?.newerSaveName ?? null;
+        this.clearSvCaches();
+        await this.loadSaves();   // refresh the list so the new save's row appears
+        this.uploadModal.show = false;
+        this.uploadModal.file = null;
+        this.savesDrawerOpen = false;
+        await this.switchTab('saves');
+        this.actionResult = { ok: true, message: loadAfter
+          ? `Uploaded "${saveName}" and loaded it on the server.`
+          : `Uploaded "${saveName}" to the server.` };
+      } catch (e) {
+        this.actionResult = { ok: false, message: `Upload failed: ${e.message}` };
+      } finally {
+        this.uploadModal.busy = false;
       }
     },
 
@@ -320,7 +380,14 @@ export function saveViewer() {
 
     async loadSvBuildingFootprints() {
       try {
-        this.svBuildingFootprints = await api.save.buildingFootprints();
+        // Keep this large per-instance payload OUT of Alpine's reactive graph. A
+        // megabase's footprints are 100k+ entries across parallel arrays (x/y/yaw/
+        // typeIndex + spline point lists); assigning that to a component prop makes
+        // Alpine/Vue deep-proxy the whole thing, so the map rebuild's per-instance
+        // reads (data.x[i] × 100k) crawl through proxy traps and app-wide reactivity
+        // drags. Object.freeze → reactivity returns it raw (non-extensible = skipped),
+        // which is correct anyway: the payload is immutable, read-only display data.
+        this.svBuildingFootprints = Object.freeze(await api.save.buildingFootprints());
       } catch (e) {
         console.warn('building footprints unavailable:', e.message);
       }
@@ -331,7 +398,12 @@ export function saveViewer() {
       this.saveDataLoading = true;
       this.saveDataError = null;
       try {
-        this.svBuildings = await api.save.buildings();
+        // Same reason as svBuildingFootprints: this census carries a full per-instance
+        // list (pos/rot) for every building — 100k+ entries on a megabase. Assigned to a
+        // reactive prop, Alpine/Vue deep-proxies the whole tree, which then drags ALL
+        // app-wide reactivity (the "everything feels slower" symptom). Freeze → raw,
+        // non-reactive; correct since it's read-only display data (edits go via editBuffer).
+        this.svBuildings = Object.freeze(await api.save.buildings());
       } catch (e) {
         this.saveDataError = e.message;
       } finally {
@@ -354,7 +426,9 @@ export function saveViewer() {
 
     async loadSvResourceNodes() {
       try {
-        this.svResourceNodes = await api.save.resourceNodes();
+        // Read-only map data (node positions/purity) — freeze so it stays out of the
+        // reactive graph, same rationale as svBuildings/svBuildingFootprints.
+        this.svResourceNodes = Object.freeze(await api.save.resourceNodes());
       } catch { this.svResourceNodes = []; }
       this._ensureNodeTypeFilters();
     },

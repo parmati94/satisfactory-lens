@@ -82,6 +82,20 @@ app.use(settingsRouter);
 app.use(saveViewerRouter);
 app.use(mapTilesRouter);
 
+// Last-resort safety nets. A transient async failure — most notably an SF API socket
+// drop inside a background poll (UND_ERR_SOCKET) — must never hard-crash a self-hosted
+// app that's otherwise serving fine. Log and keep running; the specific known paths are
+// also handled at their source (see checkForNewerSave). Better up-with-a-blip than down.
+const procLog = childLogger('process');
+process.on('unhandledRejection', (reason) => {
+  procLog.error(
+    `Unhandled promise rejection (kept alive): ${reason instanceof Error ? (reason.stack ?? reason.message) : String(reason)}`,
+  );
+});
+process.on('uncaughtException', (err) => {
+  procLog.error(`Uncaught exception (kept alive): ${err.stack ?? err.message}`);
+});
+
 // Auto-connect to SF server if SF_HOST is pre-configured via env
 const sfLog = childLogger('sf');
 if (config.sfHost) {

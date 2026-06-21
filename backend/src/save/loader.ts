@@ -8,6 +8,8 @@ import { childLogger } from '../log';
 
 const log = childLogger('save');
 
+type SatisfactorySave = ReturnType<typeof Parser.ParseSave>;
+
 export type SaveSourceMode = 'mount' | 'api' | 'none';
 
 interface SfSaveHeader {
@@ -81,6 +83,17 @@ export async function findLatestApiSave(): Promise<
   return { sessionName: session.sessionName, saveName: newest.saveName, saveDateTime: newest.saveDateTime };
 }
 
+/**
+ * Parse a save from a Buffer into a save object WITHOUT storing it. Slices an exact
+ * ArrayBuffer view (a Node Buffer can sit on a larger shared pool, so passing
+ * `.buffer` raw would hand the parser trailing bytes). Used to validate an uploaded
+ * save before we commit it as the viewed save / push it to the server.
+ */
+export function parseSaveBuffer(buf: Buffer, name: string): SatisfactorySave {
+  const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
+  return Parser.ParseSave(name, ab);
+}
+
 /** Parse a save file from a Buffer and store in state. */
 function parseAndStore(
   buf: Buffer,
@@ -89,7 +102,7 @@ function parseAndStore(
   sourceSaveDateTime: string | null = null,
 ): void {
   log.info(`Parsing "${name}" (${(buf.byteLength / 1024 / 1024).toFixed(1)} MB)…`);
-  const save = Parser.ParseSave(name, buf.buffer as ArrayBuffer);
+  const save = parseSaveBuffer(buf, name);
   setSave(save, name, sourceMtimeMs, sourceSaveDateTime);
   log.info(`Parsed "${name}" successfully.`);
 }

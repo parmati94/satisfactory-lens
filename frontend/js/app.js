@@ -67,8 +67,16 @@ document.addEventListener('alpine:init', () => {
     actionResult: null,
     _actionResultTimer: null,  // auto-dismiss timer for a successful actionResult toast
 
+    // Upload-a-save modal (admin only — uploads a .sav from the browser to the
+    // server's save list, then inspects it; see uploadSave() in saveViewer.js).
+    uploadModal: { show: false, file: null, dragging: false, busy: false, progress: { loaded: 0, total: 0 } },
+
     // ── Phase 2: Save Viewer ──────────────────────────────────────────────
     saveStatus: null,
+    // Global blocking overlay shown while a save is being fetched/parsed for
+    // inspection — big saves (10 MB+) take a few seconds server-side, and without
+    // this the UI just sits unresponsive. Driven by inspectSave() (saveViewer.js).
+    inspectOverlay: { show: false, name: '' },
     saveTab: 'players',       // sub-tab: 'players' | 'progression' | 'production' | 'power' | 'storage' | 'structures'
     savesDrawerOpen: false,   // <lg only: the save-browser slide-out drawer (Explorer is the default view)
     savesRailCollapsed: false, // lg+ only: collapse the save-browser rail to give the Explorer full width (persisted)
