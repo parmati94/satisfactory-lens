@@ -18,7 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from convert_icons import convert, convert_inline  # noqa: E402
 
-from _paths import PAK_DIR as PAK_BASE, CONTENT, FRONTEND_ASSETS  # noqa: E402
+from _paths import CONTENT, FRONTEND_ASSETS  # noqa: E402
 
 OUT_DIR      = FRONTEND_ASSETS / 'buildings'
 BUILDABLE_ROOT = CONTENT / 'FactoryGame' / 'Buildable'
@@ -27,10 +27,10 @@ BUILDABLE_ROOT = CONTENT / 'FactoryGame' / 'Buildable'
 def ue_path_to_uasset(ue_path: str) -> Path | None:
     p = re.sub(r'\.\d+$', '', ue_path.strip())
     if p.startswith('/Game/'):
-        rel = 'FactoryGame/Content/' + p[len('/Game/'):]
+        rel = p[len('/Game/'):]   # /Game/ is the Content root
     else:
         return None
-    return (PAK_BASE / rel).with_suffix('.uasset')
+    return (CONTENT / rel).with_suffix('.uasset')
 
 
 def parse_desc(desc_json: Path) -> tuple[str | None, str | None]:

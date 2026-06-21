@@ -28,6 +28,12 @@ frontend/public/tiles_webp/
 scripts/datagen/__pycache__/
 scripts/datagen/.venv/
 
+# CUE4Parse extractor: build output + the Oodle native lib (re-fetched via fetch-oodle.sh)
+scripts/datagen/extractor/bin/
+scripts/datagen/extractor/obj/
+scripts/datagen/extractor/runtime/
+scripts/datagen/extractor/NOTES.md
+
 # Env files
 .env
 .env.local
@@ -45,3 +51,4 @@ CLAUDE.md
 
 # Local planning notes (not synced to remote)
 PLANNING.md
+scripts/datagen/extractor/vendor/

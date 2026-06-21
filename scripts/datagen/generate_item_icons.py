@@ -20,7 +20,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from convert_icons import convert, convert_inline  # noqa: E402
 
-from _paths import PAK_DIR as PAK_BASE, FRONTEND_ASSETS  # noqa: E402
+from _paths import CONTENT, FRONTEND_ASSETS  # noqa: E402
 
 OUT_DIR    = FRONTEND_ASSETS / 'items'
 
@@ -45,14 +45,14 @@ SKIP_ICON_NAMES = {
 def ue_path_to_uasset(ue_path: str) -> Path | None:
     """
     Convert a UE object path to the .uasset file path on disk.
-    '/Game/FactoryGame/Foo/Bar.0'  →  PAK_BASE/FactoryGame/Content/FactoryGame/Foo/Bar.uasset
+    '/Game/FactoryGame/Foo/Bar.0'  →  CONTENT/FactoryGame/Foo/Bar.uasset
     """
     p = re.sub(r'\.\d+$', '', ue_path.strip())   # strip export index
     if p.startswith('/Game/'):
-        rel = 'FactoryGame/Content/' + p[len('/Game/'):]
+        rel = p[len('/Game/'):]   # /Game/ is the Content root
     else:
         return None
-    return (PAK_BASE / rel).with_suffix('.uasset')
+    return (CONTENT / rel).with_suffix('.uasset')
 
 
 def find_icon_path(descriptor_json: Path) -> str | None:
@@ -82,7 +82,7 @@ def main():
 
     descriptor_files: list[Path] = []
     for glob in DESC_GLOBS:
-        descriptor_files.extend(PAK_BASE.rglob(glob))
+        descriptor_files.extend(CONTENT.rglob(glob))
 
     descriptor_files = sorted(set(descriptor_files))
     print(f'Found {len(descriptor_files)} descriptor files')

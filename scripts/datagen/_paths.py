@@ -39,10 +39,19 @@ PAK_DIR = Path(
 INPUT_DIR = PAK_DIR / "input"
 DOCS = INPUT_DIR / "en-US.json"
 USMAP = INPUT_DIR / "FactoryGame.usmap"
-CONTENT = PAK_DIR / "FactoryGame" / "Content"
+# Extracted UE asset tree. Defaults to the manual FModel extraction; override with
+# SATISFACTORY_CONTENT_DIR to point at the CUE4Parse extractor's output (used to
+# verify the extractor reproduces the generators' inputs).
+CONTENT = Path(
+    os.environ.get("SATISFACTORY_CONTENT_DIR", str(PAK_DIR / "FactoryGame" / "Content"))
+).expanduser()
 
 BACKEND_DATA = REPO_ROOT / "backend" / "data"
-FRONTEND_ASSETS = REPO_ROOT / "frontend" / "public" / "assets"
+# Defaults to the repo's committed asset dir; override with SATISFACTORY_ASSETS_DIR to
+# write generated icons/markers elsewhere (e.g. a temp dir when verifying the extractor).
+FRONTEND_ASSETS = Path(
+    os.environ.get("SATISFACTORY_ASSETS_DIR", str(REPO_ROOT / "frontend" / "public" / "assets"))
+).expanduser()
 
 
 def require_pak() -> None:
