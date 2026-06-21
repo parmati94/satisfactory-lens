@@ -5,20 +5,28 @@ These scripts regenerate the committed game-data (`backend/data/*.json`,
 ships an update; their output is committed to the repo, so end users never run
 them.
 
-They read from an **external** Satisfactory pak extraction (~14 GB, not in the
-repo) and write **into** this checkout.
+They read from an **external** Satisfactory data root (not in the repo) and
+write **into** this checkout.
 
 ## Inputs
 
-Point the pipeline at your pak extraction with `SATISFACTORY_PAK_DIR`
-(default `~/.gamedata/satisfactory-pak-data`). That directory must contain:
+Point the pipeline at your data root with `SATISFACTORY_PAK_DIR`
+(default `~/.gamedata/satisfactory-pak-data`). Expected layout:
 
-- `FactoryGame/Content/…` — the full FModel/CUE4Parse pak export (UE assets as
-  `.json` + `.uasset`/`.ubulk`/`.glb` sidecars). Export with the matching UE
-  version and `FactoryGame.usmap` loaded.
-- `en-US.json` — the game's own Docs export (from
-  `CommunityResources/Docs/`). Authoritative source for item/recipe/schematic
-  names, stack sizes, tiers.
+```
+<root>/
+  input/                                 # raw, per-update — refresh this whole folder on a game update
+    FactoryGame-Windows.{pak,utoc,ucas,sig}   # the game archive (data lives in the multi-GB .ucas)
+    global.{utoc,ucas}                        # engine/global container
+    FactoryGame.usmap                         # type mappings — MUST match the game version
+    en-US.json                                # Docs export (CommunityResources/Docs); item/recipe/schematic source
+  FactoryGame/                           # transitional FModel extraction (.json/.uasset/.ubulk/.glb tree)
+```
+
+- Copy the four `input/` pieces straight from your game install each update.
+- `FactoryGame/` is the manual FModel export the icon/footprint/heightmap
+  generators still read. Once the CUE4Parse extractor lands it'll be produced
+  from `input/*.ucas` and this tree becomes deletable.
 
 All path resolution lives in [`_paths.py`](_paths.py); nothing is hardcoded.
 

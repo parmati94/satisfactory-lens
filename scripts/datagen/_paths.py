@@ -1,14 +1,26 @@
 """Shared path resolution for the data-generation pipeline.
 
-The generators read from an external Satisfactory pak extraction + Docs export
-and write into this repo. The pak data is huge (~14 GB) and lives outside the
-repo; point at it with the SATISFACTORY_PAK_DIR env var.
+The generators read from an external Satisfactory data root and write into this
+repo. That root lives outside the repo (it's huge); point at it with the
+SATISFACTORY_PAK_DIR env var (default ~/.gamedata/satisfactory-pak-data).
 
-  PAK_DIR   ─ root of the FModel/CUE4Parse pak extraction. Must contain the
-              `FactoryGame/Content/...` tree and `en-US.json` (the game's Docs
-              export from CommunityResources/Docs). Override with
-              SATISFACTORY_PAK_DIR; defaults to ~/.gamedata/satisfactory-pak-data.
-  DOCS      ─ PAK_DIR/en-US.json (items / recipes / schematics source of truth).
+Layout under PAK_DIR:
+
+  input/            ─ raw, per-update inputs copied straight from the game. Refresh
+                      this whole folder when Satisfactory updates. Holds:
+                        FactoryGame-Windows.{pak,utoc,ucas,sig}, global.{utoc,ucas}
+                        FactoryGame.usmap   (type mappings — must match the version)
+                        en-US.json          (Docs export from CommunityResources/Docs)
+  FactoryGame/      ─ transitional manual FModel extraction (the .json/.uasset/.ubulk/
+                      .glb tree the icon/footprint/heightmap generators still read).
+                      CUE4Parse will eventually extract straight from input/*.ucas and
+                      this tree becomes deletable.
+
+Resolved names:
+  INPUT_DIR ─ PAK_DIR/input (raw inputs; what CUE4Parse mounts).
+  DOCS      ─ INPUT_DIR/en-US.json (items / recipes / schematics source of truth).
+  USMAP     ─ INPUT_DIR/FactoryGame.usmap (mappings for named-property parsing).
+  CONTENT   ─ PAK_DIR/FactoryGame/Content (manual extraction; transitional).
   REPO_ROOT ─ this checkout (resolved relative to this file).
   BACKEND_DATA / FRONTEND_ASSETS ─ where generated JSON / icons land.
 """
@@ -24,7 +36,9 @@ PAK_DIR = Path(
     os.environ.get("SATISFACTORY_PAK_DIR", str(Path.home() / ".gamedata" / "satisfactory-pak-data"))
 ).expanduser()
 
-DOCS = PAK_DIR / "en-US.json"
+INPUT_DIR = PAK_DIR / "input"
+DOCS = INPUT_DIR / "en-US.json"
+USMAP = INPUT_DIR / "FactoryGame.usmap"
 CONTENT = PAK_DIR / "FactoryGame" / "Content"
 
 BACKEND_DATA = REPO_ROOT / "backend" / "data"
@@ -32,10 +46,10 @@ FRONTEND_ASSETS = REPO_ROOT / "frontend" / "public" / "assets"
 
 
 def require_pak() -> None:
-    """Fail early with a clear message if the pak extraction isn't where we expect."""
+    """Fail early with a clear message if the data root isn't where we expect."""
     if not PAK_DIR.is_dir():
         raise SystemExit(
-            f"Pak data not found at {PAK_DIR}\n"
-            f"Set SATISFACTORY_PAK_DIR to your Satisfactory pak extraction "
-            f"(must contain FactoryGame/Content/ and en-US.json)."
+            f"Satisfactory data root not found at {PAK_DIR}\n"
+            f"Set SATISFACTORY_PAK_DIR to your data root "
+            f"(must contain input/ with the paks + en-US.json, and FactoryGame/)."
         )
