@@ -19,8 +19,8 @@
         </p>
       </div>
       <div class="flex items-center gap-2">
-        <!-- Create save -->
-        <div class="flex gap-2">
+        <!-- Create save (admin only — writes a save on the server) -->
+        <div class="flex gap-2" x-show="isAdmin">
           <input
             type="text"
             x-model="newSaveName"
@@ -181,8 +181,10 @@
                           <span x-show="save.isCreativeModeEnabled" title="Creative mode" class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
                         </span>
                       </div>
-                      <!-- Hover actions (icon-only, tooltips): absolute so they never steal width from the name -->
-                      <div class="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                      <!-- Hover actions (icon-only, tooltips): absolute so they never steal width from the name.
+                           Admin only — Load to Server and Delete both mutate the server. Inspect (the row
+                           click) stays available to viewers. -->
+                      <div x-show="isAdmin" class="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         <button
                           @click.stop="loadSave(session.sessionName, save.saveName)"
                           :disabled="actionLoading || editCount > 0"
@@ -248,8 +250,10 @@
                           <span x-show="save.isCreativeModeEnabled" title="Creative mode" class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
                         </span>
                       </div>
-                      <!-- Hover actions (icon-only, tooltips): absolute so they never steal width from the name -->
-                      <div class="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                      <!-- Hover actions (icon-only, tooltips): absolute so they never steal width from the name.
+                           Admin only — Load to Server and Delete both mutate the server. Inspect (the row
+                           click) stays available to viewers. -->
+                      <div x-show="isAdmin" class="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         <button
                           @click.stop="loadSave(session.sessionName, save.saveName)"
                           :disabled="actionLoading || editCount > 0"

@@ -72,7 +72,8 @@ All settings are environment variables in `docker-compose.yml`:
 | `SF_PASSWORD` | _(blank)_ | Server admin password. Used for auto-connect on startup when `SF_HOST` is set. |
 | `ENABLE_LOGIN` | `false` | Set to `true` to require username/password to access the UI |
 | `USERNAME` | `admin` | App login username (only used if `ENABLE_LOGIN=true`) |
-| `PASSWORD` | `changeme` | App login password (only used if `ENABLE_LOGIN=true`) |
+| `PASSWORD` | `changeme` | App **admin** login password — full access incl. editing and server actions (only used if `ENABLE_LOGIN=true`) |
+| `VIEWER_PASSWORD` | _(blank)_ | Optional **read-only** login password. When set, logging in with it grants a view-only session (no editing, no load/save/delete, no settings/connect changes) while `PASSWORD` still grants admin — share this with friends. Must differ from `PASSWORD`; the backend **refuses to start** if they match. Blank = feature off (admin-only). |
 | `SESSION_SECRET` | _(placeholder)_ | Secret for signing session cookies. When `ENABLE_LOGIN=true` the backend **refuses to start** unless this is a strong, random value — generate with `openssl rand -hex 32`. |
 | `TZ` | `America/New_York` | Timezone for log timestamps |
 | `ENABLE_AUTO_WATCH` | `true` | Flag (never auto-reload) when a newer save appears, in the UI (header reload button). Watches `/app/saves` if mounted, otherwise polls the SF API. Never reloads automatically — you choose when to reload, so it won't clobber in-progress edits. |
@@ -90,6 +91,10 @@ volumes:
 A mounted save always takes precedence over the API when present. Which specific save to load (an older save, a different session) is a UI choice — see the Saves tab or the Download modal — not a config setting.
 
 When `ENABLE_LOGIN=true`, auth is enforced on the backend — every `/api/` route requires the session cookie (not just the UI), and the login endpoint is rate-limited. For public exposure, terminate HTTPS at a reverse proxy (Caddy/nginx) or Cloudflare in front of the container.
+
+### Read-only sharing
+
+Set `VIEWER_PASSWORD` (alongside `ENABLE_LOGIN=true` and the admin `PASSWORD`) to share the dashboard without handing out the editor. There's one login screen and one `USERNAME`; the password decides the role — the admin `PASSWORD` issues a full session, `VIEWER_PASSWORD` issues a read-only one. Read-only sessions can browse the dashboard, map, and save explorer (including inspecting and reloading the displayed save), but the backend rejects every mutation — editing/persisting saves, loading to the server, creating/deleting saves, and changing server settings or the connection — with a `403`, regardless of what the UI shows. Leave `VIEWER_PASSWORD` blank to keep things admin-only.
 
 ---
 

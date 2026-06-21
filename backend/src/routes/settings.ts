@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as sf from '../api/sfClient';
+import { requireAdmin } from '../auth';
 
 const router = Router();
 
@@ -11,7 +12,7 @@ router.get('/api/settings/server', async (_req, res) => {
   }
 });
 
-router.patch('/api/settings/server', async (req, res) => {
+router.patch('/api/settings/server', requireAdmin, async (req, res) => {
   try {
     res.json(await sf.setServerOptions(req.body as Record<string, string>));
   } catch (err) {
@@ -33,7 +34,7 @@ router.get('/api/settings/advanced', async (_req, res) => {
 // authoritative state, and report which requested keys the server refused —
 // turning the silent no-op into an honest result the UI can surface. The only
 // way to disable these on a live save is the in-game Esc → Advanced menu.
-router.patch('/api/settings/advanced', async (req, res) => {
+router.patch('/api/settings/advanced', requireAdmin, async (req, res) => {
   try {
     const intended = req.body as Record<string, string>;
     await sf.applyAdvancedGameSettings(intended);

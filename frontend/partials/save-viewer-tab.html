@@ -77,7 +77,7 @@
     <!-- One-time "what's editable" hint — most fields here are click-to-edit, which
          isn't obvious at a glance. Dismissed for good via localStorage. Hidden once
          the user is already editing (the staged-changes bar takes over then). -->
-    <div x-show="!editHintDismissed && editCount === 0" x-transition x-cloak
+    <div x-show="isAdmin && !editHintDismissed && editCount === 0" x-transition x-cloak
          class="flex items-start gap-2.5 mb-4 px-3 py-2.5 rounded-lg border border-accent-500/30 bg-accent-500/10 text-xs text-accent-100">
       <svg class="flex-shrink-0 mt-px text-accent-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:15px;height:15px">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -218,7 +218,7 @@
                 <div class="flex items-center gap-2 mb-2">
                   <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500">Position</p>
                   <span x-show="isPositionEdited(player)" class="text-[10px] font-medium text-accent-300">• edited</span>
-                  <button @click="open = !open"
+                  <button x-show="isAdmin" @click="open = !open"
                           class="ml-auto inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md border transition-colors"
                           :class="open ? 'border-accent-500/50 text-accent-200 bg-accent-500/10' : 'border-gray-600/60 text-gray-300 hover:text-accent-200 hover:border-accent-500/50 hover:bg-accent-500/10'">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -276,7 +276,7 @@
                 <div class="flex items-center gap-2 mb-2">
                   <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500">Health</p>
                   <span x-show="isHealthEdited(player)" class="text-[10px] font-medium text-accent-300">• edited</span>
-                  <button @click="open = !open"
+                  <button x-show="isAdmin" @click="open = !open"
                           class="ml-auto inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md border transition-colors"
                           :class="open ? 'border-accent-500/50 text-accent-200 bg-accent-500/10' : 'border-gray-600/60 text-gray-300 hover:text-accent-200 hover:border-accent-500/50 hover:bg-accent-500/10'">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -322,7 +322,7 @@
 
               <!-- Main inventory (click a slot to edit) -->
               <div class="px-4 pt-3 pb-1">
-                <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Inventory <span class="text-gray-600 normal-case tracking-normal">· click a slot to edit</span></p>
+                <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Inventory <span x-show="isAdmin" class="text-gray-600 normal-case tracking-normal">· click a slot to edit</span></p>
                 <div x-show="!player.inventorySlots" class="text-xs text-gray-600 pb-2">Empty</div>
                 <div class="flex flex-wrap gap-1.5 pb-3">
                   <template x-for="(slot, idx) in effectiveSlotGrid(player.inventoryName, player.inventory, player.inventorySlots)" :key="idx">
@@ -333,7 +333,7 @@
                       <template x-if="slot !== null">
                         <div>
                           <div class="w-12 h-12 bg-gray-700/50 rounded-lg border overflow-hidden flex items-center justify-center transition-colors"
-                               :class="isSlotEdited(player.inventoryName, idx) ? 'border-accent-500/70' : 'border-gray-600/40 hover:border-gray-500/60'">
+                               :class="isSlotEdited(player.inventoryName, idx) ? 'border-accent-500/70' : (isAdmin ? 'border-gray-600/40 hover:border-gray-500/60' : 'border-gray-600/40')">
                             <img x-show="!imgErr"
                                  :src="'/assets/items/' + slot.itemClass + '.png'"
                                  :alt="slot.displayName"
@@ -348,7 +348,7 @@
                       </template>
                       <template x-if="slot === null">
                         <div class="w-12 h-12 rounded-lg border border-dashed transition-colors"
-                             :class="isSlotEdited(player.inventoryName, idx) ? 'border-accent-500/60' : 'border-gray-700/50 hover:border-gray-600/60'"></div>
+                             :class="isSlotEdited(player.inventoryName, idx) ? 'border-accent-500/60' : (isAdmin ? 'border-gray-700/50 hover:border-gray-600/60' : 'border-gray-700/50')"></div>
                       </template>
                     </button>
                   </template>
@@ -411,21 +411,21 @@
             </div>
             <div class="min-w-0">
               <p class="text-sm font-semibold text-gray-200">Dimensional Depot</p>
-              <p class="text-[11px] text-gray-500"><span x-text="effectiveDepotItems(svDepot).length"></span> item type<span x-show="effectiveDepotItems(svDepot).length !== 1">s</span> · click to edit</p>
+              <p class="text-[11px] text-gray-500"><span x-text="effectiveDepotItems(svDepot).length"></span> item type<span x-show="effectiveDepotItems(svDepot).length !== 1">s</span><span x-show="isAdmin"> · click to edit</span></p>
             </div>
           </div>
-          <button @click.stop="openDepotEditor(svDepot, null, $event)"
+          <button x-show="isAdmin" @click.stop="openDepotEditor(svDepot, null, $event)"
                   class="text-xs font-medium px-2.5 py-1 rounded-lg border border-accent-500/40 text-accent-300 hover:bg-accent-500/10 transition-colors flex-shrink-0">+ Add item</button>
         </div>
         <div class="p-3">
-          <div x-show="effectiveDepotItems(svDepot).length === 0" class="text-xs text-gray-600 py-1">Depot is empty — use “Add item” to stock it.</div>
+          <div x-show="effectiveDepotItems(svDepot).length === 0" class="text-xs text-gray-600 py-1">Depot is empty<span x-show="isAdmin"> — use “Add item” to stock it</span>.</div>
           <div class="flex flex-wrap gap-1.5">
             <template x-for="item in effectiveDepotItems(svDepot)" :key="item.itemPath">
               <button type="button" x-data="{ e: false }" class="relative"
                    @click.stop="openDepotEditor(svDepot, item, $event)"
                    @mouseenter="showItemTooltip($event, { displayName: item.displayName, count: item.amount })" @mouseleave="hideTooltip()">
                 <div class="w-12 h-12 bg-gray-700/50 rounded-lg border overflow-hidden flex items-center justify-center transition-colors"
-                     :class="isDepotEdited(item.itemPath) ? 'border-accent-500/70' : 'border-gray-600/40 hover:border-gray-500/60'">
+                     :class="isDepotEdited(item.itemPath) ? 'border-accent-500/70' : (isAdmin ? 'border-gray-600/40 hover:border-gray-500/60' : 'border-gray-600/40')">
                   <img x-show="!e" :src="'/assets/items/' + item.itemClass + '.png'" :alt="item.displayName" class="w-full h-full object-contain p-1" @error="e = true">
                   <span x-show="e" class="text-[8px] text-gray-400 text-center leading-tight px-1" x-text="item.displayName"></span>
                 </div>
@@ -520,7 +520,7 @@
                  x-transition:enter-end="opacity-100 translate-y-0"
                  class="border-t border-gray-700/60 px-4 py-3">
               <div x-show="!c.totalSlots" class="text-xs text-gray-600">Nothing stored here.</div>
-              <p x-show="c.totalSlots" class="text-[10px] text-gray-600 mb-2">Click a slot to edit</p>
+              <p x-show="c.totalSlots && isAdmin" class="text-[10px] text-gray-600 mb-2">Click a slot to edit</p>
               <div class="flex flex-wrap gap-1.5">
                 <template x-for="(slot, idx) in effectiveSlotGrid(c.inventoryName, c.contents, c.totalSlots)" :key="idx">
                   <button type="button" x-data="{ imgErr: false }" class="relative"
@@ -530,7 +530,7 @@
                     <template x-if="slot !== null">
                       <div>
                         <div class="w-12 h-12 bg-gray-700/50 rounded-lg border overflow-hidden flex items-center justify-center transition-colors"
-                             :class="isSlotEdited(c.inventoryName, idx) ? 'border-accent-500/70' : 'border-gray-600/40 hover:border-gray-500/60'">
+                             :class="isSlotEdited(c.inventoryName, idx) ? 'border-accent-500/70' : (isAdmin ? 'border-gray-600/40 hover:border-gray-500/60' : 'border-gray-600/40')">
                           <img x-show="!imgErr"
                                :src="'/assets/items/' + slot.itemClass + '.png'"
                                :alt="slot.displayName"
@@ -545,7 +545,7 @@
                     </template>
                     <template x-if="slot === null">
                       <div class="w-12 h-12 rounded-lg border border-dashed transition-colors"
-                           :class="isSlotEdited(c.inventoryName, idx) ? 'border-accent-500/60' : 'border-gray-700/50 hover:border-gray-600/60'"></div>
+                           :class="isSlotEdited(c.inventoryName, idx) ? 'border-accent-500/60' : (isAdmin ? 'border-gray-700/50 hover:border-gray-600/60' : 'border-gray-700/50')"></div>
                     </template>
                   </button>
                 </template>
@@ -861,14 +861,14 @@
                                           <div class="flex items-end gap-3">
                                             <div class="flex-1 min-w-0">
                                               <div class="flex justify-between items-center text-[10px] mb-0.5">
-                                                <span class="text-gray-500 uppercase tracking-wide">Clock <span class="text-gray-600 normal-case tracking-normal">· editable</span></span>
+                                                <span class="text-gray-500 uppercase tracking-wide">Clock <span x-show="isAdmin" class="text-gray-600 normal-case tracking-normal">· editable</span></span>
                                                 <span class="font-mono font-semibold" :class="effectiveClockPct(inst) > 100 ? 'text-warn-300' : (effectiveClockPct(inst) < 100 ? 'text-sky-300' : 'text-ok-300')" x-text="effectiveClockPct(inst) + '%'"></span>
                                               </div>
                                               <div class="h-2 rounded-full bg-gray-700/70 overflow-hidden">
                                                 <div class="h-full rounded-full transition-all" :class="effectiveClockPct(inst) > 100 ? 'bg-warn-400' : (effectiveClockPct(inst) < 100 ? 'bg-sky-400' : 'bg-ok-400')" :style="'width:' + Math.min(effectiveClockPct(inst) / 250 * 100, 100) + '%'"></div>
                                               </div>
-                                              <!-- Overclock editor: input + presets + shard cost -->
-                                              <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                                              <!-- Overclock editor: input + presets + shard cost (admin only) -->
+                                              <div x-show="isAdmin" class="flex items-center gap-1.5 mt-1.5 flex-wrap">
                                                 <input type="number" min="1" max="250" :value="effectiveClockPct(inst)"
                                                        @click.stop @change.stop="setMachineClock(inst, $event.target.value)"
                                                        class="w-14 px-1.5 py-0.5 rounded-md bg-gray-800 border text-xs text-gray-200 focus:outline-none focus:border-accent-500/60"
@@ -987,13 +987,13 @@
                                         <!-- Clock gauge (extractors) — editable -->
                                         <div x-show="inst.kind === 'extractor' && inst.clockPct !== undefined">
                                           <div class="flex justify-between items-center text-[10px] mb-0.5">
-                                            <span class="text-gray-500 uppercase tracking-wide">Clock <span class="text-gray-600 normal-case tracking-normal">· editable</span></span>
+                                            <span class="text-gray-500 uppercase tracking-wide">Clock <span x-show="isAdmin" class="text-gray-600 normal-case tracking-normal">· editable</span></span>
                                             <span class="font-mono font-semibold" :class="effectiveClockPct(inst) > 100 ? 'text-warn-300' : (effectiveClockPct(inst) < 100 ? 'text-sky-300' : 'text-ok-300')" x-text="effectiveClockPct(inst) + '%'"></span>
                                           </div>
                                           <div class="h-2 rounded-full bg-gray-700/70 overflow-hidden">
                                             <div class="h-full rounded-full transition-all" :class="effectiveClockPct(inst) > 100 ? 'bg-warn-400' : (effectiveClockPct(inst) < 100 ? 'bg-sky-400' : 'bg-ok-400')" :style="'width:' + Math.min(effectiveClockPct(inst) / 250 * 100, 100) + '%'"></div>
                                           </div>
-                                          <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                                          <div x-show="isAdmin" class="flex items-center gap-1.5 mt-1.5 flex-wrap">
                                             <input type="number" min="1" max="250" :value="effectiveClockPct(inst)"
                                                    @click.stop @change.stop="setMachineClock(inst, $event.target.value)"
                                                    class="w-14 px-1.5 py-0.5 rounded-md bg-gray-800 border text-xs text-gray-200 focus:outline-none focus:border-accent-500/60"
@@ -1124,7 +1124,8 @@
           <span x-show="isPhaseEdited()" class="text-[10px] font-medium text-accent-300 flex-shrink-0">staged</span>
         </div>
         <div class="p-3">
-          <div class="flex flex-wrap gap-1.5">
+          <!-- Admin: phase selector. Viewer: read-only current phase. -->
+          <div x-show="isAdmin" class="flex flex-wrap gap-1.5">
             <template x-for="i in (svGamePhase ? svGamePhase.count : 0)" :key="i">
               <button @click="setGamePhase(i - 1)"
                 class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
@@ -1132,9 +1133,10 @@
                 x-text="'Phase ' + (i - 1)"></button>
             </template>
           </div>
-          <p class="mt-2.5 text-[11px] text-gray-500 leading-snug">
+          <p x-show="isAdmin" class="mt-2.5 text-[11px] text-gray-500 leading-snug">
             Sets the Space Elevator phase (skips its part deliveries). Tiers/milestones are unlocked separately below — bumping the phase doesn't unlock their schematics.
           </p>
+          <p x-show="!isAdmin" class="text-sm text-gray-300">Current: <span class="font-semibold text-white" x-text="'Phase ' + effectivePhaseIndex()"></span></p>
         </div>
       </div>
 
@@ -1162,7 +1164,7 @@
                 <div>
                   <div class="flex items-center justify-between mb-2">
                     <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-500" x-text="g.group || cat.category"></p>
-                    <div class="flex gap-3 text-[10px] font-medium">
+                    <div x-show="isAdmin" class="flex gap-3 text-[10px] font-medium">
                       <button @click="setGroupPurchased(g.items, true)" class="text-gray-500 hover:text-ok-300 transition-colors">unlock all</button>
                       <button @click="setGroupPurchased(g.items, false)" class="text-gray-500 hover:text-danger-300 transition-colors">lock all</button>
                     </div>
@@ -1171,7 +1173,7 @@
                     <template x-for="s in g.items" :key="s.class">
                       <button @click="toggleSchematic(s)" :title="(effectivePurchased(s.path) ? 'Unlocked — ' : 'Locked — ') + s.name"
                         class="relative flex flex-col items-center gap-1 p-2 rounded-lg border transition-all"
-                        :class="effectivePurchased(s.path) ? 'bg-gray-800/70 border-gray-600/60' : 'bg-gray-900/40 border-gray-800 hover:border-gray-700'">
+                        :class="effectivePurchased(s.path) ? 'bg-gray-800/70 border-gray-600/60' : (isAdmin ? 'bg-gray-900/40 border-gray-800 hover:border-gray-700' : 'bg-gray-900/40 border-gray-800')">
                         <!-- icon -->
                         <div class="w-11 h-11 flex items-center justify-center">
                           <template x-if="s.icon">

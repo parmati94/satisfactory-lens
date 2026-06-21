@@ -34,6 +34,12 @@ document.addEventListener('alpine:init', () => {
 
     // App auth (login may be disabled via config — drives the header logout control)
     loginEnabled: false,
+    role: null,            // 'admin' | 'viewer' | null — from /api/auth/status
+    viewerEnabled: false,  // whether a read-only VIEWER_PASSWORD is configured server-side
+    // Single gate for every mutating control. Login off ⇒ everyone's an admin
+    // (single-user local/dev). This is UX only — the backend's requireAdmin is the
+    // real boundary; a viewer who forces a write still gets a 403.
+    get isAdmin() { return !this.loginEnabled || this.role === 'admin'; },
 
     // SF server connection
     sfStatus: { connected: false, host: '', port: 7777 },
@@ -157,6 +163,8 @@ document.addEventListener('alpine:init', () => {
       try {
         const authStatus = await api.auth.status();
         this.loginEnabled = !!authStatus.loginEnabled;
+        this.role = authStatus.role ?? null;
+        this.viewerEnabled = !!authStatus.viewerEnabled;
         if (!authStatus.authenticated) {
           window.location.href = '/login.html';
           return;
@@ -259,6 +267,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     async connectToSF() {
+      if (!this.isAdmin) return;
       this.connectLoading = true;
       this.connectError = null;
       try {
@@ -279,6 +288,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     async disconnect() {
+      if (!this.isAdmin) return;
       await api.sf.disconnect();
       this.sfStatus = { connected: false, host: this.sfStatus.host, port: this.sfStatus.port };
       this.serverState = null;
@@ -549,6 +559,7 @@ document.addEventListener('alpine:init', () => {
 
     // Apply changed keys, grouped by scope, via the existing PATCH routes.
     async applySettings() {
+      if (!this.isAdmin) return;
       const serverPayload = {}, advancedPayload = {};
       for (const [k, v] of Object.entries(this.settingEdits)) {
         const [scope, ...rest] = k.split(':');
@@ -586,6 +597,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     async triggerSave() {
+      if (!this.isAdmin) return;
       const name = this.newSaveName.trim();
       if (!name) return;
       this.actionLoading = true;
@@ -606,6 +618,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     async deleteSave(saveName, saveDateTime) {
+      if (!this.isAdmin) return;
       const ok = await this.showConfirm({
         title: 'Delete Save',
         message: `Permanently delete <strong class="text-white">${saveName}</strong>?${saveDateTime ? `<br><span class="text-gray-500 text-xs">${this.formatSaveDate(saveDateTime)}</span>` : ''}<br><br>This cannot be undone.`,
@@ -631,6 +644,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     async loadSave(sessionName, saveName) {
+      if (!this.isAdmin) return;
       // Loading swaps the underlying save out from under any staged edits (whose
       // targets are instanceNames in the *current* save), which would orphan them.
       // Same reason we block header reload while editing — make the user save or

@@ -183,6 +183,8 @@ export function saveViewer() {
     // resolves to (mount, or latest via the API). The Save Viewer tab's own content area
     // also shows the loading skeleton while it runs, if that tab happens to be active.
     async headerReloadSave() {
+      // Viewer-allowed: reload only refreshes what Lens is displaying to the latest
+      // save — it doesn't touch the running game server.
       this.headerReloading = true;
       this.saveDataLoading = true;
       try {
@@ -215,6 +217,9 @@ export function saveViewer() {
     // the Saves tab's "Inspect" button. This only loads the save into Lens for viewing; it
     // never touches the live server (that's what "Load to Server" is for).
     async inspectSave(saveName, saveDateTime) {
+      // Viewer-allowed: inspecting only changes what Lens is displaying (loads a save
+      // into Lens for viewing) — it does NOT touch the running game server, so it's a
+      // read operation. Loading to the live server is the admin-gated action.
       // Inspecting swaps the loaded save (and clears the sv* caches), which would
       // orphan any staged edits — their targets are instanceNames in the current
       // save. Block until the user saves or discards; the save list is also blurred

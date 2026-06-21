@@ -12,6 +12,12 @@ export const config = {
   enableLogin: (process.env.ENABLE_LOGIN ?? 'false').toLowerCase() === 'true',
   username: process.env.USERNAME ?? 'admin',
   password: process.env.PASSWORD ?? 'admin',
+  // Optional read-only password. When set, logging in with it issues a 'viewer'
+  // (read-only) session while the admin PASSWORD still issues a full 'admin' one —
+  // lets you share the dashboard with friends without handing them the editor.
+  // Unset ⇒ feature off (admin-only, as before). Must differ from PASSWORD (guarded
+  // at boot in index.ts) so the login can tell the two roles apart.
+  viewerPassword: process.env.VIEWER_PASSWORD ?? '',
   sessionSecret: process.env.SESSION_SECRET ?? DEFAULT_SESSION_SECRET,
 
   // Satisfactory dedicated server

@@ -1483,6 +1483,7 @@ export function mapController() {
     // when there's no room above, and clamps to the viewport while the tail still
     // tracks the click's x. The chosen world coords are carried as gx/gy (cm).
     _openTeleportMenu(e, latlng) {
+      if (!this.isAdmin) return; // teleport is an edit — read-only viewers can't stage it
       if (!this.svPlayers?.length) return;
       const g = latLngToGame(latlng);
       const M = 8, W = 232, GAP = 11;
@@ -1502,6 +1503,7 @@ export function mapController() {
 
     // Anchor the marker edit menu to the clicked stamp (mirrors _openTeleportMenu).
     _openMarkerMenu(guid, e) {
+      if (!this.isAdmin) return; // marker rename/recolor/delete is admin-only (read-only viewers can't edit)
       const stamp = this.effectiveStamps().find(s => s.guid === guid) || this._baselineStamp(guid);
       if (!stamp) return;
       const M = 8, W = 240, GAP = 14, H = 188;

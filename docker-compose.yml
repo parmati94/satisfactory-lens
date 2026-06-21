@@ -16,6 +16,7 @@ services:
       - ENABLE_LOGIN=false
       - USERNAME=admin
       - PASSWORD=changeme
+      - VIEWER_PASSWORD=          # optional read-only login (see README)
       - SESSION_SECRET=change-me-in-production
       # SF server. Set SF_HOST to auto-connect on startup, or leave blank to connect via the UI.
       - SF_HOST=

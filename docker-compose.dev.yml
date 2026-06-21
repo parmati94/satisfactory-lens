@@ -24,6 +24,7 @@ services:
       - ENABLE_LOGIN=false
       - USERNAME=admin
       - PASSWORD=changeme
+      - VIEWER_PASSWORD=          # optional read-only login (see README)
       - SESSION_SECRET=dev-secret-not-for-production
       - SF_HOST=
       - SF_PORT=7777

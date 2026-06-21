@@ -6,11 +6,13 @@
     <h2 class="text-xl font-semibold text-gray-300 mb-2">Not Connected</h2>
     <p class="text-gray-500 mb-6 text-sm">Connect to your Satisfactory dedicated server to get started.</p>
     <button
+      x-show="isAdmin"
       @click="showConnectModal = true"
       class="px-5 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition-colors text-sm"
     >
       Connect to Server
     </button>
+    <p x-show="!isAdmin" class="text-gray-600 text-xs">Read-only access — ask the owner to connect the server.</p>
   </div>
 
   <!-- Connected -->

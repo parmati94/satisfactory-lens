@@ -28,6 +28,7 @@ export function saveEditing() {
     // the override entirely. Shared by the Explorer's per-axis inputs and the map's
     // click-to-teleport, so both write the identical SetPlayerPosition edit.
     _stagePlayerPosition(player, next) {
+      if (!this.isAdmin) return;
       const base = player.position;
       const key = this._posKey(player);
       if (next.x === base.x && next.y === base.y && next.z === base.z) {
@@ -69,6 +70,7 @@ export function saveEditing() {
     // Snap the player's Z to terrain height (+3 m safety) at its current X/Y, so
     // teleporting drops you just above the ground instead of into a mountain/midair.
     async snapToGround(player) {
+      if (!this.isAdmin) return;
       const pos = this.effectivePosition(player);
       try {
         const r = await api.groundHeight(pos.x, pos.y);
@@ -112,6 +114,7 @@ export function saveEditing() {
     },
 
     async openSlotEditor(invName, slot, contextLabel, baselineSlot, ev) {
+      if (!this.isAdmin) return;
       await this.loadItemCatalog();
       const eff = this.effectiveSlot(invName, slot, baselineSlot);
       // Anchor the popover to the clicked slot (clamped to the viewport in slotEditorStyle()).
@@ -217,6 +220,7 @@ export function saveEditing() {
 
     // item = an existing DepotItem (edit, item locked) or null (add a new item).
     async openDepotEditor(depot, item, ev) {
+      if (!this.isAdmin) return;
       await this.loadItemCatalog();
       const x = ev?.clientX ?? (window.innerWidth / 2);
       const y = ev?.clientY ?? (window.innerHeight / 2);
@@ -278,6 +282,7 @@ export function saveEditing() {
 
     // Stage a removal (amount 0) directly from a depot row.
     removeDepotItem(depot, item) {
+      if (!this.isAdmin) return;
       const key = this._depotKey(item.itemPath);
       const base = depot.items.find(i => i.itemPath === item.itemPath)?.amount ?? 0;
       if (base === 0) {                              // was a staged add → just drop it
@@ -309,6 +314,7 @@ export function saveEditing() {
     clockShards(pct) { return pct <= 100 ? 0 : Math.min(3, Math.ceil((pct - 100) / 50)); },
 
     setMachineClock(inst, pct) {
+      if (!this.isAdmin) return;
       const key = this._clockKey(inst);
       const clamped = Math.max(1, Math.min(250, Math.round(Number(pct) || 0)));
       const baseline = inst.clockPct ?? 100;
@@ -374,6 +380,7 @@ export function saveEditing() {
 
     // Merge a name and/or color change into one SetMapMarker edit (net-zero clears it).
     setMarker(guid, { name, color }) {
+      if (!this.isAdmin) return;
       const base = this._baselineStamp(guid);
       if (!base) return;
       const key = this._markerKey(guid);
@@ -403,6 +410,7 @@ export function saveEditing() {
     },
 
     deleteMarker(guid) {
+      if (!this.isAdmin) return;
       const base = this._baselineStamp(guid);
       if (!base) return;
       const { [this._markerKey(guid)]: _drop, ...rest } = this.editBuffer; // supersede any rename/recolor
@@ -446,6 +454,7 @@ export function saveEditing() {
       return e ? e.value.index : (this.svGamePhase?.currentIndex ?? -1);
     },
     setGamePhase(index) {
+      if (!this.isAdmin) return;
       if (!this.svGamePhase) return;
       const key = this._phaseKey();
       const idx = Math.max(0, Math.min(this.svGamePhase.count - 1, Math.round(index)));
@@ -482,6 +491,7 @@ export function saveEditing() {
       return h > 50 ? 'text-ok-400' : h > 20 ? 'text-warn-400' : 'text-danger-400';
     },
     setPlayerHealthValue(player, hp) {
+      if (!this.isAdmin) return;
       const v = Math.max(0, Math.min(100, Math.round(Number(hp) || 0)));
       const key = this._healthKey(player);
       if (v === Math.round(player.health ?? 0)) {
@@ -503,6 +513,7 @@ export function saveEditing() {
     },
     isSchematicEdited(path) { return !!this.editBuffer[this._schKey(path)]; },
     setSchematicPurchased(sch, purchased) {
+      if (!this.isAdmin) return;
       const path = sch.path, key = this._schKey(path);
       const baseline = !!this.svSchematics?.[path];
       if (purchased === baseline) {
@@ -623,6 +634,7 @@ export function saveEditing() {
     },
 
     openPersistModal() {
+      if (!this.isAdmin) return;
       if (this.editCount === 0) return;
       this.changesModal.show = false;
       this.persistModal = { show: true, saveName: `${this.originalSaveBase()}_edited`, overwrite: false, loading: false, error: null };
@@ -635,6 +647,7 @@ export function saveEditing() {
     },
 
     async persistEdits(mode) {
+      if (!this.isAdmin) return;
       if (this.editCount === 0) return;
       const saveName = this.persistModal.saveName.trim();
       if (!saveName) { this.persistModal.error = 'Save name is required.'; return; }
