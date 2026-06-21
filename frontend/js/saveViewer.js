@@ -230,6 +230,7 @@ export function saveViewer() {
       }
       this.actionLoading = true;
       this.actionResult = null;
+      this.inspectOverlay = { show: true, name: saveName };
       try {
         // Pass along the saveDateTime we already know from the Saves list, so the backend
         // can keep comparing against it for newer-save polling — otherwise that check has
@@ -245,6 +246,7 @@ export function saveViewer() {
         this.actionResult = { ok: false, message: `Failed to load "${saveName}" for inspection: ${e.message}` };
       } finally {
         this.actionLoading = false;
+        this.inspectOverlay.show = false;
       }
     },
 
@@ -261,7 +263,13 @@ export function saveViewer() {
     },
 
     openUploadModal() {
-      this.uploadModal = { show: true, file: null, dragging: false, busy: false };
+      this.uploadModal = { show: true, file: null, dragging: false, busy: false, progress: { loaded: 0, total: 0 } };
+    },
+
+    // Upload progress as a whole-number percent (browser → server transfer).
+    uploadPct() {
+      const { loaded, total } = this.uploadModal.progress;
+      return total > 0 ? Math.round((loaded / total) * 100) : 0;
     },
 
     // Admin-only: upload the picked .sav to the server's save list, then auto-inspect
@@ -276,9 +284,12 @@ export function saveViewer() {
       }
       const saveName = f.name.replace(/\.sav$/i, '').trim() || 'uploaded';
       this.uploadModal.busy = true;
+      this.uploadModal.progress = { loaded: 0, total: f.size };
       this.actionResult = null;
       try {
-        this.saveStatus = await api.save.upload(f, saveName, loadAfter);
+        this.saveStatus = await api.save.upload(f, saveName, loadAfter, (loaded, total) => {
+          this.uploadModal.progress = { loaded, total };
+        });
         this.newerSaveAvailable = !!this.saveStatus?.newerSaveAvailable;
         this.newerSaveName = this.saveStatus?.newerSaveName ?? null;
         this.clearSvCaches();
@@ -369,7 +380,14 @@ export function saveViewer() {
 
     async loadSvBuildingFootprints() {
       try {
-        this.svBuildingFootprints = await api.save.buildingFootprints();
+        // Keep this large per-instance payload OUT of Alpine's reactive graph. A
+        // megabase's footprints are 100k+ entries across parallel arrays (x/y/yaw/
+        // typeIndex + spline point lists); assigning that to a component prop makes
+        // Alpine/Vue deep-proxy the whole thing, so the map rebuild's per-instance
+        // reads (data.x[i] × 100k) crawl through proxy traps and app-wide reactivity
+        // drags. Object.freeze → reactivity returns it raw (non-extensible = skipped),
+        // which is correct anyway: the payload is immutable, read-only display data.
+        this.svBuildingFootprints = Object.freeze(await api.save.buildingFootprints());
       } catch (e) {
         console.warn('building footprints unavailable:', e.message);
       }

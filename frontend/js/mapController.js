@@ -23,6 +23,12 @@ let _buildingOverlayContainer = null;
 // from each loaded save, so neither is safe to persist by key.
 const PERSISTED_FILTER_KEYS = ['players', 'hub', 'stamps', 'fog', 'purityImpure', 'purityNormal', 'purityPure'];
 let _buildingHitList = [];
+// Uniform spatial grid over _buildingHitList for O(1) hover/click picking: a megabase
+// has 100k+ buildings, and a linear scan per mousemove is what tanks interaction on big
+// saves. Each building is bucketed into every cell its AABB overlaps, so a pick only
+// tests the few candidates in the mouse's cell. Built once per save (see _buildHitGrid).
+const HIT_GRID_CM = 2500; // cell size in game-cm (~25 m); most buildings land in one cell
+let _buildingHitGrid = null; // Map<"ix,iy", hitEntry[]> | null
 let _splineHitList = [];
 let _lastHoverMs = 0;
 let _clickDownX = 0; // pointer-down position, to tell a click from a map drag
@@ -856,6 +862,7 @@ export function mapController() {
       }
       _highlightGfx?.clear();
       _buildingHitList = [];
+      _buildingHitGrid = null;
       _splineHitList = [];
       _categoryDisplayObjects = new Map();
       if (!data) return;
@@ -1062,9 +1069,35 @@ export function mapController() {
         registerCategoryObj(group.category, g);
       }
 
+      // Index the finished hit list into the spatial grid for fast picking.
+      this._buildHitGrid();
+
       // Apply current per-category visibility to the freshly-built objects
       // (no redraw — we're already inside the overlay draw callback).
       this._applyCategoryVisibility(false);
+    },
+
+    // Bucket every building hit entry into each grid cell its axis-aligned bounds
+    // overlap. Iterating _buildingHitList in order means each bucket preserves the
+    // list's global ordering, so the first-match tie-break in _pickBuildingAt is
+    // unchanged from the old linear scan — just over far fewer candidates.
+    _buildHitGrid() {
+      const grid = new Map();
+      for (const b of _buildingHitList) {
+        const ix0 = Math.floor((b.cx - b.aabbHW) / HIT_GRID_CM);
+        const ix1 = Math.floor((b.cx + b.aabbHW) / HIT_GRID_CM);
+        const iy0 = Math.floor((b.cy - b.aabbHH) / HIT_GRID_CM);
+        const iy1 = Math.floor((b.cy + b.aabbHH) / HIT_GRID_CM);
+        for (let ix = ix0; ix <= ix1; ix++) {
+          for (let iy = iy0; iy <= iy1; iy++) {
+            const key = ix + ',' + iy;
+            let bucket = grid.get(key);
+            if (!bucket) { bucket = []; grid.set(key, bucket); }
+            bucket.push(b);
+          }
+        }
+      }
+      _buildingHitGrid = grid;
     },
 
     // Shared hit-test for hover and click: returns { entry, isSpline } or null.
@@ -1072,13 +1105,19 @@ export function mapController() {
     _pickBuildingAt(latlng) {
       const { x: mx, y: my } = latLngToGame(latlng);
 
-      for (const b of _buildingHitList) {
-        if (this.categoryFilters[b.category] === false) continue; // hidden category
-        const dx = mx - b.cx, dy = my - b.cy;
-        if (Math.abs(dx) > b.aabbHW || Math.abs(dy) > b.aabbHH) continue;
-        const lx = dx * b.cos + dy * b.sin;
-        const ly = -dx * b.sin + dy * b.cos;
-        if (Math.abs(lx) <= b.hw && Math.abs(ly) <= b.hh) return { entry: b, isSpline: false };
+      // Only the buildings bucketed into the mouse's cell can contain the point.
+      const bucket = _buildingHitGrid?.get(
+        Math.floor(mx / HIT_GRID_CM) + ',' + Math.floor(my / HIT_GRID_CM),
+      );
+      if (bucket) {
+        for (const b of bucket) {
+          if (this.categoryFilters[b.category] === false) continue; // hidden category
+          const dx = mx - b.cx, dy = my - b.cy;
+          if (Math.abs(dx) > b.aabbHW || Math.abs(dy) > b.aabbHH) continue;
+          const lx = dx * b.cos + dy * b.sin;
+          const ly = -dx * b.sin + dy * b.cos;
+          if (Math.abs(lx) <= b.hw && Math.abs(ly) <= b.hh) return { entry: b, isSpline: false };
+        }
       }
 
       for (const s of _splineHitList) {

@@ -55,20 +55,28 @@ export const api = {
     reload: () => apiFetch('/api/save/reload', { method: 'POST' }),
     download: (saveName, saveDateTime) =>
       apiFetch('/api/save/download', { method: 'POST', body: { saveName, saveDateTime } }),
-    // Upload a .sav from the browser to the server (raw bytes, not JSON — bypasses
-    // apiFetch). `loadAfter` boots the live game into it. Admin cookie rides along
-    // same-origin. Returns the new save status (the upload is auto-inspected).
-    upload: async (file, saveName, loadAfter) => {
+    // Upload a .sav from the browser to the server (raw bytes, not JSON). Uses XHR
+    // rather than fetch specifically because fetch can't report upload progress —
+    // xhr.upload.onprogress gives loaded/total bytes for a real 0–100% bar. `loadAfter`
+    // boots the live game into it; `onProgress(loaded, total)` is called as bytes send.
+    // Admin cookie rides along same-origin. Resolves to the new save status.
+    upload: (file, saveName, loadAfter, onProgress) => new Promise((resolve, reject) => {
       const qs = new URLSearchParams({ saveName, load: loadAfter ? 'true' : 'false' });
-      const res = await fetch('/api/save/upload?' + qs.toString(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/octet-stream' },
-        body: file,
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? `Upload failed (${res.status})`);
-      return data;
-    },
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/save/upload?' + qs.toString());
+      xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+      xhr.responseType = 'json';
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && onProgress) onProgress(e.loaded, e.total);
+      };
+      xhr.onload = () => {
+        const data = xhr.response ?? {};
+        if (xhr.status >= 200 && xhr.status < 300) resolve(data);
+        else reject(new Error(data.error ?? `Upload failed (${xhr.status})`));
+      };
+      xhr.onerror = () => reject(new Error('Network error during upload'));
+      xhr.send(file);
+    }),
     watch: () => apiFetch('/api/save/watch', { method: 'POST' }),
     players: () => apiFetch('/api/save/players'),
     buildings: () => apiFetch('/api/save/buildings'),

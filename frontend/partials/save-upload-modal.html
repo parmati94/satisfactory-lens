@@ -1,0 +1,71 @@
+<!-- Upload-a-save modal. Lives at the top level (not inside saves-tab.html) so it
+     isn't trapped in the save rail's stacking context — the rail is lg:sticky, which
+     creates a stacking context, and a modal nested under it can't reliably cover the
+     Explorer's positioned children. Same reason the persist/review modals live in the
+     global edit-bar partial. State (uploadModal) is on the app component, so it's
+     reachable from here. -->
+<div x-show="uploadModal.show" x-transition.opacity
+     class="fixed inset-0 z-[1300] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+     @click.self="if (!uploadModal.busy) uploadModal.show = false"
+     @keydown.escape.window="if (!uploadModal.busy) uploadModal.show = false"
+     style="display:none">
+  <div class="w-full max-w-md mx-4 bg-gray-900 border border-gray-700/60 rounded-2xl shadow-2xl p-5">
+    <div class="flex items-center justify-between mb-1">
+      <h3 class="text-base font-semibold text-gray-100">Upload a save</h3>
+      <button @click="uploadModal.show = false" :disabled="uploadModal.busy"
+        class="text-gray-500 hover:text-gray-300 transition-colors disabled:opacity-40">✕</button>
+    </div>
+    <p class="text-xs text-gray-500 mb-4">Send a <span class="text-gray-400">.sav</span> from this computer to the server.</p>
+
+    <!-- Drop zone / file picker -->
+    <label
+      @dragover.prevent="uploadModal.dragging = true"
+      @dragleave.prevent="uploadModal.dragging = false"
+      @drop.prevent="uploadModal.dragging = false; setUploadFile($event.dataTransfer.files)"
+      :class="uploadModal.dragging ? 'border-accent-400 bg-accent-500/5' : 'border-gray-700 hover:border-gray-600'"
+      class="block border-2 border-dashed rounded-xl px-4 py-8 text-center cursor-pointer transition-colors"
+    >
+      <input type="file" accept=".sav" class="hidden" @change="setUploadFile($event.target.files)" />
+      <svg class="w-8 h-8 mx-auto text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+      </svg>
+      <p x-show="!uploadModal.file" class="text-sm text-gray-400">Drag a <span class="text-gray-300">.sav</span> here, or click to browse</p>
+      <p x-show="uploadModal.file" class="text-sm text-gray-100 font-medium truncate" x-text="uploadModal.file?.name"></p>
+      <p x-show="uploadModal.file" class="text-[11px] text-gray-500 mt-0.5"
+         x-text="uploadModal.file ? (uploadModal.file.size / 1024 / 1024).toFixed(1) + ' MB' : ''"></p>
+    </label>
+
+    <!-- Actions: two paths — park it on the server, or also boot the live game into it -->
+    <div class="grid grid-cols-2 gap-2 mt-4">
+      <button
+        @click="uploadSave(false)"
+        :disabled="!uploadModal.file || uploadModal.busy"
+        class="px-3 py-2.5 bg-gray-800 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm rounded-lg transition-colors text-left"
+      >
+        <span class="font-medium block">Upload</span>
+        <span class="block text-[10px] text-gray-400 leading-tight mt-0.5">adds to server, opens here</span>
+      </button>
+      <button
+        @click="uploadSave(true)"
+        :disabled="!uploadModal.file || uploadModal.busy"
+        class="px-3 py-2.5 bg-accent-500 hover:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm rounded-lg transition-colors text-left"
+      >
+        <span class="font-medium block">Upload &amp; Load</span>
+        <span class="block text-[10px] text-white/75 leading-tight mt-0.5">also loads it on the server</span>
+      </button>
+    </div>
+    <!-- Live upload progress (real bytes-sent %, then a server-side processing tail). -->
+    <div x-show="uploadModal.busy" class="mt-3">
+      <div class="flex items-center justify-between text-[11px] mb-1">
+        <span class="text-accent-300" x-text="uploadPct() >= 100 ? 'Processing on server…' : 'Uploading…'"></span>
+        <span class="text-gray-400 tabular-nums" x-text="uploadPct() + '%'"></span>
+      </div>
+      <div class="h-1.5 rounded-full bg-gray-700/70 overflow-hidden">
+        <div class="h-full bg-accent-500 rounded-full transition-[width] duration-150 ease-out"
+             :class="uploadPct() >= 100 ? 'animate-pulse' : ''"
+             :style="`width: ${uploadPct()}%`"></div>
+      </div>
+    </div>
+    <p x-show="!uploadModal.busy" class="text-[11px] text-gray-600 mt-3 leading-snug">“Load” boots the live server into this save, replacing the running session.</p>
+  </div>
+</div>
