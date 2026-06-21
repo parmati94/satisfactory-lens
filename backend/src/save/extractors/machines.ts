@@ -3,6 +3,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { buildInstanceMap, parseStacks, itemDisplayName, type InventoryItem } from './storage';
 import { buildClassFromTypePath, buildingLabel } from './buildings';
+import { nodeResourceByPath, resourceLabel } from './resourceNodes';
 
 type SatisfactorySave = ReturnType<typeof Parser.ParseSave>;
 
@@ -194,17 +195,30 @@ export function extractMachineInstances(save: SatisfactorySave, buildClass: stri
         fuelBuffer: withNames(parseStacks(refEntity(byInstance, p.mFuelInventory)).contents),
       });
     } else {
-      // extractor
+      // extractor — the extracted resource is NOT stored in any output inventory:
+      // miners feed belts directly and fluid pumps have no item inventory, so the
+      // old "read mOutputInventory[0]" approach always yielded dashes. Resolve it
+      // instead from the node the extractor sits on (mExtractableResource → static
+      // node catalog). Fluid pumps point at a water/oil volume that isn't in the
+      // catalog, so fall back to the fixed resource for that build class.
       const clock = p.mCurrentPotential?.value ?? 1;
-      const outputBuffer = withNames(parseStacks(refEntity(byInstance, p.mOutputInventory)).contents);
-      const res = outputBuffer[0];
+      const extractRef: string = p.mExtractableResource?.value?.pathName ?? '';
+      const node = extractRef ? nodeResourceByPath(extractRef) : null;
+      let resourceClass: string | null = node?.resourceClass ?? null;
+      if (!resourceClass) {
+        if (buildClass === 'Build_WaterPump') resourceClass = 'Desc_Water';
+        else if (buildClass === 'Build_OilPump') resourceClass = 'Desc_LiquidOil';
+      }
       out.push({
         ...base,
         kind: 'extractor',
         clockPct: Math.round(clock * 100),
-        resourceClass: res?.itemClass ?? null,
-        resourceName: res?.displayName ?? null,
-        outputBuffer,
+        resourceClass,
+        resourceName: resourceClass ? resourceLabel(resourceClass) : null,
+        // Solid miners feed belts and fluid pumps feed pipes, so this is usually
+        // empty — kept for the rare case a buffer exists, but no longer the source
+        // of the resource label.
+        outputBuffer: withNames(parseStacks(refEntity(byInstance, p.mOutputInventory)).contents),
       });
     }
   }

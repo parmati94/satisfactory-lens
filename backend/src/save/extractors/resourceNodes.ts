@@ -70,6 +70,24 @@ function lookupKey(saveInstanceName: string): string {
   return colon !== -1 ? saveInstanceName.slice(colon + 1) : saveInstanceName;
 }
 
+// Resolve a node's resource (class + label) from a save object path like
+// "Persistent_Level:PersistentLevel.BP_ResourceNode545". Miners/extractors store
+// only a reference to their node via mExtractableResource; the resource class
+// itself lives in the static node catalog (the node entity in the save carries no
+// mResourceClass). Returns null for targets not in the catalog (e.g. the
+// FGWaterVolume a water pump points at) so callers can fall back by build class.
+export function nodeResourceByPath(pathName: string): { resourceClass: string; label: string } | null {
+  const entry = NODE_LOOKUP[lookupKey(pathName)];
+  if (!entry?.resource) return null;
+  return { resourceClass: entry.resource, label: RESOURCE_LABEL[entry.resource] ?? entry.resource };
+}
+
+// Human label for a resource class (e.g. "Desc_Water" → "Water"); falls back to
+// the class stem. Shared with the machine extractor for fluid-pump labelling.
+export function resourceLabel(resourceClass: string): string {
+  return RESOURCE_LABEL[resourceClass] ?? resourceClass;
+}
+
 function nodeType(typePath: string): string {
   if (typePath.includes('Geyser'))            return 'geyser';
   if (typePath.includes('FrackingCore'))      return 'well_core';

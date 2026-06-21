@@ -1127,9 +1127,16 @@ export function mapController() {
         const arrow = ins && outs ? `<span style="color:#9ca3af;margin:0 2px">→</span>` : '';
         const rate = detail.outputs?.[0] ? this.fmtRate(detail.outputs[0]) : '';
         const boost = detail.boostPct > 100 ? ` · ×${detail.boostPct / 100}` : '';
+        // "What's it doing": producing/idle state, with the current craft-cycle
+        // progress when it's actively producing — both already in the detail.
+        const prog = detail.isProducing && detail.progressPct !== undefined ? ` · ${detail.progressPct}%` : '';
+        const status = detail.isProducing
+          ? `<span style="color:#4ade80">● Producing${prog}</span>`
+          : `<span style="color:#9ca3af">○ Idle</span>`;
         return `<div class="sf-card-row"><span class="sf-card-k">Recipe</span><span class="sf-card-v">${detail.recipeName || 'None'}</span></div>
           <div style="display:flex;align-items:center;gap:3px;margin:2px 0 4px">${ins}${arrow}${outs}</div>
-          <div class="sf-card-row"><span class="sf-card-k">Output</span><span class="sf-card-v">${rate ? rate + ' · ' : ''}${detail.clockPct}%${boost}</span></div>`;
+          <div class="sf-card-row"><span class="sf-card-k">Output</span><span class="sf-card-v">${rate ? rate + ' · ' : ''}${detail.clockPct}%${boost}</span></div>
+          <div class="sf-card-row"><span class="sf-card-k">Status</span><span class="sf-card-v">${status}</span></div>`;
       }
       if (detail.kind === 'generator') {
         return `<div class="sf-card-row"><span class="sf-card-k">Fuel</span><span class="sf-card-v">${detail.fuelClass ? icon(detail.fuelClass, detail.fuelName) + ' ' : ''}${detail.fuelName || 'None'}</span></div>`
@@ -1140,9 +1147,36 @@ export function mapController() {
         <div class="sf-card-row"><span class="sf-card-k">Clock</span><span class="sf-card-v">${detail.clockPct}%</span></div>`;
     },
 
+    // A compact inventory peek for the map card. `c` is a fetched StorageContainer;
+    // shows the top item stacks (icon + count) plus a slot-fill bar — a read-only
+    // sneak peek; the full editable grid lives in the Explorer's Storage tab.
+    _cardStorageHtml(c) {
+      if (!c.totalSlots || !c.contents?.length) {
+        return `<div class="sf-card-row"><span class="sf-card-k">Contents</span><span class="sf-card-v">Empty</span></div>`;
+      }
+      const { items, overflow } = this.storagePreview(c.contents, 4);
+      const stk = (i) => `<div class="sf-card-stk">
+        <img src="/assets/items/${i.itemClass}.png" title="${i.displayName || ''}" onerror="this.style.display='none'">
+        <span>${this.fmtCount(i.count)}</span>
+      </div>`;
+      const more = overflow > 0 ? `<span class="sf-card-more">+${overflow}</span>` : '';
+      const pct = Math.round((c.usedSlots / c.totalSlots) * 100);
+      return `<div class="sf-card-stacks">${items.map(stk).join('')}${more}</div>
+        <div class="sf-card-row"><span class="sf-card-k">Slots</span><span class="sf-card-v">${c.usedSlots}/${c.totalSlots}</span></div>
+        <div class="sf-card-bar"><div class="sf-card-barfill" style="width:${pct}%"></div></div>`;
+    },
+
+    // Compact integer formatter for the inventory peek (e.g. 12345 → "12.3k").
+    fmtCount(n) {
+      if (n >= 10000) return (n / 1000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, '') + 'k';
+      return String(n);
+    },
+
     // Click detail card content. Position/length fact, plus — for machines whose
     // per-instance detail has been fetched — a recipe (in→out) / fuel / resource
-    // summary, and the launch button into the Save Viewer.
+    // summary, for storage containers an inventory peek, and the launch button
+    // into the Save Viewer. `detail` is a MachineInstance or a StorageContainer
+    // (discriminated by its `contents` field).
     _buildingCardHtml(entry, isSpline, detail) {
       let factLabel, factValue;
       if (isSpline) {
@@ -1157,7 +1191,9 @@ export function mapController() {
         factLabel = 'Position';
         factValue = `${(entry.cx / 100).toFixed(0)} m, ${(entry.cy / 100).toFixed(0)} m`;
       }
-      const machineHtml = detail ? this._cardMachineHtml(detail) : '';
+      const detailHtml = !detail ? ''
+        : detail.contents !== undefined ? this._cardStorageHtml(detail)
+        : this._cardMachineHtml(detail);
       return `<div class="sf-card">
         <div class="sf-card-head">
           <img class="sf-card-icon" src="/assets/buildings/${entry.buildClass}.png" onerror="this.style.display='none'">
@@ -1167,7 +1203,7 @@ export function mapController() {
           </div>
         </div>
         <div class="sf-card-body">
-          ${machineHtml}
+          ${detailHtml}
           <div class="sf-card-row"><span class="sf-card-k">${factLabel}</span><span class="sf-card-v">${factValue}</span></div>
         </div>
         <button class="sf-card-action" type="button">Open in Explorer
@@ -1176,10 +1212,13 @@ export function mapController() {
       </div>`;
     },
 
-    // After a machine is clicked on the map, fetch its type's detail and, if the
-    // card is still showing that instance, re-render with recipe/fuel/resource info.
+    // After a building is clicked on the map, fetch its detail and, if the card is
+    // still showing that instance, re-render with the peek: recipe/fuel/resource for
+    // machines, an inventory preview for storage containers.
     async _enrichBuildingCard(entry) {
-      if (!entry || !this.isInstanceableCategory(entry.category)) return;
+      if (!entry) return;
+      if (entry.category === 'Storage') { await this._enrichStorageCard(entry); return; }
+      if (!this.isInstanceableCategory(entry.category)) return;
       await this.loadMachineDetail(entry.buildClass);
       if (_cardEntry !== entry) return; // popup changed/closed while loading
       const list = this.svMachineDetail[entry.buildClass];
@@ -1188,6 +1227,23 @@ export function mapController() {
       for (const m of list) {
         const d = Math.hypot(Math.round(m.pos.x) - entry.gx, Math.round(m.pos.y) - entry.gy);
         if (d < bestD) { bestD = d; best = m; }
+      }
+      if (best) _detailPopup.setContent(this._buildingCardHtml(entry, false, best));
+    },
+
+    // Storage peek: lazily load the storage census, match the clicked container by
+    // buildClass + nearest position (positions are metres in the census, game-cm on
+    // the map), and re-render the card with its inventory preview. Containers the
+    // census doesn't track (e.g. Dimensional Depot) simply find no match → bare card.
+    async _enrichStorageCard(entry) {
+      if (!this.svStorage) await this.loadSvStorage();
+      if (_cardEntry !== entry) return; // popup changed/closed while loading
+      const mx = Math.round(entry.gx / 100), my = Math.round(entry.gy / 100);
+      let best = null, bestD = Infinity;
+      for (const c of this.svStorage ?? []) {
+        if (c.buildClass !== entry.buildClass || !c.position) continue;
+        const d = Math.hypot(c.position.x - mx, c.position.y - my);
+        if (d < bestD) { bestD = d; best = c; }
       }
       if (best) _detailPopup.setContent(this._buildingCardHtml(entry, false, best));
     },
