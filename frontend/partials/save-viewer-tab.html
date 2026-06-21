@@ -3,18 +3,7 @@
   <!-- The staged-changes bar + persist/review modals now live in the global
        edit-bar partial (shared across tabs); see partials/edit-bar.html. -->
 
-  <!-- Action result banner (save/persist outcomes) -->
-  <div x-show="actionResult" x-transition
-       :class="actionResult?.ok ? 'bg-ok-900/30 border-ok-800 text-ok-300' : 'bg-danger-900/30 border-danger-800 text-danger-300'"
-       class="flex items-start justify-between gap-3 p-3 border rounded-lg text-sm mb-5">
-    <div class="flex items-start gap-2">
-      <svg x-show="actionResult?.ok" class="flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:16px;height:16px">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-      </svg>
-      <span x-text="actionResult?.message"></span>
-    </div>
-    <button @click="actionResult = null" class="text-current opacity-60 hover:opacity-100 flex-shrink-0">✕</button>
-  </div>
+  <!-- Action-result outcomes now surface in the global toast (partials/toast.html). -->
 
   <!-- Status bar -->
   <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
@@ -83,6 +72,22 @@
       <span x-show="saveStatus?.mode === 'api'" class="ml-3">
         Polling Satisfactory API every <span class="text-gray-400" x-text="saveStatus?.pollIntervalSeconds"></span>s
       </span>
+    </div>
+
+    <!-- One-time "what's editable" hint — most fields here are click-to-edit, which
+         isn't obvious at a glance. Dismissed for good via localStorage. Hidden once
+         the user is already editing (the staged-changes bar takes over then). -->
+    <div x-show="!editHintDismissed && editCount === 0" x-transition x-cloak
+         class="flex items-start gap-2.5 mb-4 px-3 py-2.5 rounded-lg border border-accent-500/30 bg-accent-500/10 text-xs text-accent-100">
+      <svg class="flex-shrink-0 mt-px text-accent-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:15px;height:15px">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+      </svg>
+      <span class="min-w-0">
+        Most fields here are editable — click an inventory slot, depot item, machine overclock,
+        progression card, or a marker on the map to stage a change. Changes batch up in the bar at the
+        bottom; press <kbd class="px-1 py-0.5 rounded bg-gray-800/80 border border-gray-700 text-[10px] font-mono text-gray-300">Ctrl/⌘ Z</kbd> to undo the last one, then Save when you're ready.
+      </span>
+      <button @click="dismissEditHint()" aria-label="Dismiss tip" class="flex-shrink-0 text-accent-300/70 hover:text-accent-200 -mr-0.5">✕</button>
     </div>
 
     <!-- Sub-tab nav — grouped by intent: You · Factory · World.

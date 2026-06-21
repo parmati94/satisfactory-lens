@@ -557,6 +557,47 @@ export function saveEditing() {
       return this.svPlayers?.find(p => p.instanceName === target)?.position ?? null;
     },
 
+    // ── Edit-buffer persistence + undo ────────────────────────────────────
+    // localStorage key holding the staged buffer for whichever save it belongs to.
+    _EDIT_STORAGE_KEY: 'sl-edit-buffer',
+
+    // Mirror the staged buffer to localStorage, tagged with the loaded save's name
+    // so it's only ever restored onto the exact save it was made against (targets
+    // are instanceNames, meaningless on a different save). Empty buffer → clear.
+    _persistEditBuffer() {
+      const id = this.saveStatus?.sourceName;
+      try {
+        if (!id || this.editCount === 0) { localStorage.removeItem(this._EDIT_STORAGE_KEY); return; }
+        localStorage.setItem(this._EDIT_STORAGE_KEY, JSON.stringify({ id, buffer: this.editBuffer }));
+      } catch { /* quota exceeded or storage disabled — staging still works in-memory */ }
+    },
+
+    // Re-stage a persisted buffer after a reload, but only if it matches the save
+    // currently loaded (same sourceName) — otherwise drop it as stale.
+    _restoreEditBuffer() {
+      if (!this.saveStatus?.loaded) return;
+      let stored = null;
+      try { stored = JSON.parse(localStorage.getItem(this._EDIT_STORAGE_KEY) || 'null'); } catch { /* ignore */ }
+      if (!stored || stored.id !== this.saveStatus.sourceName) {
+        if (stored) localStorage.removeItem(this._EDIT_STORAGE_KEY); // belongs to another save
+        return;
+      }
+      if (stored.buffer && Object.keys(stored.buffer).length) this.editBuffer = stored.buffer;
+    },
+
+    // Undo the most recently staged change (Ctrl/Cmd+Z). _editOrder tracks
+    // last-touched order; reverting just drops the key and recomputes.
+    undoLastEdit() {
+      const key = this._editOrder[this._editOrder.length - 1];
+      if (key) this.revertEdit(key);
+    },
+
+    // Dismiss the one-time "what's editable" hint on the Save Tools tab.
+    dismissEditHint() {
+      this.editHintDismissed = true;
+      try { localStorage.setItem('sl-edit-hint-dismissed', 'true'); } catch { /* ignore */ }
+    },
+
     // Revert a single staged change — just drop its key (no inverse needed).
     revertEdit(key) {
       const { [key]: _, ...rest } = this.editBuffer;

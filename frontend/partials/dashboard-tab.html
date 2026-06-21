@@ -16,16 +16,7 @@
   <!-- Connected -->
   <div x-show="sfStatus.connected">
 
-    <!-- Action result banner -->
-    <div
-      x-show="actionResult"
-      x-transition
-      :class="actionResult?.ok ? 'bg-ok-900/30 border-ok-800 text-ok-300' : 'bg-danger-900/30 border-danger-800 text-danger-300'"
-      class="p-3 border rounded-lg text-sm mb-5 flex items-center justify-between"
-    >
-      <span x-text="actionResult?.message"></span>
-      <button @click="actionResult = null" class="text-current opacity-60 hover:opacity-100 ml-4">✕</button>
-    </div>
+    <!-- Action-result outcomes now surface in the global toast (partials/toast.html). -->
 
     <!-- Loading -->
     <div x-show="loading" class="flex items-center justify-center py-16">
