@@ -35,6 +35,11 @@
          x-text="uploadModal.file ? (uploadModal.file.size / 1024 / 1024).toFixed(1) + ' MB' : ''"></p>
     </label>
 
+    <!-- Inline error (invalid file / failed upload). Lives in the modal because the
+         global toast renders below modals and would be blurred behind this one. -->
+    <p x-show="uploadModal.error" x-text="uploadModal.error"
+       class="mt-3 text-xs text-danger-300 bg-danger-900/30 border border-danger-800 rounded-lg px-3 py-2"></p>
+
     <!-- Actions: two paths — park it on the server, or also boot the live game into it -->
     <div class="grid grid-cols-2 gap-2 mt-4">
       <button

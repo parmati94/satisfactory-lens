@@ -69,7 +69,7 @@ document.addEventListener('alpine:init', () => {
 
     // Upload-a-save modal (admin only — uploads a .sav from the browser to the
     // server's save list, then inspects it; see uploadSave() in saveViewer.js).
-    uploadModal: { show: false, file: null, dragging: false, busy: false, progress: { loaded: 0, total: 0 } },
+    uploadModal: { show: false, file: null, dragging: false, busy: false, error: null, progress: { loaded: 0, total: 0 } },
 
     // ── Phase 2: Save Viewer ──────────────────────────────────────────────
     saveStatus: null,
