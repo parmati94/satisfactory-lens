@@ -225,15 +225,20 @@ function applySetMachineClock(save: SatisfactorySave, edit: SaveEdit): void {
   const machine = findEntity(save, edit.target);
   if (!machine?.properties) throw new Error(`SetMachineClock: machine not found (${edit.target})`);
 
-  // 1) Set/create mCurrentPotential (absent at default 100%, like health). Keep
-  //    mPendingPotential in lock-step so the value doesn't snap back on resolve.
-  let prop = machine.properties.mCurrentPotential;
-  if (!prop) {
-    prop = { type: 'FloatProperty', name: 'mCurrentPotential', propertyTagType: { name: 'FloatProperty', children: [] }, value: 1 };
-    machine.properties.mCurrentPotential = prop;
-  }
-  prop.value = clock;
-  if (machine.properties.mPendingPotential) machine.properties.mPendingPotential.value = clock;
+  // 1) Set/create BOTH mCurrentPotential and mPendingPotential (both absent at the
+  //    default 100%, like health). On load the game resolves mPendingPotential onto
+  //    mCurrentPotential, so writing current alone snaps the clock back to 100% while
+  //    the shards (a separate inventory write) stick — pending MUST be created too.
+  const setPotential = (key: 'mCurrentPotential' | 'mPendingPotential') => {
+    let p = machine.properties[key];
+    if (!p) {
+      p = { type: 'FloatProperty', name: key, propertyTagType: { name: 'FloatProperty', children: [] }, value: 1 };
+      machine.properties[key] = p;
+    }
+    p.value = clock;
+  };
+  setPotential('mCurrentPotential');
+  setPotential('mPendingPotential');
 
   // 2) Reconcile shards. Each Power Shard raises the clock CAP by +50% (0 shards =
   //    100%), so any overclock above 100% needs ⌈(pct−100)/50⌉ shards: 101–150 → 1,
