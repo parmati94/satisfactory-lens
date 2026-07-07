@@ -318,12 +318,38 @@ router.get('/api/save/schematics', (_req, res) => {
   }
 });
 
-// GET /api/save/game-phase — current Project Assembly phase + edit target.
+// Base Space Elevator part costs per phase (from the pak; not in the save).
+// [ { phase, costs: [ { item, amount } ] }, ... ]. Cached.
+let _gamePhaseCosts: { phase: number; costs: { item: string; amount: number }[] }[] | null = null;
+function gamePhaseCosts() {
+  if (!_gamePhaseCosts) {
+    try {
+      _gamePhaseCosts = JSON.parse(readFileSync(join(__dirname, '../../data/gamePhases.json'), 'utf-8'));
+    } catch {
+      _gamePhaseCosts = [];
+    }
+  }
+  return _gamePhaseCosts!;
+}
+
+// GET /api/save/game-phase — current Project Assembly phase + edit target, plus
+// per-part delivery progress toward the next phase (delivered / base×multiplier).
 router.get('/api/save/game-phase', (_req, res) => {
   const save = getSave();
   if (!save) { res.status(404).json({ error: 'No save loaded' }); return; }
   try {
-    res.json({ phase: extractGamePhase(save) });
+    const phase = extractGamePhase(save);
+    if (!phase) { res.json({ phase: null }); return; }
+    const catalog = getItemCatalog();
+    const mult = phase.costMultiplier || 1;
+    const base = gamePhaseCosts().find((p) => p.phase === phase.targetIndex)?.costs ?? [];
+    const progress = base.map((c) => ({
+      item: c.item,
+      name: catalog[c.item]?.name ?? c.item,
+      delivered: phase.delivered[c.item] ?? 0,
+      required: Math.round(c.amount * mult),
+    }));
+    res.json({ phase: { ...phase, progress } });
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }

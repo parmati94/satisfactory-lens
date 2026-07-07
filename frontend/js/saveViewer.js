@@ -339,12 +339,18 @@ export function saveViewer() {
         const data = await api.save.schematics();
         // plain object map (path → true) — Alpine proxies don't play well with Set
         this.svSchematics = Object.fromEntries((data.purchased ?? []).map((p) => [p, true]));
-        this.svGamePhase = (await api.save.gamePhase()).phase;
+        await this.loadSvGamePhase();
       } catch (e) {
         this.saveDataError = e.message;
       } finally {
         this.saveDataLoading = false;
       }
+    },
+
+    // Space Elevator / Project Assembly phase + per-part delivery progress. Loaded
+    // eagerly by the Progression tab, lazily by the map's Space Elevator card.
+    async loadSvGamePhase() {
+      this.svGamePhase = (await api.save.gamePhase()).phase;
     },
 
     async loadSvPlayers() {

@@ -1116,7 +1116,9 @@
     <div x-show="saveTab === 'progression' && !saveDataLoading">
 
       <!-- Game phase (Project Assembly / Space Elevator) -->
-      <div x-show="svGamePhase && svGamePhase.count" class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden mb-4">
+      <div id="sv-gamephase-card" x-show="svGamePhase && svGamePhase.count"
+           class="bg-gray-800 rounded-xl border overflow-hidden mb-4 transition-colors duration-500"
+           :class="highlightGamePhase ? 'border-accent-400 ring-1 ring-accent-400' : 'border-gray-700'">
         <div class="px-4 py-3 border-b border-gray-700/60 flex items-center justify-between gap-2">
           <div class="min-w-0">
             <p class="text-sm font-semibold text-white">Game Phase</p>
@@ -1138,6 +1140,40 @@
             Sets the Space Elevator phase (skips its part deliveries). Tiers/milestones are unlocked separately below — bumping the phase doesn't unlock their schematics.
           </p>
           <p x-show="!isAdmin" class="text-sm text-gray-300">Current: <span class="font-semibold text-white" x-text="'Phase ' + effectivePhaseIndex()"></span></p>
+
+          <!-- Space Elevator delivery progress toward the next phase (reflects the
+               loaded save; delivered / base × multiplier). -->
+          <div x-show="svGamePhase && svGamePhase.progress && svGamePhase.progress.length" class="mt-3 pt-3 border-t border-gray-700/60">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-[11px] font-medium text-gray-400">
+                Space Elevator deliveries → <span x-text="'Phase ' + (svGamePhase ? svGamePhase.targetIndex : '')"></span>
+              </p>
+              <span x-show="svGamePhase && svGamePhase.costMultiplier !== 1"
+                    class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 tabular-nums"
+                    x-text="'×' + (svGamePhase ? svGamePhase.costMultiplier : 1) + ' cost'"></span>
+            </div>
+            <div class="space-y-2">
+              <template x-for="p in (svGamePhase ? svGamePhase.progress : [])" :key="p.item">
+                <div class="flex items-center gap-2">
+                  <img :src="'/assets/items/' + p.item + '.png'" class="w-6 h-6 flex-shrink-0 object-contain"
+                       onerror="this.style.visibility='hidden'">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-2 text-[11px]">
+                      <span class="text-gray-300 truncate" x-text="p.name"></span>
+                      <span class="tabular-nums flex-shrink-0"
+                            :class="p.delivered >= p.required ? 'text-green-400' : 'text-gray-400'"
+                            x-text="p.delivered.toLocaleString() + ' / ' + p.required.toLocaleString()"></span>
+                    </div>
+                    <div class="mt-1 h-1.5 rounded-full bg-gray-700 overflow-hidden">
+                      <div class="h-full rounded-full transition-all"
+                           :class="p.delivered >= p.required ? 'bg-green-500' : 'bg-accent-500'"
+                           :style="'width:' + Math.min(100, p.required ? Math.round(p.delivered / p.required * 100) : 100) + '%'"></div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
         </div>
       </div>
 

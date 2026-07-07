@@ -230,6 +230,20 @@ html.reduce-motion .leaflet-pan-anim .leaflet-proxy {
 .sf-card-more { font-size: 11px; font-weight: 600; color: #9ca3af; padding-left: 1px; }
 .sf-card-bar { height: 4px; margin: 8px 0 2px; background: rgba(55, 65, 81, 0.6); border-radius: 999px; overflow: hidden; }
 .sf-card-barfill { height: 100%; border-radius: 999px; background: rgb(var(--accent-500)); transition: width 0.2s; }
+/* Space Elevator delivery peek: one tight row per part (icon · inline bar · count). */
+.sf-el { padding: 8px 0 4px; border-top: 1px solid rgba(55, 65, 81, 0.4); }
+.sf-el-head {
+  font-size: 11px; color: #9ca3af; margin-bottom: 7px;
+  display: flex; align-items: center; gap: 6px;
+}
+.sf-el-mult { color: #fbbf24; font-weight: 600; font-variant-numeric: tabular-nums; }
+.sf-el-row { display: flex; align-items: center; gap: 7px; margin-top: 6px; }
+.sf-el-icon { width: 15px; height: 15px; flex-shrink: 0; object-fit: contain; }
+.sf-el-bar { flex: 1; height: 4px; background: rgba(55, 65, 81, 0.6); border-radius: 999px; overflow: hidden; }
+.sf-el-fill { height: 100%; border-radius: 999px; background: rgb(var(--accent-500)); }
+.sf-el-fill.is-done { background: #22c55e; }
+.sf-el-num { font-size: 11px; color: #cbd5e1; font-variant-numeric: tabular-nums; flex-shrink: 0; min-width: 62px; text-align: right; }
+.sf-el-num.is-done { color: #4ade80; }
 .sf-card-action {
   display: flex; align-items: center; justify-content: center; gap: 6px;
   width: calc(100% - 24px); margin: 10px 12px 12px; padding: 8px;

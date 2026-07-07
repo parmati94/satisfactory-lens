@@ -114,7 +114,8 @@ document.addEventListener('alpine:init', () => {
     slotEditor: { show: false, invName: '', slot: 0, contextLabel: '', search: '', selClass: '', count: 1, baseline: null, x: 0, y: 0 },
     depotEditor: { show: false, target: '', fixedItem: null, selClass: '', count: 0, baselineAmount: 0, search: '', x: 0, y: 0 },
     svSchematics: null,       // baseline purchased set (path → true)
-    svGamePhase: null,        // { target, currentIndex, count } — Project Assembly phase
+    svGamePhase: null,        // { target, currentIndex, targetIndex, count, costMultiplier, progress } — Project Assembly phase
+    highlightGamePhase: false,// transient highlight of the Game Phase card after a Space Elevator → Explorer jump
     schematicCatalog: null,   // full progression catalog (array)
     schematicsSearch: '',
     progOpen: {},             // expanded category sections in the Progression tab
