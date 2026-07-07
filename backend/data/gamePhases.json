@@ -1,0 +1,99 @@
+[
+{
+"phase": 0,
+"costs": []
+},
+{
+"phase": 1,
+"costs": [
+{
+"item": "Desc_SpaceElevatorPart_1",
+"amount": 50
+}
+]
+},
+{
+"phase": 2,
+"costs": [
+{
+"item": "Desc_SpaceElevatorPart_1",
+"amount": 1000
+},
+{
+"item": "Desc_SpaceElevatorPart_2",
+"amount": 1000
+},
+{
+"item": "Desc_SpaceElevatorPart_3",
+"amount": 100
+}
+]
+},
+{
+"phase": 3,
+"costs": [
+{
+"item": "Desc_SpaceElevatorPart_2",
+"amount": 2500
+},
+{
+"item": "Desc_SpaceElevatorPart_4",
+"amount": 500
+},
+{
+"item": "Desc_SpaceElevatorPart_5",
+"amount": 100
+}
+]
+},
+{
+"phase": 4,
+"costs": [
+{
+"item": "Desc_SpaceElevatorPart_7",
+"amount": 500
+},
+{
+"item": "Desc_SpaceElevatorPart_6",
+"amount": 500
+},
+{
+"item": "Desc_SpaceElevatorPart_8",
+"amount": 250
+},
+{
+"item": "Desc_SpaceElevatorPart_9",
+"amount": 100
+}
+]
+},
+{
+"phase": 5,
+"costs": [
+{
+"item": "Desc_SpaceElevatorPart_9",
+"amount": 1000
+},
+{
+"item": "Desc_SpaceElevatorPart_10",
+"amount": 1000
+},
+{
+"item": "Desc_SpaceElevatorPart_12",
+"amount": 256
+},
+{
+"item": "Desc_SpaceElevatorPart_11",
+"amount": 200
+}
+]
+},
+{
+"phase": 6,
+"costs": []
+},
+{
+"phase": 7,
+"costs": []
+}
+]

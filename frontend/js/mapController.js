@@ -1268,6 +1268,23 @@ export function mapController() {
         <div class="sf-card-bar"><div class="sf-card-barfill" style="width:${pct}%"></div></div>`;
     },
 
+    // Space Elevator delivery progress — a minimal one-line-per-part peek toward the
+    // next phase: item icon, inline progress bar, delivered/required. The icon (with
+    // tooltip) stands in for the part name to keep the card tight.
+    _cardPhaseHtml(d) {
+      const rows = d.phaseProgress.map((p) => {
+        const pct = Math.min(100, p.required ? Math.round((p.delivered / p.required) * 100) : 100);
+        const done = p.delivered >= p.required;
+        return `<div class="sf-el-row">
+          <img class="sf-el-icon" src="/assets/items/${p.item}.png" title="${p.name}" onerror="this.style.visibility='hidden'">
+          <div class="sf-el-bar"><div class="sf-el-fill${done ? ' is-done' : ''}" style="width:${pct}%"></div></div>
+          <span class="sf-el-num${done ? ' is-done' : ''}">${this.fmtCount(p.delivered)}/${this.fmtCount(p.required)}</span>
+        </div>`;
+      }).join('');
+      const mult = d.costMultiplier !== 1 ? `<span class="sf-el-mult">×${d.costMultiplier}</span>` : '';
+      return `<div class="sf-el"><div class="sf-el-head">Deliveries → Phase ${d.targetIndex}${mult}</div>${rows}</div>`;
+    },
+
     // Compact integer formatter for the inventory peek (e.g. 12345 → "12.3k").
     fmtCount(n) {
       if (n >= 10000) return (n / 1000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, '') + 'k';
@@ -1294,6 +1311,7 @@ export function mapController() {
         factValue = `${(entry.cx / 100).toFixed(0)} m, ${(entry.cy / 100).toFixed(0)} m`;
       }
       const detailHtml = !detail ? ''
+        : detail.phaseProgress !== undefined ? this._cardPhaseHtml(detail)
         : detail.contents !== undefined ? this._cardStorageHtml(detail)
         : this._cardMachineHtml(detail);
       return `<div class="sf-card">
@@ -1319,6 +1337,10 @@ export function mapController() {
     // machines, an inventory preview for storage containers.
     async _enrichBuildingCard(entry) {
       if (!entry) return;
+      // The Space Elevator reads like a storage container, but its "contents" are
+      // the parts delivered toward the next Project Assembly phase (global state,
+      // not per-instance) — lazily load the game phase and show delivery progress.
+      if (entry.buildClass === 'Build_SpaceElevator') { await this._enrichSpaceElevatorCard(entry); return; }
       if (entry.category === 'Storage') { await this._enrichStorageCard(entry); return; }
       if (!this.isInstanceableCategory(entry.category)) return;
       await this.loadMachineDetail(entry.buildClass);
@@ -1331,6 +1353,17 @@ export function mapController() {
         if (d < bestD) { bestD = d; best = m; }
       }
       if (best) _detailPopup.setContent(this._buildingCardHtml(entry, false, best));
+    },
+
+    // Space Elevator peek: lazily load the game phase and re-render the card with
+    // per-part delivery progress toward the next phase (delivered / base×multiplier).
+    async _enrichSpaceElevatorCard(entry) {
+      if (!this.svGamePhase) { try { await this.loadSvGamePhase(); } catch { return; } }
+      if (_cardEntry !== entry) return; // popup changed/closed while loading
+      const p = this.svGamePhase;
+      if (!p || !p.progress?.length) return;
+      _detailPopup.setContent(this._buildingCardHtml(entry, false,
+        { phaseProgress: p.progress, targetIndex: p.targetIndex, costMultiplier: p.costMultiplier }));
     },
 
     // Storage peek: lazily load the storage census, match the clicked container by
@@ -1358,6 +1391,17 @@ export function mapController() {
     async openInSaveViewer(entry) {
       _leafletMap?.closePopup(_detailPopup);
 
+      // Space Elevator → the Progression tab's Game Phase card (delivery progress +
+      // phase editing), rather than a bare per-instance structural row.
+      if (entry.buildClass === 'Build_SpaceElevator') {
+        this.saveTab = 'progression';
+        this.savesDrawerOpen = false;
+        await this.switchTab('saves');
+        if (!this.svSchematics) await this.loadSvSchematics();
+        this._focusGamePhaseCard();
+        return;
+      }
+
       // Storage containers → the dedicated Storage tab (inventory + edit), which is
       // strictly more useful than a bare per-instance row. Falls through to the
       // category's normal tab only if the container isn't one the Storage tab tracks
@@ -1381,6 +1425,17 @@ export function mapController() {
       await this.switchTab('saves');
       if (!this.svBuildings) await this.loadSvBuildings();
       this._focusBuildingInstance(entry.buildClass, entry.gx, entry.gy);
+    },
+
+    // Scroll to + briefly highlight the Progression tab's Game Phase card (the
+    // Space Elevator's home in the Explorer).
+    _focusGamePhaseCard() {
+      this.highlightGamePhase = true;
+      this.$nextTick(() => {
+        document.getElementById('sv-gamephase-card')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      });
+      clearTimeout(this._gamePhaseHighlightTimer);
+      this._gamePhaseHighlightTimer = setTimeout(() => { this.highlightGamePhase = false; }, 4000);
     },
 
     // Locate a storage container in the Storage tab by buildClass + nearest position
