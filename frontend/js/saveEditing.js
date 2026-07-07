@@ -355,6 +355,16 @@ export function saveEditing() {
       return shards.concat(somersloops);
     },
 
+    // Generator output power (MW) reflecting any STAGED clock change — output scales
+    // linearly with clock. inst.powerMW is base×savedClock, so rescale by the ratio
+    // of effective to saved clock for a live preview as the overclock is edited.
+    effectiveGeneratorMW(inst) {
+      if (inst.powerMW == null) return null;
+      const savedPct = inst.clockPct || 100;
+      const scaled = inst.powerMW * (this.effectiveClockPct(inst) / savedPct);
+      return Math.round(scaled * 10) / 10;
+    },
+
     // ── Map marker editing ────────────────────────────────────────────────
     _markerKey(guid) { return `marker:${guid}`; },
     _markerDelKey(guid) { return `marker:${guid}:delete`; },

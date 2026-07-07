@@ -19,7 +19,7 @@ const BASE_POWER_MW: Record<string, number> = {
   Build_GeneratorBiomass_Automated_C:    30,
   Build_GeneratorIntegratedBiomass_C:    30,
   Build_GeneratorCoal_C:                 75,
-  Build_GeneratorFuel_C:                150,
+  Build_GeneratorFuel_C:                250,   // 1.0 value (was 150 pre-1.0)
   Build_GeneratorNuclear_C:           2500,
   Build_GeneratorGeoThermal_C:          200,   // mid-range average
 
