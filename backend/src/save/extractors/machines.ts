@@ -204,13 +204,26 @@ export function extractMachineInstances(save: SatisfactorySave, buildClass: stri
       // Generators have no mTargetConsumption (they produce), so derive "running"
       // from fuel: a generator with fuel in its buffer is operational, empty = stalled.
       const fuelBuffer = withNames(parseStacks(refEntity(byInstance, p.mFuelInventory)).contents);
+      // Generators overclock exactly like production/extractors (power shards in
+      // mInventoryPotential, clock in mCurrentPotential) — but output POWER scales
+      // LINEARLY with clock (base × clock), not by the consumer's clock^1.321928.
+      // GeoThermal can't be overclocked (variable output, no shard slots) → skip.
+      const clock = p.mCurrentPotential?.value ?? 1;
+      const baseMW = GENERATOR_MW[buildClass];
+      const overclockable = buildClass !== 'Build_GeneratorGeoThermal';
+      const potInv = overclockable ? refEntity(byInstance, p.mInventoryPotential) : null;
+      const potential = parseStacks(potInv);
+      const potentialSlots = potential.totalSlots || (potInv?.properties?.mArbitrarySlotSizes?.values?.length ?? 0);
       out.push({
         ...base,
         kind: 'generator',
         isProducing: fuelBuffer.length > 0,
         fuelClass: fuelPath ? classStem(fuelPath) : null,
         fuelName: fuelPath ? itemDisplayName(fuelPath) : null,
-        powerMW: GENERATOR_MW[buildClass] ?? null,
+        powerMW: baseMW !== undefined ? Math.round(baseMW * clock * 10) / 10 : null,
+        clockPct: overclockable ? Math.round(clock * 100) : undefined,
+        potential: withNames(potential.contents),
+        potentialSlots,
         fuelBuffer,
       });
     } else {

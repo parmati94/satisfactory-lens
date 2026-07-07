@@ -1242,6 +1242,7 @@ export function mapController() {
       }
       if (detail.kind === 'generator') {
         return `<div class="sf-card-row"><span class="sf-card-k">Fuel</span><span class="sf-card-v">${detail.fuelClass ? icon(detail.fuelClass, detail.fuelName) + ' ' : ''}${detail.fuelName || 'None'}</span></div>`
+          + (detail.clockPct !== undefined && detail.clockPct !== 100 ? `<div class="sf-card-row"><span class="sf-card-k">Clock</span><span class="sf-card-v">${detail.clockPct}%</span></div>` : '')
           + (detail.powerMW ? `<div class="sf-card-row"><span class="sf-card-k">Power</span><span class="sf-card-v">${detail.powerMW} MW</span></div>` : '');
       }
       // extractor

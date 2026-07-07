@@ -1033,6 +1033,60 @@
                                           </div>
                                         </div>
 
+                                        <!-- Clock gauge (generators) — editable. Output power scales linearly
+                                             with clock (base × clock); overclocking adds power shards, same as
+                                             production machines. -->
+                                        <div x-show="inst.kind === 'generator' && inst.clockPct !== undefined">
+                                          <div class="flex justify-between items-center text-[10px] mb-0.5">
+                                            <span class="text-gray-500 uppercase tracking-wide">Clock <span x-show="isAdmin" class="text-gray-600 normal-case tracking-normal">· editable</span></span>
+                                            <span class="font-mono font-semibold" :class="effectiveClockPct(inst) > 100 ? 'text-warn-300' : (effectiveClockPct(inst) < 100 ? 'text-sky-300' : 'text-ok-300')" x-text="effectiveClockPct(inst) + '%'"></span>
+                                          </div>
+                                          <div class="h-2 rounded-full bg-gray-700/70 overflow-hidden">
+                                            <div class="h-full rounded-full transition-all" :class="effectiveClockPct(inst) > 100 ? 'bg-warn-400' : (effectiveClockPct(inst) < 100 ? 'bg-sky-400' : 'bg-ok-400')" :style="'width:' + Math.min(effectiveClockPct(inst) / 250 * 100, 100) + '%'"></div>
+                                          </div>
+                                          <div x-show="isAdmin" class="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                                            <input type="number" min="1" max="250" :value="effectiveClockPct(inst)"
+                                                   @click.stop @change.stop="setMachineClock(inst, $event.target.value)"
+                                                   class="w-14 px-1.5 py-0.5 rounded-md bg-gray-800 border text-xs text-gray-200 focus:outline-none focus:border-accent-500/60"
+                                                   :class="isClockEdited(inst) ? 'border-accent-500/60' : 'border-gray-700'">
+                                            <span class="text-[10px] text-gray-500">%</span>
+                                            <template x-for="p in [100, 150, 200, 250]" :key="p">
+                                              <button @click.stop="setMachineClock(inst, p)"
+                                                      class="px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors"
+                                                      :class="effectiveClockPct(inst) === p ? 'bg-accent-500/20 text-accent-200' : 'bg-gray-700/50 text-gray-400 hover:bg-gray-700'"
+                                                      x-text="p + '%'"></button>
+                                            </template>
+                                            <span x-show="clockShards(effectiveClockPct(inst)) > 0" class="ml-auto flex items-center gap-0.5 text-[10px] text-fuchsia-300" :title="'Power Shards needed for ' + effectiveClockPct(inst) + '%'">
+                                              <span x-text="clockShards(effectiveClockPct(inst)) + '×'"></span>
+                                              <img src="/assets/items/Desc_CrystalShard.png" class="w-3.5 h-3.5 object-contain" onerror="this.style.display='none'">
+                                            </span>
+                                          </div>
+                                          <div x-show="inst.powerMW != null" class="mt-1.5 flex items-center justify-between text-[10px]">
+                                            <span class="text-gray-500 uppercase tracking-wide">Power output</span>
+                                            <span class="font-mono font-semibold text-warn-300" x-text="effectiveGeneratorMW(inst) + ' MW'"></span>
+                                          </div>
+                                        </div>
+
+                                        <!-- Power Shards (generators) — mirrors production; previews staged shards -->
+                                        <div x-show="inst.kind === 'generator' && inst.potentialSlots">
+                                          <p class="text-[10px] uppercase tracking-wide text-gray-500 mb-1">Power Shards
+                                            <span x-show="isClockEdited(inst)" class="text-accent-300 normal-case tracking-normal">· staged</span></p>
+                                          <div class="flex flex-wrap gap-1.5">
+                                            <template x-for="(item, ii) in effectivePotential(inst)" :key="'gp'+ii">
+                                              <div class="relative w-9 h-9 rounded-lg border flex items-center justify-center" x-data="{ e: false }"
+                                                   :class="item.staged ? 'bg-accent-500/10 border-accent-500/70' : 'bg-fuchsia-500/5 border-fuchsia-500/30'"
+                                                   :title="item.displayName + (item.count > 1 ? ' ×' + item.count : '') + (item.staged ? ' (staged)' : '')">
+                                                <img x-show="!e" :src="'/assets/items/' + item.itemClass + '.png'" class="w-full h-full object-contain p-1" @error="e = true">
+                                                <span x-show="e" class="text-[7px] text-gray-400 text-center px-0.5" x-text="item.displayName"></span>
+                                                <span x-show="item.count > 1" class="absolute bottom-0 right-0.5 text-[9px] font-bold text-white" style="text-shadow:0 1px 2px #000" x-text="item.count"></span>
+                                              </div>
+                                            </template>
+                                            <template x-for="n in Math.max(0, inst.potentialSlots - effectivePotential(inst).length)" :key="'gpe'+n">
+                                              <div class="w-9 h-9 rounded-lg border border-dashed border-gray-700/70"></div>
+                                            </template>
+                                          </div>
+                                        </div>
+
                                         <!-- Fuel (generator) — read-only. Fuel isn't editable: generators are
                                              belt/pipe-fed only, the buffer is tiny and burned in seconds. The
                                              extractor output buffer is hidden entirely — solid miners only fill it
