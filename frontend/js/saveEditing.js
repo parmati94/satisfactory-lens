@@ -280,12 +280,17 @@ export function saveEditing() {
       this.depotEditor.show = false;
     },
 
-    // Stage a removal (amount 0) directly from a depot row.
+    // Stage a removal of a depot item. Distinguish a staged add (exists only in the
+    // buffer, not in the save) from a persisted baseline entry — by PRESENCE in
+    // depot.items, not by amount. A persisted entry emptied to 0 in-game stays in
+    // mStoredItems forever (amount 0); it's still a baseline entry, so removing it
+    // must stage amount:0 for the backend to splice it out — checking `amount === 0`
+    // would misread it as a staged add and silently no-op.
     removeDepotItem(depot, item) {
       if (!this.isAdmin) return;
       const key = this._depotKey(item.itemPath);
-      const base = depot.items.find(i => i.itemPath === item.itemPath)?.amount ?? 0;
-      if (base === 0) {                              // was a staged add → just drop it
+      const inBaseline = depot.items.some(i => i.itemPath === item.itemPath);
+      if (!inBaseline) {                             // staged add → just drop the staged edit
         const { [key]: _, ...rest } = this.editBuffer;
         this.editBuffer = rest;
         return;
